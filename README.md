@@ -22,11 +22,11 @@ Some examples:
 
 
 ## Tech
-**Hardware**: a Sim Card reader, a Sim Card with a 0euro phone plan (e.g., Prixtel in France) only used to receive SMSs, a raspberry Pi.
+**Hardware**: a Sim Card reader (I bought mine 20€ [here](http://www.huaweie220.com/)), a Sim Card with a 0euro phone plan (e.g., [Prixtel](http://www.prixtel.com/) in France) only used to receive SMSs, a raspberry Pi.
 In order to send free SMSs, we use a common feature of most of mobile operators: by sending an email
 to [phone number]@[mobile operator website], the email is forwarded by SMS to [phone number].
 
-**Software**: project [Weboob](http://weboob.org/) (scriptable routines for fetching info from websites), Python and Google scripts to glue everything together.
+**Software**: project [Weboob](http://weboob.org/) (scriptable routines for fetching info from websites), Python and Google scripts to glue everything together. We use [Gammu](http://wammu.eu/) to interact with the SIM card reader.
 
 
 ## Roadmap
