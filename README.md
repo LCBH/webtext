@@ -15,6 +15,7 @@ Some examples:
 - "forecast Marseille 14th March" -> precise forecast
 - "Gmail subjects list" -> list of (id,subject of id's email)
 - "Gmail body 3" -> body of email whose id=3
+- "movie Mommy Paris 18" -> next film show of Mommy around Paris 18
 
 
 **Task2**: I let a voicemail on my raspberry's number with my request, it answers me by SMS.
