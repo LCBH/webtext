@@ -24,3 +24,29 @@
 #                                                                         #
 ###########################################################################
 
+""" Parse a request and using Fetch, return the required answer.
+We thus define here the conventions of requests."""
+
+import fetch
+
+# Parse the inputted text and output the corresponding answer
+def parseContent(text):
+    logging.info("Starting parseContent")
+    if text == "banque":
+        return(fetch.bankInfo())
+    elif text == "banque details":
+        return(fetch.bankInfo(True))
+    elif text[:4] == "velo":
+        if text == "velo":
+            where = "chapelle"
+        elif text == "velo moi":
+            where = "riquet"
+        else:
+            where = text[5:]
+        fetch.velibParis(where)
+    else:
+        extract = ('Le numéro %s ma envoyé le texte %s' % (SMSnumber, SMScontent))
+        answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
+                  extract +
+                  ", malheuresement je n'ai pas compris sa requête.")
+        return(answer)

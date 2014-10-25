@@ -24,3 +24,37 @@
 #                                                                         #
 ###########################################################################
 
+""" Using either carrier API's or the raspberry pi, we define functions
+that send SMSs."""
+
+import os
+import sys
+import wget                     # wget command (for api free)
+import urllib                   # used to transform text into url
+import logging
+from os.path import expanduser
+
+# -- Static data (install). --
+REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "../../"
+LOG_DIR = PROJECT_DIR + "data/log/"
+# -- User Data --
+if os.path.isfile(PROJECT_DIR+'/config_backends.txt'):
+    execfile(expanduser(PROJECT_DIR+'/config_backends.txt'))
+# -- Setup Logging ''
+logging.basicConfig(filename=LOG_DIR + '/handleSMS.log',
+                    level=logging.DEBUG,
+                    format='%(asctime)s|%(levelname)s|send:%(message)s',
+                    datefmt='%d/%m %I:%M:%S %p')
+
+# -- functions --
+def sendTextFREE(text):
+    """ Send the message [text] through the Free API
+    (so only to the corresponding nb.)."""
+    logging.info("Starting sendTextFREE")
+    encodedText = urllib.quote_plus(text) # url-ize the message's content
+    url = ('https://smsapi.free-mobile.fr/sendmsg?user=%s&pass=%s&msg=%s'
+           % (FREE_USER, FREE_PASSWD, encodedText))
+    filename = "./tmp/torm.tmp"
+    out = wget.download(url,out=filename)
+    os.remove(filename)
