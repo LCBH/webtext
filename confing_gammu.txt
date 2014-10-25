@@ -1,7 +1,7 @@
 [gammu]
 port = /dev/ttyUSB0
 connection = at
-pin = 0000
+pin = 0000			# TO FILL
 
 # Debugging
 logfile = /home/lutcheti/webtext/data/log/gammu.log
