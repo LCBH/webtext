@@ -56,20 +56,20 @@ SMSnumber = sys.argv[1]         # TODO
 SMScontent = sys.argv[2]
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "../../"
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 LOG_DIR = PROJECT_DIR + "data/log/"
 # -- User Data --
-if os.path.isfile(PROJECT_DIR+'/config_backends.txt'):
-    execfile(expanduser(PROJECT_DIR+'/config_backends.txt'))
+if os.path.isfile(PROJECT_DIR+'config_backends.txt'):
+    execfile(expanduser(PROJECT_DIR+'config_backends.txt'))
 # -- Setup Logging --
-logging.basicConfig(filename=LOG_DIR + '/handleSMS.log',
+logging.basicConfig(filename=LOG_DIR + 'handleSMS.log',
                     level=logging.DEBUG,
                     format='%(asctime)s|%(levelname)s|handle:%(message)s',
                     datefmt='%d/%m %I:%M:%S %p')
 
 # -- START MAIN --
 logging.info("Starting handleSMS.py with number:[%s] and content:[%s]." % (SMSnumber,SMScontent))
-answer = parse.parseContent(SMScontent)
+answer = parse.parseContent(SMSnumber, SMScontent)
 logging.info("Answer is: " + answer)
 send.sendTextFREE(answer)
 logging.info("Sent OK, END of handleSMS")

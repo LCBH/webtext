@@ -30,20 +30,20 @@ We thus define here the conventions of requests."""
 import fetch
 
 # Parse the inputted text and output the corresponding answer
-def parseContent(text):
+def parseContent(SMSnumber,SMScontent):
     # TODO: define a common structure for requests ["backend request args] ?
     # extract word per word the request
-    if text == "banque":
+    if SMScontent == "banque":
         return(fetch.bankInfo())
-    elif text == "banque details":
+    elif SMScontent == "banque details":
         return(fetch.bankInfo(True))
-    elif text[:4] == "velo":
-        if text == "velo":
+    elif SMScontent[:4] == "velo":
+        if SMScontent == "velo":
             where = "chapelle"
-        elif text == "velo moi":
+        elif SMScontent == "velo moi":
             where = "riquet"
         else:
-            where = text[5:]
+            where = SMScontent[5:]
         fetch.velibParis(where)
     else:
         extract = ('Le numéro %s ma envoyé le texte %s' % (SMSnumber, SMScontent))
