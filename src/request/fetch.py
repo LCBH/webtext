@@ -24,20 +24,8 @@
 #                                                                         #
 ###########################################################################
 
-""" Given a SMS (sender's number, content), we parse here the request, fetch
-the result and sends the appropriate answer."""
-
-# OLD: This program is executed any time a new SMS is received.
-# argv[1] contains the senders' number and argv[2] contains the content of
-# the SMS
-
-########################################
-#TODO: 
-#  This script will be executed whenever 
-# the "request's server" receives a 
-# request from the raspberry pi.
-# Add a PHP page and adapt the script.
-########################################
+""" Fetch different types of information using Weboob and some APIs and pretty
+format as a SMS' text."""
 
 import os
 import sys
@@ -45,15 +33,8 @@ import wget                     # wget command (for api free)
 import subprocess               # for launching bash programs
 import urllib                   # used to transform text into url
 import logging
-import parse
-import fetch
-import send
 from os.path import expanduser
 
-
-# -- Inputs: the SMS' number and the SMS' content -- 
-SMSnumber = sys.argv[1]         # TODO
-SMScontent = sys.argv[2]
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "../../"
@@ -61,15 +42,54 @@ LOG_DIR = PROJECT_DIR + "data/log/"
 # -- User Data --
 if os.path.isfile(PROJECT_DIR+'/config_backends.txt'):
     execfile(expanduser(PROJECT_DIR+'/config_backends.txt'))
-# -- Setup Logging --
+# -- Setup Logging ''
 logging.basicConfig(filename=LOG_DIR + '/handleSMS.log',
                     level=logging.DEBUG,
-                    format='%(asctime)s|%(levelname)s|handle:%(message)s',
+                    format='%(asctime)s|%(levelname)s|fetch:%(message)s',
                     datefmt='%d/%m %I:%M:%S %p')
 
-# -- START MAIN --
-logging.info("Starting handleSMS.py with number:[%s] and content:[%s]." % (SMSnumber,SMScontent))
-answer = parse.parseContent(SMScontent)
-logging.info("Answer is: " + answer)
-send.sendTextFREE(answer)
-logging.info("Sent OK, END of handleSMS")
+
+def bankInfo(details=False):
+    """ Fetch the amounts of bank accounts."""
+    logging.info("Starting bankInfo")
+    bashCommandList = "boobank list --formatter=multiline --select=label,balance"
+    bashCommandHistory = ("boobank history 102780735700020237601EUR@creditmutuel "
+                          "--formatter=multiline --select=date,raw,amount")
+    logging.info("Before subprocess: %s" % bashCommandList)
+    process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
+    if details:
+        logging.info("More details needed, before subprocess: %s" % bashCommandHistory)
+        process = subprocess.Popen(bashCommandHistory.split(), stdout=subprocess.PIPE)
+        outputHistory = process.communicate()[0]
+        output = output + "||| Les détails:\n" + str(outputHistory)
+    answer = ("J'ai compris que tu voulais un point sur tes comptes:\n" +
+              str(output))
+    return(answer)
+
+def velibParis(where):
+    """ Fetch available stations and bikes around a given location."""
+    logging.info("Starting velibParis")
+    bashPrefix = "boobsize search --formatter=multiline "
+    bashPrefix2 = "boobsize last_sensor_measure "
+    # prefixBikes = "available_bikes"
+    # prefixFree = "available_bike_stands"
+    # stationChap = ".18040.Paris.jcvelaux"
+    # stationDep = "18110.Paris.jcvelaux"
+    # stationRiqet = ".18010.Paris.jcvelaux"
+    # stationRiquetP = ".18109.Paris.jcvelaux"
+    if where == "chapelle":
+#        bashC =  bashPrefix2 + prefixBikes + stationChap
+        bashC = bashPrefix + "marx dormoy"
+    elif where == "moi":
+        bashC = bashPrefix + "riquet"
+    else:
+        bashC = bashPrefix + where
+    logging.info("Before subprocess: %s." % bashC)
+    process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
+#     output = output[0:200]      # TO FIX
+    answer = ("J'ai compris que tu voulais avoir les dispos des vélos à "+where+"."
+              " Voici ces infos:\n" +
+              str(output))
+    return(answer)
