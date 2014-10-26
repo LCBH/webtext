@@ -24,30 +24,8 @@
 #                                                                         #
 ###########################################################################
 
-""" Parse a request and using Fetch, return the required answer.
-We thus define here the conventions of requests."""
+""" Tests all the scripts."""
 
-import fetch
+import handleSMS
 
-# Parse the inputted text and output the corresponding answer
-def parseContent(text):
-    # TODO: define a common structure for requests ["backend request args] ?
-    # extract word per word the request
-    if text == "banque":
-        return(fetch.bankInfo())
-    elif text == "banque details":
-        return(fetch.bankInfo(True))
-    elif text[:4] == "velo":
-        if text == "velo":
-            where = "chapelle"
-        elif text == "velo moi":
-            where = "riquet"
-        else:
-            where = text[5:]
-        fetch.velibParis(where)
-    else:
-        extract = ('Le numéro %s ma envoyé le texte %s' % (SMSnumber, SMScontent))
-        answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
-                  extract +
-                  ", malheureusement je n'ai pas compris sa requête.")
-        return(answer)
+# TODO: focus on testing all backends

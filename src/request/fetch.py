@@ -24,7 +24,9 @@
 #                                                                         #
 ###########################################################################
 
-""" Fetch different types of information using Weboob and some APIs."""
+""" Fetch different types of information using Weboob and some APIs and pretty
+format as a SMS' text."""
+
 import os
 import sys
 import wget                     # wget command (for api free)

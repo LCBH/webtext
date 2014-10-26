@@ -56,5 +56,6 @@ def sendTextFREE(text):
     url = ('https://smsapi.free-mobile.fr/sendmsg?user=%s&pass=%s&msg=%s'
            % (FREE_USER, FREE_PASSWD, encodedText))
     filename = "./tmp/torm.tmp"
+    # TOOD: do not wget when testing (see tests.py)
     out = wget.download(url,out=filename)
     os.remove(filename)
