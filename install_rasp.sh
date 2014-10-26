@@ -1,4 +1,4 @@
-cp config.txt /etc/gammu-smsdrc
+cp config_gammu.txt /etc/gammu-smsdrc
 mkdir /data
 mkdir data/log
 mkdir data/SMS
