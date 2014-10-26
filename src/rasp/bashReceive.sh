@@ -5,8 +5,8 @@
 echo Starting screen of bashReceive:
 PROGRAM=/home/lutcheti/webtext/src/request/handleSMS.py # TODO: config auto
 for i in `seq $SMS_MESSAGES` ; do
-    echo "screen -S parseAndSend -d -m $PROGRAM \"\${SMS_${i}_NUMBER}\" \"\${SMS_${i}_TEXT}\" &"
-    eval "screen -S parseAndSend -d -m $PROGRAM \"\${SMS_${i}_NUMBER}\" \"\${SMS_${i}_TEXT}\" &"
+    echo "screen -S parseAndSend -d -m python $PROGRAM \"\${SMS_${i}_NUMBER}\" \"\${SMS_${i}_TEXT}\" &"
+    eval "screen -S parseAndSend -d -m python $PROGRAM \"\${SMS_${i}_NUMBER}\" \"\${SMS_${i}_TEXT}\" &"
 done
 echo Ending screen of bashReceive.
 
