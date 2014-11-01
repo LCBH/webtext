@@ -86,10 +86,11 @@ def velibParis(where):
     # SOL: truncatated 47 first caracters of all lines
     TRUNC = 51
     output_trunc = ""
-    listLines = output.splitlines()[1:] # drop the menu
+    listLines = output.splitlines()[2:] # drop the menu
     for line in listLines:
-        line = line[47:]
-        output_trunc += line + "\n"
+        if len(line) > 1:
+            line = line[TRUNC:]
+            output_trunc += line + "\n"
     answer = ("J'ai compris que tu voulais avoir les dispos des vélos à "+where+"."
               " Voici ces infos:\n" +
               str(output_trunc))
