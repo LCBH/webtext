@@ -34,6 +34,7 @@ import subprocess               # for launching bash programs
 import urllib                   # used to transform text into url
 import logging
 from os.path import expanduser
+import backends.allocine
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -70,26 +71,33 @@ def bankInfo(details=False):
 def velibParis(where):
     """ Fetch available stations and bikes around a given location."""
     logging.info("Starting velibParis")
-    bashPrefix = "boobsize search --formatter=multiline "
-    bashPrefix2 = "boobsize last_sensor_measure "
+    bashPrefix = "boobsize search "
+    # bashPrefix2 = "boobsize last_sensor_measure "
     # prefixBikes = "available_bikes"
     # prefixFree = "available_bike_stands"
     # stationChap = ".18040.Paris.jcvelaux"
     # stationDep = "18110.Paris.jcvelaux"
     # stationRiqet = ".18010.Paris.jcvelaux"
     # stationRiquetP = ".18109.Paris.jcvelaux"
-    if where == "chapelle":
-#        bashC =  bashPrefix2 + prefixBikes + stationChap
-        bashC = bashPrefix + "marx dormoy"
-    elif where == "moi":
-        bashC = bashPrefix + "riquet"
-    else:
-        bashC = bashPrefix + where
+    bashC = bashPrefix + where
     logging.info("Before subprocess: %s." % bashC)
     process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE)
     output = process.communicate()[0]
-#     output = output[0:200]      # TO FIX
+    # PB: only table formatter shows all required info but not adapted for SMS
+    # SOL: truncatated 47 first caracters of all lines
+    TRUNC = 51
+    output_trunc = ""
+    listLines = output.splitlines()[2:] # drop the menu
+    for line in listLines:
+        if len(line) > 1:
+            line = line[TRUNC:]
+            output_trunc += line + "\n"
     answer = ("J'ai compris que tu voulais avoir les dispos des vélos à "+where+"."
               " Voici ces infos:\n" +
-              str(output))
+              str(output_trunc))
     return(answer)
+
+def cinema(request):
+    # parse the request: showtimes? search for movies? etc....
+    allocine.showtimes("mommy")
+    return()
