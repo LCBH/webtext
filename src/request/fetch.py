@@ -70,26 +70,27 @@ def bankInfo(details=False):
 def velibParis(where):
     """ Fetch available stations and bikes around a given location."""
     logging.info("Starting velibParis")
-    bashPrefix = "boobsize search --formatter=multiline "
-    bashPrefix2 = "boobsize last_sensor_measure "
+    bashPrefix = "boobsize search "
+    # bashPrefix2 = "boobsize last_sensor_measure "
     # prefixBikes = "available_bikes"
     # prefixFree = "available_bike_stands"
     # stationChap = ".18040.Paris.jcvelaux"
     # stationDep = "18110.Paris.jcvelaux"
     # stationRiqet = ".18010.Paris.jcvelaux"
     # stationRiquetP = ".18109.Paris.jcvelaux"
-    if where == "chapelle":
-#        bashC =  bashPrefix2 + prefixBikes + stationChap
-        bashC = bashPrefix + "marx dormoy"
-    elif where == "moi":
-        bashC = bashPrefix + "riquet"
-    else:
-        bashC = bashPrefix + where
+    bashC = bashPrefix + where
     logging.info("Before subprocess: %s." % bashC)
     process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE)
     output = process.communicate()[0]
-#     output = output[0:200]      # TO FIX
+    # PB: only table formatter shows all required info but not adapted for SMS
+    # SOL: truncatated 47 first caracters of all lines
+    TRUNC = 51
+    output_trunc = ""
+    listLines = output.splitlines()[1:] # drop the menu
+    for line in listLines:
+        line = line[47:]
+        output_trunc += line + "\n"
     answer = ("J'ai compris que tu voulais avoir les dispos des vélos à "+where+"."
               " Voici ces infos:\n" +
-              str(output))
+              str(output_trunc))
     return(answer)

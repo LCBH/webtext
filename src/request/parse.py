@@ -44,7 +44,7 @@ def parseContent(SMSnumber,SMScontent):
             where = "riquet"
         else:
             where = SMScontent[5:]
-        fetch.velibParis(where)
+        return(fetch.velibParis(where))
     else:
         extract = ('Le numéro %s ma envoyé le texte %s' % (SMSnumber, SMScontent))
         answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
