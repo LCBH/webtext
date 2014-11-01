@@ -34,6 +34,7 @@ import subprocess               # for launching bash programs
 import urllib                   # used to transform text into url
 import logging
 from os.path import expanduser
+import backends.allocine
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -95,3 +96,8 @@ def velibParis(where):
               " Voici ces infos:\n" +
               str(output_trunc))
     return(answer)
+
+def cinema(request):
+    # parse the request: showtimes? search for movies? etc....
+    allocine.showtimes("mommy")
+    return()
