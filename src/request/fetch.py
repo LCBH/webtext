@@ -34,7 +34,7 @@ import subprocess               # for launching bash programs
 import urllib                   # used to transform text into url
 import logging
 from os.path import expanduser
-import backends.allocine
+import datetime
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -97,7 +97,29 @@ def velibParis(where):
               str(output_trunc))
     return(answer)
 
-def cinema(request):
-    # parse the request: showtimes? search for movies? etc....
-    allocine.showtimes("mommy")
-    return()
+def showtimes_zip(movie, zipcode):
+    logging.info("Starting allocine")
+    bashPrefix = "php backends/allocine_showtimes_zip.php "
+    bashC = bashPrefix+str(movie)+" "+str(zipcode)
+    logging.info("Before subprocess: %s." % bashC)
+    process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = process.communicate()[0]
+    if "error" in output.lower() or len(output) == 0:        
+        return("Erreur avec le backend PHP")
+    cine = output.split("THEATER")
+    day = int(str(datetime.date.today()).split('-')[2])
+    answer = ""    
+    for c in cine:
+        lines = c.split("\n")
+        if len(lines) == 1:
+            continue
+        answer += lines[0]+"\n"
+        for i in xrange(1,len(lines)):
+            if len(lines[i]) > 4 and int(lines[i].split()[3]) == day :
+                answer += lines[i]+"\n"
+                if i < len(lines) -1:
+                    answer += lines[i+1]+"\n"
+                break
+    return(answer)
+
+

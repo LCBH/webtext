@@ -45,6 +45,13 @@ def parseContent(SMSnumber,SMScontent):
         else:
             where = SMScontent[5:]
         return(fetch.velibParis(where))
+    elif SMScontent[:4] == "cine":
+        mess = SMScontent.split()
+        if len(mess) < 3:
+            return "Usage pour cine: 'cine [titre] [zip]'\n"
+        movie = mess[1]
+        zipcode = mess[2]
+        return(fetch.showtimes_zip(movie, zipcode)
     else:
         extract = ('Le numéro %s ma envoyé le texte %s' % (SMSnumber, SMScontent))
         answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
