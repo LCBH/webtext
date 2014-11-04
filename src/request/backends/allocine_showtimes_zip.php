@@ -1,8 +1,15 @@
 <?php
 <<<<<<< HEAD
+<<<<<<< HEAD
     require_once "api-allocine-helper/api-allocine-helper.php";
 =======
     require_once "/home/lutcheti/webtext/src/request/backends/api-allocine-helper/api-allocine-helper.php";
+>>>>>>> request
+=======
+    require_once "/home/lutcheti/webtext/src/request/backends/api-allocine-helper/api-allocine-helper.php";
+=======
+    require_once "api-allocine-helper/api-allocine-helper.php";
+>>>>>>> 7bee1760c76c1be52aa1b449af966994ed90e505
 >>>>>>> request
     
     // Construct the object
