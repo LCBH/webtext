@@ -5,5 +5,6 @@ sudo aptitude install python-html2text python-mechanize libyaml-0-2 python2.7-si
 sudo aptitude install weboob
 # PHP
 sudo aptitude install php5 
+sudo aptitude install curl libcurl3 php5-curl
 
 mkdir src/request/tmp
