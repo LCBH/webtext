@@ -51,7 +51,7 @@ def parseContent(SMSnumber,SMScontent):
             return "Usage pour cine: 'cine [titre] [zip]'\n"
         movie = mess[1]
         zipcode = mess[2]
-        return(fetch.showtimes_zip(movie, zipcode)
+        return(fetch.showtimes_zip(movie, zipcode))
     else:
         extract = ('Le numéro %s ma envoyé le texte %s' % (SMSnumber, SMScontent))
         answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
