@@ -34,7 +34,7 @@ import subprocess               # for launching bash programs
 import urllib                   # used to transform text into url
 import logging
 from os.path import expanduser
-import backends.allocine
+import datetime
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__)) + "/"
@@ -97,11 +97,9 @@ def velibParis(where):
               str(output_trunc))
     return(answer)
 
-
 def showtimes_zip(movie, zipcode):
-    """ Fetch showtimes for a given movie and location."""
     logging.info("Starting allocine")
-    bashPrefix = "php " + REQUEST_DIR + "backends/allocine_showtimes_zip.php "
+    bashPrefix = "php backends/allocine_showtimes_zip.php "
     bashC = bashPrefix+str(movie)+" "+str(zipcode)
     logging.info("Before subprocess: %s." % bashC)
     process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
