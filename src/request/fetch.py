@@ -104,7 +104,8 @@ def showtimes_zip(movie, zipcode):
     logging.info("Before subprocess: %s." % bashC)
     process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = process.communicate()[0]
-    if "error" in output.lower() or len(output) == 0:        
+    if "error" in output.lower() or len(output) == 0: # TODO: if error occurs in a cinema/movie ?
+        logging.info("PHP failed: %s." % output)
         return("Erreur avec le backend PHP")
     cine = output.split("THEATER")
     day = int(str(datetime.date.today()).split('-')[2])
@@ -120,6 +121,9 @@ def showtimes_zip(movie, zipcode):
                 if i < len(lines) -1:
                     answer += lines[i+1]+"\n"
                 break
+    answer = ("J'ai compris que tu voulais avoir "
+              "les séances de %s dans le %s, voici "
+              "ce que j'ai trouvé:\n" % (str(movie),str(zipcode)) + answer)
     return(answer)
 
 
