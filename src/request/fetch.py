@@ -37,8 +37,8 @@ from os.path import expanduser
 import datetime
 
 # -- Static data (install). --
-REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
+REQUEST_DIR = os.path.dirname(os.path.abspath(__file__)) + "/"
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
 LOG_DIR = PROJECT_DIR + "data/log/"
 # -- User Data --
 if os.path.isfile(PROJECT_DIR+'config_backends.txt'):
@@ -98,8 +98,9 @@ def velibParis(where):
     return(answer)
 
 def showtimes_zip(movie, zipcode):
+    """ Fetch showtimes for a given movie and location."""
     logging.info("Starting allocine")
-    bashPrefix = "php backends/allocine_showtimes_zip.php "
+    bashPrefix = "php " + REQUEST_DIR + "backends/allocine_showtimes_zip.php "
     bashC = bashPrefix+str(movie)+" "+str(zipcode)
     logging.info("Before subprocess: %s." % bashC)
     process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -125,5 +126,3 @@ def showtimes_zip(movie, zipcode):
               "les séances de %s dans le %s, voici "
               "ce que j'ai trouvé:\n" % (str(movie),str(zipcode)) + answer)
     return(answer)
-
-
