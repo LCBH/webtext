@@ -49,8 +49,8 @@ def parseContent(SMSnumber,SMScontent):
         mess = SMScontent.split()
         if len(mess) < 3:
             return "Usage pour cine: 'cine [titre] [zip]'\n"
-        movie = mess[1]
-        zipcode = mess[2]
+        movie = " ".join(mess[1:-1])
+        zipcode = mess[-1:]
         return(fetch.showtimes_zip(movie, zipcode))
     else:
         extract = ('Le numéro %s ma envoyé le texte %s' % (SMSnumber, SMScontent))
