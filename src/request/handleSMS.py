@@ -59,17 +59,29 @@ REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 LOG_DIR = PROJECT_DIR + "data/log/"
 # -- User Data --
-if os.path.isfile(PROJECT_DIR+'config_backends.txt'):
-    execfile(expanduser(PROJECT_DIR+'config_backends.txt'))
+# if os.path.isfile(PROJECT_DIR+'config_backends.py'):
+execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 # -- Setup Logging --
 logging.basicConfig(filename=LOG_DIR + 'handleSMS.log',
                     level=logging.DEBUG,
                     format='%(asctime)s|%(levelname)s|handle:%(message)s',
                     datefmt='%d/%m %I:%M:%S %p')
 
+
+def searchUser(dic, number):
+    matches = [u for u in dic['users'] if u['number']==(str(number))]
+    if matches != []:
+        return matches[0]
+
+
 # -- START MAIN --
 logging.info("Starting handleSMS.py with number:[%s] and content:[%s]." % (SMSnumber,SMScontent))
-answer = parse.parseContent(SMSnumber, SMScontent)
-logging.info("Answer is: " + answer)
-send.sendTextFREE(answer)
-logging.info("Sent OK, END of handleSMS")
+user = searchUser(CONF, SMSnumber)
+if user == None:    
+    logging.info("I will not process the request since the sender is not in the white list")
+else:
+    logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
+    answer = parse.parseContent(SMScontent, user)
+    logging.info("Answer is: " + answer)
+    send.sendText(answer, user)
+    logging.info("Sent OK, END of handleSMS")

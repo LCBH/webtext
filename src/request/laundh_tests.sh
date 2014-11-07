@@ -1,1 +1,0 @@
-python handleSMS.py 0600000000 'Coucou'

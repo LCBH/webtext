@@ -30,7 +30,7 @@ We thus define here the conventions of requests."""
 import fetch
 
 # Parse the inputted text and output the corresponding answer
-def parseContent(SMSnumber,SMScontent):
+def parseContent(SMScontent, user):
     # TODO: define a common structure for requests ["backend request args] ?
     # extract word per word the request
     if SMScontent == "banque":
@@ -53,8 +53,9 @@ def parseContent(SMSnumber,SMScontent):
         zipcode = mess[-1:]
         return(fetch.showtimes_zip(movie, zipcode))
     else:
-        extract = ('Le numéro %s ma envoyé le texte %s' % (SMSnumber, SMScontent))
+        extract = ("L'utilisateur %s (uméro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
         answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
                   extract +
-                  ", malheureusement je n'ai pas compris sa requête.")
+                  ", malheureusement je n'ai pas compris sa requête." +
+                  "TODO: afficher l'aide.")
         return(answer)
