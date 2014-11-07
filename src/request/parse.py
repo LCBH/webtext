@@ -53,7 +53,7 @@ def parseContent(SMScontent, user):
         zipcode = mess[-1:]
         return(fetch.showtimes_zip(movie, zipcode))
     else:
-        extract = ("L'utilisateur %s (uméro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
+        extract = ("L'utilisateur %s (numéro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
         answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
                   extract +
                   ", malheureusement je n'ai pas compris sa requête." +

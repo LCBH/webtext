@@ -61,7 +61,7 @@ def sendTextFree(text, login, password):
     os.remove(filename)
 
 def sendText(text, user):
-    """ Send the message [text]."""
+    """ Send the message [text] to [user]."""
     logging.info("Starting sendTextFREE.")
     userSend = user['sendSMS']
     if userSend['method'] == "FREE_API":
