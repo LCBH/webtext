@@ -34,9 +34,15 @@ def parseContent(SMScontent, user):
     # TODO: define a common structure for requests ["backend request args] ?
     # extract word per word the request
     if SMScontent == "banque":
-        return(fetch.bankInfo())
+        if user['login'] == "luccaH":
+            return(fetch.bankInfo())
+        else:
+            return("Pas de backend banque configuré pour l'utilisateur %s." % user['login'])
     elif SMScontent == "banque details":
-        return(fetch.bankInfo(True))
+        if user['login'] == "luccaH":
+            return(fetch.bankInfo(True))
+        else:
+            return("Pas de backend banque configuré pour l'utilisateur %s." % user['login'])
     elif SMScontent[:4] == "velo":
         if SMScontent == "velo":
             where = "chapelle"
