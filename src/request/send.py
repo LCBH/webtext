@@ -39,8 +39,8 @@ REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 LOG_DIR = PROJECT_DIR + "data/log/"
 # -- User Data --
-if os.path.isfile(PROJECT_DIR+'config_backends.txt'):
-    execfile(expanduser(PROJECT_DIR+'config_backends.txt'))
+#if os.path.isfile(PROJECT_DIR+'config_backends.txt'):
+execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 # -- Setup Logging ''
 logging.basicConfig(filename=LOG_DIR + 'handleSMS.log',
                     level=logging.DEBUG,
@@ -48,14 +48,25 @@ logging.basicConfig(filename=LOG_DIR + 'handleSMS.log',
                     datefmt='%d/%m %I:%M:%S %p')
 
 # -- functions --
-def sendTextFREE(text):
+def sendTextFree(text, login, password):
     """ Send the message [text] through the Free API
     (so only to the corresponding nb.)."""
-    logging.info("Starting sendTextFREE")
+    logging.info("Sending using FREE API....")
     encodedText = urllib.quote_plus(text) # url-ize the message's content
     url = ('https://smsapi.free-mobile.fr/sendmsg?user=%s&pass=%s&msg=%s'
-           % (FREE_USER, FREE_PASSWD, encodedText))
+           % (login, password, encodedText))
     filename = "./tmp/torm.tmp"
     # TOOD: do not wget when testing (see tests.py)
     out = wget.download(url,out=filename)
     os.remove(filename)
+
+def sendText(text, user):
+    """ Send the message [text] to [user]."""
+    logging.info("Starting sendTextFREE.")
+    userSend = user['sendSMS']
+    if userSend['method'] == "FREE_API":
+        sendTextFree(text, userSend['login'], userSend['password'])
+    else:
+        logging.info("Sending capabiility is not defined for user %s." % (user['login']))
+        
+        

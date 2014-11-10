@@ -41,8 +41,8 @@ REQUEST_DIR = os.path.dirname(os.path.abspath(__file__)) + "/"
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
 LOG_DIR = PROJECT_DIR + "data/log/"
 # -- User Data --
-if os.path.isfile(PROJECT_DIR+'config_backends.txt'):
-    execfile(expanduser(PROJECT_DIR+'config_backends.txt'))
+#if os.path.isfile(PROJECT_DIR+'config_backends.txt'):
+execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 # -- Setup Logging ''
 logging.basicConfig(filename=LOG_DIR + 'handleSMS.log',
                     level=logging.DEBUG,

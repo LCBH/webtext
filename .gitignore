@@ -1,5 +1,5 @@
 #Private files
-config_backends.txt
+config_backends.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
