@@ -52,14 +52,15 @@ import send
 from os.path import expanduser
 
 
-# -- Inputs: the SMS' number and the SMS' content -- 
-# arguments: number, SMS' content, is_testing, run_is_local, ?password 
-SMSnumber = sys.argv[1]
-SMScontent = sys.argv[2]
-IS_TESTING = sys.argv[3]
-IS_LOCAL = sys.argv[4]          # true if launch from rasp and false otherwise
-if IS_LOCAL == "false":
-    PASSWORD = sys.argv[5]
+if __name__ == "handleSMS.py":
+    # -- Inputs: the SMS' number and the SMS' content -- 
+    # arguments: number, SMS' content, is_testing, run_is_local, ?password 
+    SMSnumber = sys.argv[1]
+    SMScontent = sys.argv[2]
+    IS_TESTING = sys.argv[3]
+    IS_LOCAL = sys.argv[4]          # true if launch from rasp and false otherwise
+    if not(IS_LOCAL == "true"):
+        PASSWORD = sys.argv[5]
 # -- Static data (install). --
 API_SECRET_KEY="bhk126T74IY5sdfBNdfg35"
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -80,23 +81,25 @@ def searchUser(dic, number):
     if matches != []:
         return matches[0]
 
+def ofb(s):
+    return(s=="true")
 
 # -- START MAIN --
-def main(is_testing):
-    logging.info("Starting handleSMS.py with number:[%s] and content:[%s]." % (SMSnumber,SMScontent))
+def main(is_testing, is_local, content, number, password=""):
+    logging.info("Starting handleSMS.py with number:[%s] and content:[%s]." % (number,content))
     # Check the password if not executed locally
-    if IS_LOCAL != "false" and PASSWORD != API_SECRET_KEY:
-        logging.warning("ERROR SECRET_KEY_API! (try with: %s)." % PASSWORD)
+    if not(is_local) and password != API_SECRET_KEY:
+        logging.warning("ERROR SECRET_KEY_API! (try with: %s)." % password)
         return None
 
     if is_testing:
-        logging.info("A TEST IS STARTING.")
-    user = searchUser(CONF, SMSnumber)
+        logging.info("TEST IS STARTING.")
+    user = searchUser(CONF, number)
     if user == None:    
         logging.info("I will not process the request since the sender is not in the white list")
     else:
         logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
-        answer = parse.parseContent(SMScontent, user)
+        answer = parse.parseContent(content, user)
         logging.info("Answer is: " + answer)
         if not(is_testing):
             send.sendText(answer, user)
@@ -107,7 +110,7 @@ def main(is_testing):
 
 # When this file executed as a script:
 if __name__ == "handeSMS.py":
-    if IS_TESTING == "true":
-        main(True)
+    if not(ofb(IS_LOCAL)):
+        main(is_testing=ofb(IS_TESTING), is_local=False, content=SMScontent, number=SMSnumber, password=PASSWORD)
     else:
-        main(False)
+        main(is_testing=ofb(IS_TESTING), is_local=True, content=SMScontent, number=SMSnumber)
