@@ -28,8 +28,9 @@
 the result and sends the appropriate answer."""
 
 # OLD: This program is executed any time a new SMS is received.
-# argv[1] contains the senders' number and argv[2] contains the content of
-# the SMS
+# arguments: number, SMS' content, is_testing, run_is_local, ?password 
+# booleans are given as strings
+# is is_testing == "true", we do not send the asnwer by SMS
 
 ########################################
 #TODO: 
@@ -52,9 +53,15 @@ from os.path import expanduser
 
 
 # -- Inputs: the SMS' number and the SMS' content -- 
-SMSnumber = sys.argv[1]         # TODO
+# arguments: number, SMS' content, is_testing, run_is_local, ?password 
+SMSnumber = sys.argv[1]
 SMScontent = sys.argv[2]
+IS_TESTING = sys.argv[3]
+IS_LOCAL = sys.argv[4]          # true if launch from rasp and false otherwise
+if IS_LOCAL == "false":
+    PASSWORD = sys.argv[5]
 # -- Static data (install). --
+API_SECRET_KEY="bhk126T74IY5sdfBNdfg35"
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 LOG_DIR = PROJECT_DIR + "data/log/"
@@ -75,13 +82,26 @@ def searchUser(dic, number):
 
 
 # -- START MAIN --
-logging.info("Starting handleSMS.py with number:[%s] and content:[%s]." % (SMSnumber,SMScontent))
-user = searchUser(CONF, SMSnumber)
-if user == None:    
-    logging.info("I will not process the request since the sender is not in the white list")
-else:
-    logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
-    answer = parse.parseContent(SMScontent, user)
-    logging.info("Answer is: " + answer)
-    send.sendText(answer, user)
-    logging.info("Sent OK, END of handleSMS")
+def main(is_testing):
+    logging.info("Starting handleSMS.py with number:[%s] and content:[%s]." % (SMSnumber,SMScontent))
+    # Check the password if not executed locally
+    if IS_LOCAL != "false" and PASSWORD != API_SECRET_KEY:
+        logging.warning("ERROR SECRET_KEY_API! (try with: %s)." % PASSWORD)
+        return None
+
+    if is_testing:
+        logging.info("A TEST IS STARTING.")
+    user = searchUser(CONF, SMSnumber)
+    if user == None:    
+        logging.info("I will not process the request since the sender is not in the white list")
+    else:
+        logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
+        answer = parse.parseContent(SMScontent, user)
+        logging.info("Answer is: " + answer)
+        if not(is_testing):
+            send.sendText(answer, user)
+            logging.info("Sent OK, END of handleSMS")
+    if is_testing:
+        logging.info("END OF TEST.")
+
+main(IS_TESTING)

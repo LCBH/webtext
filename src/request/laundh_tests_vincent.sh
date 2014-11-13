@@ -1,1 +1,1 @@
-python handleSMS.py 0632368091 '0658934277'
+python handleSMS.py 0632368091 '0658934277' true true
