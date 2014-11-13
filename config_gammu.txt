@@ -21,6 +21,6 @@ runonreceive = /home/lutcheti/webtext/src/rasp/bashReceive.sh
 
 # Paths
 InboxPath = /home/lutcheti/webtext/data/SMS/inbox/
-OutboPpath = /home/lutcheti/webtext/data/SMS/outbox/
+OutboxPath = /home/lutcheti/webtext/data/SMS/outbox/
 SentSMSPath = /home/lutcheti/webtext/data/SMS/sent/
 ErrorSMSPath = /home/lutcheti/webtext/data/SMS/error/
