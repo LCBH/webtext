@@ -104,4 +104,10 @@ def main(is_testing):
     if is_testing:
         logging.info("END OF TEST.")
 
-main(IS_TESTING)
+
+# When this file executed as a script:
+if __name__ == "handeSMS.py":
+    if IS_TESTING == "true":
+        main(True)
+    else:
+        main(False)

@@ -28,4 +28,6 @@
 
 import handleSMS
 
+# handleSMS.main(True, TODO...)
+
 # TODO: focus on testing all backends
