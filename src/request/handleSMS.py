@@ -62,7 +62,6 @@ if __name__ == "handleSMS.py":
     if not(IS_LOCAL == "true"):
         PASSWORD = sys.argv[5]
 # -- Static data (install). --
-API_SECRET_KEY="bhk126T74IY5sdfBNdfg35"
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 LOG_DIR = PROJECT_DIR + "data/log/"
@@ -88,7 +87,8 @@ def ofb(s):
 def main(is_testing, is_local, content, number, password=""):
     logging.info("Starting handleSMS.py with number:[%s] and content:[%s]." % (number,content))
     # Check the password if not executed locally
-    if not(is_local) and password != API_SECRET_KEY:
+    if not(is_local) and password != api_secret_key:
+        api_secret_key = CONF['config_api']['api_secret_key']
         logging.warning("ERROR SECRET_KEY_API! (try with: %s)." % password)
         return None
 
@@ -105,12 +105,18 @@ def main(is_testing, is_local, content, number, password=""):
             send.sendText(answer, user)
             logging.info("Sent OK, END of handleSMS")
     if is_testing:
-        logging.info("END OF TEST.")
+        logging.info("I do not send any SMS (we are testing now!).")
 
 
-# When this file executed as a script:
-if __name__ == "handeSMS.py":
+if __name__ == "__main__":
+    # arguments: number, SMS' content, is_testing, run_is_local, ?password 
+    SMSnumber = sys.argv[1]
+    SMScontent = sys.argv[2]
+    IS_TESTING = sys.argv[3]
+    IS_LOCAL = sys.argv[4]          # true if launch from rasp and false otherwise
     if not(ofb(IS_LOCAL)):
+        # in tha that case the api's secret key a password is required
+        PASSWORD = sys.argv[5]
         main(is_testing=ofb(IS_TESTING), is_local=False, content=SMScontent, number=SMSnumber, password=PASSWORD)
     else:
         main(is_testing=ofb(IS_TESTING), is_local=True, content=SMScontent, number=SMSnumber)
