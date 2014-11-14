@@ -1,5 +1,7 @@
 #Private files
-config_backends.txt
+config_backends.py
+config_rasp.cfg
+data/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
