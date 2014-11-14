@@ -34,7 +34,7 @@ import fetch
 logging = logging.getLogger(__name__)
 
 # Parse the inputted text and output the corresponding answer
-def parseContent(SMScontent, user, is_local=False):
+def parseContent(SMScontent, user, is_local=False, is_testing=False):
     # TODO: define a common structure for requests ["backend request args] ?
     # extract word per word the request
     # We start with the case: should be executed in local
@@ -50,7 +50,7 @@ def parseContent(SMScontent, user, is_local=False):
                          "et les données demandées sont privées.")
             return None
         # Now, we deal with the case: should be executed in the request server and not in local:
-    if is_local:
+    if is_local and not(is_testing):
         logging.info("Je ne vais pas répondre à la requête car je suis éxécuté en local"
                      "et les données demandées ne sont privées.")
         return None
