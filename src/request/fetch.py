@@ -99,7 +99,7 @@ def velibParis(where):
 
 def showtimes_zip(movie, zipcode):
     logging.info("Starting allocine")
-    bashPrefix = "php backends/allocine_showtimes_zip.php "
+    bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/backends/allocine_showtimes_zip.php "
     bashC = bashPrefix+str(movie)+" "+str(zipcode)
     logging.info("Before subprocess: %s." % bashC)
     process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
