@@ -51,7 +51,7 @@ def parseContent(SMScontent, user, is_local=False):
                      "et les données demandées ne sont privées.")
         return None
     else:
-        elif SMScontent == "banque details":
+        if SMScontent == "banque details":
             return(fetch.bankInfo(True))
         elif SMScontent[:4] == "velo":
             if SMScontent == "velo":
