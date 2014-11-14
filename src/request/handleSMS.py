@@ -79,8 +79,8 @@ def main(is_testing, is_local, content, number, password=""):
                  "--- Starting handleSMS.py with number:[%s] and content:[%s]. ---"
                  % (number,content))        
     # Check the password if not executed locally
+    api_secret_key = CONF['config_api']['api_secret_key']
     if not(is_local) and password != api_secret_key:
-        api_secret_key = CONF['config_api']['api_secret_key']
         logging.warning("ERROR SECRET_KEY_API! (try with: %s)." % password)
         return None
 
@@ -89,11 +89,14 @@ def main(is_testing, is_local, content, number, password=""):
         logging.warning("I will not process the request since the sender is not in the white list")
     else:
         logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
-        answer = parse.parseContent(content, user)
-        logging.info("Answer is: " + answer)
-        if not(is_testing):
-            send.sendText(answer, user)
-            logging.info("Sent OK, END of handleSMS")
+        answer = parse.parseContent(content, user, is_local=is_local)
+        if answer != None:
+            logging.info("Answer is: " + answer)
+            if not(is_testing):
+                send.sendText(answer, user)
+                logging.info("Sent OK, END of handleSMS")
+        else:
+            logging.info("Pas de réponse! (privée + distant?).")
     if is_testing:
         logging.info("I do not send any SMS (we are testing now!).")
 
