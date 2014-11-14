@@ -5,11 +5,12 @@
 # to the request server as well.
 echo Starting screen of bashReceive:
 PROGRAM=/home/lutcheti/webtext/src/request/handleSMS.py # TODO: config auto
-source ../../config_rasp.cfg
+source /home/lutcheti/webtext/config_rasp.cfg
 for i in `seq $SMS_MESSAGES` ; do
     echo "screen -S parseAndSend -d -m python $PROGRAM \"\${SMS_${i}_NUMBER}\" \"\${SMS_${i}_TEXT}\" \"false\" \"true\" &"
     eval "screen -S parseAndSend -d -m python $PROGRAM \"\${SMS_${i}_NUMBER}\" \"\${SMS_${i}_TEXT}\" \"false\" \"true\" &"
-    echo "curl -k 'https://www.choum.net/webtext/api/sms.php?pass=$API_KEY&numero=\${SMS_${i}_NUMBER}&content=\${SMS_${i}_TEXT}\&isTesting=false'"
-    eval "curl -k 'https://www.choum.net/webtext/api/sms.php?pass=$API_KEY&numero=\${SMS_${i}_NUMBER}&content=\${SMS_${i}_TEXT}\&isTesting=false'"
+    # We need to URLEncode SMS'content before using curl
+    ESCAPED_TEXT="$(perl -MURI::Escape -e 'print uri_escape($ARGV[0]);' "${SMS_1_TEXT}")"
+    curl -k "https://www.choum.net/webtext/api/sms.php?pass=${API_SECRET_KEY}&numero=${SMS_1_NUMBER}&content=${ESCAPED_TEXT}&isTesting=false"
 done
 echo Ending screen of bashReceive.
