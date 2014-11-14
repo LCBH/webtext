@@ -34,11 +34,16 @@ import fetch
 logging = logging.getLogger(__name__)
 
 # Parse the inputted text and output the corresponding answer
-def parseContent(SMScontent, user):
+def parseContent(SMScontent, user, is_local=False):
     # TODO: define a common structure for requests ["backend request args] ?
     # extract word per word the request
     if SMScontent == "banque":
-        return(fetch.bankInfo())
+        if is_local:
+            return(fetch.bankInfo())
+        else:
+            logging.info("Je ne vais pas répondre à la requête car je ne suis pas exécuté en local"
+                         "et les données demandées sont privées.")
+            return None
     elif SMScontent == "banque details":
         return(fetch.bankInfo(True))
     elif SMScontent[:4] == "velo":
