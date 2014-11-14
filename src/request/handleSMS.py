@@ -27,18 +27,10 @@
 """ Given a SMS (sender's number, content), we parse here the request, fetch
 the result and sends the appropriate answer."""
 
-# OLD: This program is executed any time a new SMS is received.
+# This program is executed any time a new SMS is received or a HTTP request.
 # arguments: number, SMS' content, is_testing, run_is_local, ?password 
 # booleans are given as strings
-# is is_testing == "true", we do not send the asnwer by SMS
-
-########################################
-#TODO: 
-#  This script will be executed whenever 
-# the "request's server" receives a 
-# request from the raspberry pi.
-# Add a PHP page and adapt the script.
-########################################
+# if is_testing == "true", we do not send the answer by SMS
 
 import os
 import sys
@@ -46,57 +38,55 @@ import wget                     # wget command (for api free)
 import subprocess               # for launching bash programs
 import urllib                   # used to transform text into url
 import logging
+from os.path import expanduser
+
 import parse
 import fetch
 import send
-from os.path import expanduser
 
-
-if __name__ == "handleSMS.py":
-    # -- Inputs: the SMS' number and the SMS' content -- 
-    # arguments: number, SMS' content, is_testing, run_is_local, ?password 
-    SMSnumber = sys.argv[1]
-    SMScontent = sys.argv[2]
-    IS_TESTING = sys.argv[3]
-    IS_LOCAL = sys.argv[4]          # true if launch from rasp and false otherwise
-    if not(IS_LOCAL == "true"):
-        PASSWORD = sys.argv[5]
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 LOG_DIR = PROJECT_DIR + "data/log/"
-# -- User Data --
-# if os.path.isfile(PROJECT_DIR+'config_backends.py'):
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
-# -- Setup Logging --
-logging.basicConfig(filename=LOG_DIR + 'handleSMS.log',
-                    level=logging.DEBUG,
-                    format='%(asctime)s|%(levelname)s|handle:%(message)s',
-                    datefmt='%d/%m %I:%M:%S %p')
 
+# -- Setup Logging --
+if __name__ == "__main__":
+    # if this is executed as a script: logging in a file
+    logging.basicConfig(filename=LOG_DIR + 'handleSMS.log',
+                        level=logging.DEBUG,
+                        format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
+                        datefmt='%d/%m %H:%M:%S')
+else:
+    # otherwise, we are testing using test.py -> use sdout
+    logger = logging.getLogger(__name__)
+
+
+# -- Helping functions --
+def ofb(s):
+    return(s=="true")
 
 def searchUser(dic, number):
+    """ Given a configuration file (config_backends.py) and a number,
+    search for the corresponding user's config."""
     matches = [u for u in dic['users'] if u['number']==(str(number))]
     if matches != []:
         return matches[0]
 
-def ofb(s):
-    return(s=="true")
-
 # -- START MAIN --
 def main(is_testing, is_local, content, number, password=""):
-    logging.info("Starting handleSMS.py with number:[%s] and content:[%s]." % (number,content))
+    logging.info("--------------------------------------------------------------\n"
+                 "--- Starting handleSMS.py with number:[%s] and content:[%s]. ---"
+                 % (number,content))        
     # Check the password if not executed locally
     if not(is_local) and password != api_secret_key:
         api_secret_key = CONF['config_api']['api_secret_key']
         logging.warning("ERROR SECRET_KEY_API! (try with: %s)." % password)
         return None
 
-    if is_testing:
-        logging.info("TEST IS STARTING.")
     user = searchUser(CONF, number)
     if user == None:    
-        logging.info("I will not process the request since the sender is not in the white list")
+        logging.warning("I will not process the request since the sender is not in the white list")
     else:
         logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
         answer = parse.parseContent(content, user)

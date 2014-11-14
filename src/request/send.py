@@ -34,20 +34,9 @@ import urllib                   # used to transform text into url
 import logging
 from os.path import expanduser
 
-# -- Static data (install). --
-REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
-LOG_DIR = PROJECT_DIR + "data/log/"
-# -- User Data --
-#if os.path.isfile(PROJECT_DIR+'config_backends.txt'):
-execfile(expanduser(PROJECT_DIR+'config_backends.py'))
-# -- Setup Logging ''
-logging.basicConfig(filename=LOG_DIR + 'handleSMS.log',
-                    level=logging.DEBUG,
-                    format='%(asctime)s|%(levelname)s|send:%(message)s',
-                    datefmt='%d/%m %I:%M:%S %p')
+# -- Setup Logging --
+logging = logging.getLogger(__name__)
 
-# -- functions --
 def sendTextFree(text, login, password):
     """ Send the message [text] through the Free API
     (so only to the corresponding nb.)."""

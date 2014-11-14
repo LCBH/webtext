@@ -27,6 +27,7 @@
 """ Tests all the scripts."""
 
 import os
+import sys
 from os.path import expanduser
 import logging
 import handleSMS
@@ -34,15 +35,14 @@ import handleSMS
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
-LOG_DIR = PROJECT_DIR + "data/log/"
 # -- User Data --
 # if os.path.isfile(PROJECT_DIR+'config_backends.py'):
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
-# -- Setup Logging --
-logging.basicConfig(filename=LOG_DIR + 'handleSMS.log',
+
+logging.basicConfig(stream = sys.stdout,
                     level=logging.DEBUG,
-                    format='%(asctime)s|%(levelname)s|handle:%(message)s',
-                    datefmt='%d/%m %I:%M:%S %p')
+                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
+                    datefmt='%H:%M:%S')
 
 user1 = [ u for u in CONF['users'] if u['login'] == 'luccaH'][0]
 user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]

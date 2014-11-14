@@ -27,7 +27,11 @@
 """ Parse a request and using Fetch, return the required answer.
 We thus define here the conventions of requests."""
 
+import logging
 import fetch
+
+# -- Setup Logging --
+logging = logging.getLogger(__name__)
 
 # Parse the inputted text and output the corresponding answer
 def parseContent(SMScontent, user):
