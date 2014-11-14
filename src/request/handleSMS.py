@@ -69,7 +69,12 @@ def ofb(s):
 def searchUser(dic, number):
     """ Given a configuration file (config_backends.py) and a number,
     search for the corresponding user's config."""
-    matches = [u for u in dic['users'] if u['number']==(str(number))]
+    number=(str(number))
+    if number[0] == " ":
+        # Means that it was a '+' but it has been URLencoded
+        number = "+" + number[1:]
+    print(number)
+    matches = [u for u in dic['users'] if u['number']==number]
     if matches != []:
         return matches[0]
 
