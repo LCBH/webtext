@@ -51,7 +51,7 @@ def callHandle(content,number):
     return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
 
 callHandle("Coucou", user1['number'])
-callHandle("Coucou", user2['number'])
-callHandle("banque", user1['number'])
+callHandle("cine mommy 75018", user2['number'])
+callHandle("velo marx dormoy", user1['number'])
 
 # TODO: focus on testing all backends
