@@ -23,14 +23,14 @@ either weboob or some external APIs.
 
 
 ## Architecture:
-# BRANCH RASP: code for the rasp in src/rasp.
+### BRANCH RASP: code for the rasp in src/rasp.
 bashReceive.sh is executed by Gammu whenever a SMS is received.
 This script sends the number+sms' content to:
      - the requested server through a HTTPS request (+secret key API) and;
      - to handleSMS.py as well to process private data (e.g., bank info).
 You can test from the raspberry by executing test.sh.
 
-# BRANCH REQUEST: code for the request server in src/request.
+### BRANCH REQUEST: code for the request server in src/request.
 sms.php (copy in /var/www) is a piece of PHP that is executed by Apache whenever
 a HTTPS packet arrives on choum.net/webtext/API/sms.php. It forwards the
 paramaters of the packet to handleSMS.py.
