@@ -7,4 +7,5 @@ $NUMERO = $_GET['numero'];
 $CONTENT = $_GET['content'];
 
 echo 'sudo screen -S parseAndSendOnRequest -d -m  python $PROGRAM \"\${NUMERO}\" \"\${CONTENT}\" \"false\" \"\${PASS}\" &';
-?>'
+?>
+
