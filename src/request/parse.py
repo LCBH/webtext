@@ -37,6 +37,7 @@ logging = logging.getLogger(__name__)
 def parseContent(SMScontent, user, is_local=False):
     # TODO: define a common structure for requests ["backend request args] ?
     # extract word per word the request
+    # We start with the case: should be executed in local
     if SMScontent == "banque":
         if is_local:
             return(fetch.bankInfo())
@@ -44,27 +45,33 @@ def parseContent(SMScontent, user, is_local=False):
             logging.info("Je ne vais pas répondre à la requête car je ne suis pas exécuté en local"
                          "et les données demandées sont privées.")
             return None
-    elif SMScontent == "banque details":
-        return(fetch.bankInfo(True))
-    elif SMScontent[:4] == "velo":
-        if SMScontent == "velo":
-            where = "chapelle"
-        elif SMScontent == "velo moi":
-            where = "riquet"
-        else:
-            where = SMScontent[5:]
-        return(fetch.velibParis(where))
-    elif SMScontent[:4] == "cine":
-        mess = SMScontent.split()
-        if len(mess) < 3:
-            return "Usage pour cine: 'cine [titre] [zip]'\n"
-        movie = " ".join(mess[1:-1])
-        zipcode = mess[-1:]
-        return(fetch.showtimes_zip(movie, zipcode))
+        # Now, we deal with the case: should be executed in the request server and not in local:
+    if is_local:
+        logging.info("Je ne vais pas répondre à la requête car je suis éxécuté en local"
+                     "et les données demandées ne sont privées.")
+        return None
     else:
-        extract = ("L'utilisateur %s (numéro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
-        answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
-                  extract +
-                  ", malheureusement je n'ai pas compris sa requête." +
-                  "TODO: afficher l'aide.")
-        return(answer)
+        elif SMScontent == "banque details":
+            return(fetch.bankInfo(True))
+        elif SMScontent[:4] == "velo":
+            if SMScontent == "velo":
+                where = "chapelle"
+            elif SMScontent == "velo moi":
+                where = "riquet"
+            else:
+                where = SMScontent[5:]
+                return(fetch.velibParis(where))
+        elif SMScontent[:4] == "cine":
+            mess = SMScontent.split()
+            if len(mess) < 3:
+                return "Usage pour cine: 'cine [titre] [zip]'\n"
+            movie = " ".join(mess[1:-1])
+            zipcode = mess[-1:]
+            return(fetch.showtimes_zip(movie, zipcode))
+        else:
+            extract = ("L'utilisateur %s (numéro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
+            answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
+                      extract +
+                      ", malheureusement je n'ai pas compris sa requête." +
+                      "TODO: afficher l'aide.")
+            return(answer)
