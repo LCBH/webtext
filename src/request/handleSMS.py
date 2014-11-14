@@ -79,8 +79,8 @@ def main(is_testing, is_local, content, number, password=""):
                  "--- Starting handleSMS.py with number:[%s] and content:[%s]. ---"
                  % (number,content))        
     # Check the password if not executed locally
+    api_secret_key = CONF['config_api']['api_secret_key']
     if not(is_local) and password != api_secret_key:
-        api_secret_key = CONF['config_api']['api_secret_key']
         logging.warning("ERROR SECRET_KEY_API! (try with: %s)." % password)
         return None
 
