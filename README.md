@@ -30,6 +30,6 @@ to [phone number]@[mobile operator website], the email is forwarded by SMS to [p
 
 
 ## Roadmap
-1. Task1, focus on train and bikes, interacting with the raspberry pi by letting a voicemail (0 or 1)
+1. Task1, focus on train and bikes, interacting with the raspberry pi by letting a voicemail (0 or 1) -> DIRECTLY TASK 2
 2. 1. + interacting using SMSs
 3. Task2
