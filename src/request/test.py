@@ -26,6 +26,32 @@
 
 """ Tests all the scripts."""
 
+import os
+import sys
+from os.path import expanduser
+import logging
 import handleSMS
+
+# -- Static data (install). --
+REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
+# -- User Data --
+# if os.path.isfile(PROJECT_DIR+'config_backends.py'):
+execfile(expanduser(PROJECT_DIR+'config_backends.py'))
+
+logging.basicConfig(stream = sys.stdout,
+                    level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
+                    datefmt='%H:%M:%S')
+
+user1 = [ u for u in CONF['users'] if u['login'] == 'luccaH'][0]
+user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
+
+def callHandle(content,number):
+    return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
+
+callHandle("Coucou", user1['number'])
+callHandle("Coucou", user2['number'])
+callHandle("banque", user1['number'])
 
 # TODO: focus on testing all backends

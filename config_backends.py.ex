@@ -1,4 +1,7 @@
 CONF = {
+    'config_api' : {
+        'api_secret_key' : "XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },		 
     'users' : [
         {
             'login' : "luccaH",
