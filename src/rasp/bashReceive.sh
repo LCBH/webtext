@@ -9,7 +9,7 @@ source ../../config_rasp.cfg
 for i in `seq $SMS_MESSAGES` ; do
     echo "screen -S parseAndSend -d -m python $PROGRAM \"\${SMS_${i}_NUMBER}\" \"\${SMS_${i}_TEXT}\" \"false\" \"true\" &"
     eval "screen -S parseAndSend -d -m python $PROGRAM \"\${SMS_${i}_NUMBER}\" \"\${SMS_${i}_TEXT}\" \"false\" \"true\" &"
-    echo "curl -k 'https://www.choum.net/webtext/api/sms.php?pass=$API_KEY&numero=\${SMS_${i}_NUMBER}&content=\${SMS_${i}_TEXT}\'"
-    eval "curl -k 'https://www.choum.net/webtext/api/sms.php?pass=$API_KEY&numero=\${SMS_${i}_NUMBER}&content=\${SMS_${i}_TEXT}\'"
+    echo "curl -k 'https://www.choum.net/webtext/api/sms.php?pass=$API_KEY&numero=\${SMS_${i}_NUMBER}&content=\${SMS_${i}_TEXT}\&isTesting=false'"
+    eval "curl -k 'https://www.choum.net/webtext/api/sms.php?pass=$API_KEY&numero=\${SMS_${i}_NUMBER}&content=\${SMS_${i}_TEXT}\&isTesting=false'"
 done
 echo Ending screen of bashReceive.
