@@ -54,6 +54,12 @@ def parseContent(SMScontent, user, is_local=False, is_testing=False):
     # TODO: define a common structure for requests ["backend request args] ?
     # extract word per word the request
     # We start with the case: should be executed in local
+    # Search for a shortcut:
+    matches = [u for u in user['shortcuts'] if u[0] == SMScontent]
+    if len(matches) > 0:
+        for requ in matches[0][1]:
+            answer = parseContent(requ, user, is_local, is_testing) + "|| \n" 
+        return(answer)
     words = SMScontent.split()
     requestType = words[0].lower()
     requestContent = words[1:]
