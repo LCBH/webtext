@@ -39,6 +39,24 @@ import datetime
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
+def forecasts(zipcode):
+    """ Fetch forecasts in Zipcode."""
+    logging.info("Starting bankInfo")
+    bashCommandList = ("wetboobs forecasts %s" % zipcode)
+    logging.info("Before subprocess: %s" % bashCommandList)
+    process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
+    output_trunc = ""
+    listLines = output.splitlines()
+    for line in listLines:
+        if len(line) > 1:
+            output_trunc += line + " "
+            if line.find("UV") >= 1 or line.find("Indice") >= 1:
+                output_trunc += "\n"
+    answer = (("J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
+              str(output_trunc))
+    return(answer)
+
 def bankInfo(details=False):
     """ Fetch the amounts of bank accounts."""
     logging.info("Starting bankInfo")
