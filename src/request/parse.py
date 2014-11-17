@@ -59,15 +59,18 @@ def parseContent(SMScontent, user, is_local=False, is_testing=False):
     requestContent = words[1:]
     if requestType == BANK:
         if is_local:
-            if requestContent[0].lower() == "details":
-                return(fetch.bankInfo(True))
+            if user['login'] == "luccaH":
+                if requestContent[0].lower() == "details":
+                    return(fetch.bankInfo(True))
+                else:
+                    return(fetch.bankInfo())
             else:
-                return(fetch.bankInfo())
+                return("Pas de backend banque configuré pour l'utilisateur %s." % user['login'])
         else:
             logging.info("Je ne vais pas répondre à la requête car je ne suis pas exécuté en local"
                          "et les données demandées sont privées.")
             return None
-        # Now, we deal with the case: should be executed in the request server and not in local:
+    # Now, we deal with the case: should be executed in the request server and not in local:   
     if is_local and not(is_testing):
         logging.info("Je ne vais pas répondre à la requête car je suis éxécuté en local"
                      "et les données demandées ne sont privées.")
