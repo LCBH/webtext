@@ -54,5 +54,6 @@ callHandle("Coucou", user1['number'])
 callHandle("cine mommy 75018", user2['number'])
 callHandle("velo marx dormoy", user1['number'])
 callHandle("meteo 75020", user1['number'])
+callHandle("retour", user1['number'])
 
 # TODO: focus on testing all backends
