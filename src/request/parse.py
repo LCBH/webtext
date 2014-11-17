@@ -38,14 +38,16 @@ BANK="banque"
 BIKES="velo"
 MOVIES="cine"
 FORECASTS="meteo"
-HELP = ("Voici comment écrire vos requêtes:"
-        "'" + BIKES + " [lieux]' pour les velibs autour de [lieux]; "
-        "'" + MOVIES + " [nom] [code postal]' pour les séances de cinéma des films "
-        "contenant [nom] dans [code postal]; "
-        "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
-        "'" + BANK + " pour récupérer le montant de mes comptes. "
-        " Pour avoir l'aide complète d'un type de requête, envoyer 'help [requete]' "
-        "(par exemple 'help cine').")
+HELP = "aide"
+HELPMESS = (
+    "Voici comment écrire vos requêtes:"
+    "'" + BIKES + " [lieux]' pour les velibs autour de [lieux]; "
+    "'" + MOVIES + " [nom] [code postal]' pour les séances de cinéma des films "
+    "contenant [nom] dans [code postal]; "
+    "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
+    "'" + BANK + " pour récupérer le montant de mes comptes. "
+    " Pour avoir l'aide complète d'un type de requête, envoyer 'aide [requete]' "
+    "(par exemple 'help cine').")
 
 # Parse the inputted text and output the corresponding answer
 def parseContent(SMScontent, user, is_local=False, is_testing=False):
@@ -83,6 +85,12 @@ def parseContent(SMScontent, user, is_local=False, is_testing=False):
             movie = " ".join(requestContent[0:-1])
             zipcode = requestContent[-1:]
             return(fetch.showtimes_zip(movie, zipcode))
+        elif requestType == HELP:
+            if len(requestContent) == 0:
+                return(HELPMESS)
+            else:
+                answer = ("Vous avez demandé de l'aide à propos de %s." % requestContent[0])
+                return(answer + " Désolé mais l'aide n'est pas encore complète.")
         else:
             extract = ("L'utilisateur %s (numéro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
             answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
