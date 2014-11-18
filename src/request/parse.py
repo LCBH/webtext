@@ -66,7 +66,7 @@ def parseContent(SMScontent, user, is_local=False, is_testing=False):
     if requestType == BANK:
         if is_local:
             if user['login'] == "luccaH":
-                if requestContent[0].lower() == "details":
+                if requestContent != [] and requestContent[0].lower() == "details":
                     return(fetch.bankInfo(True))
                 else:
                     return(fetch.bankInfo())
