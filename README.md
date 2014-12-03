@@ -16,9 +16,18 @@ Some examples:
 - "Gmail subjects list" -> list of (id,subject of id's email)
 - "Gmail body 3" -> body of email whose id=3
 - "movie Mommy Paris 18" -> next film show of Mommy around Paris 18
+- car trafic (e.g., bison futé in France)
+- train trafic (e.g., infolignes)
+- best restaurants around for giving cuisine (e.g. chinese, indian, ...)
+- roadmap for cars (given as a list if directions to follow)
 
+**Task2**: add the ability to set up SMS notifications for a given request.
+For instance, we may need to receive a SMS as soon as:
+- a delay is expected for a given metro line or
+- the last bus/metro/wheteveror of the night is expected at a given place in less than 15 minutes or
+- the amount of a bank account becomes negative or lower than X, ...
 
-**Task2**: I let a voicemail on my raspberry's number with my request, it answers me by SMS.
+**Task3**: I let a voicemail on my raspberry's number with my request, it answers me by SMS.
 
 
 ## Tech
