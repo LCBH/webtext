@@ -38,6 +38,8 @@ To process the received request, handleSMS.py relies on:
    - parse.py to parse the request (we make some choice on the syntax there);
    - fetch.py to fetch all the needed info and produce an answer;
    - send.py to choose the correct capability to send the answer to the user.
+ 
+   
 All the hard work is done in fetch.py. The latter imports backends (one for each
 website or API) that may be in src/request/backends).
 Everything is logged in the file ./data/log/handleSMS.log.
