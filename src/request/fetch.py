@@ -32,9 +32,11 @@ import sys
 import wget                     # wget command (for api free)
 import subprocess               # for launching bash programs
 import urllib                   # used to transform text into url
+import urllib2                  # used to transform text into url
 import logging
 from os.path import expanduser
 import datetime
+import json
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
@@ -104,10 +106,43 @@ def velibParis(where):
               str(output_trunc))
     return(answer)
 
+def trafic_ratp(metro=True, rer=True):
+    """Fetch trafic information of RATP network (for metro or/and RER) using API made by
+    Paul Grimaud."""
+    API_url = "http://api-ratp.pierre-grimaud.fr/"
+    API_trafic = API_url + "data/trafic/"
+    K_trafic = "trafic"
+    K_pertu_metro = "perburations"
+    K_pertu_rer = "perburbations"
+    answ = "J'ai compris que tu voulais connaitre l'état du trafic RATP. "
+    if rer:
+        url = API_trafic + "rer"
+        data = json.load(urllib2.urlopen(url))
+        print(str(data))        # DEBUGG
+        if data[K_trafic] == "normal":
+            answ += "[RER] Aucune perturbation.\n"
+        else:
+            answ += "[RER] Perturbations: "
+            for ligne,status in data[K_pertu_rer].iteritems():
+                answ += "{" + str(ligne.encode('ascii', 'ignore')) + "}" + ": " + str(status.encode('ascii', 'ignore'))
+        answ += "\n"
+    if metro:
+        url = API_trafic + "metro"
+        data = json.load(urllib2.urlopen(url))
+        print(str(data))        # DEBUGG
+        if data[K_trafic] == "normal":
+            answ += "[METRO] Aucune perturbation.\n"
+        else:
+            answ += "[METRO] Perturbations: "
+            for ligne,status in data[K_pertu_metro].iteritems():
+                answ += "{" + str(ligne.encode('ascii', 'ignore')) + "}" + ": " + str(status.encode('ascii', 'ignore'))
+        answ += "\n"
+    return(answ)
+
 def showtimes_zip(movie, zipcode):
     """ Fetch showtimes for a given movie and location."""
     logging.info("Starting allocine")
-    bashPrefix = "php " + REQUEST_DIR + "backends/allocine_showtimes_zip.php "
+    bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/backends/allocine_showtimes_zip.php "
     bashC = bashPrefix+str(movie)+" "+str(zipcode)
     logging.info("Before subprocess: %s." % bashC)
     process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)

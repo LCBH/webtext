@@ -38,10 +38,12 @@ BANK="banque"
 BIKES="velo"
 MOVIES="cine"
 FORECASTS="meteo"
+TRAFIC="trafic"
 HELP = "aide"
 HELPMESS = (
     "Voici comment écrire vos requêtes:"
     "'" + BIKES + " [lieux]' pour les velibs autour de [lieux]; "
+    "'" + TRAFIC + " pour connaitre toutes les perturbations du réseau RATP; "
     "'" + MOVIES + " [nom] [code postal]' pour les séances de cinéma des films "
     "contenant [nom] dans [code postal]; "
     "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
@@ -85,6 +87,8 @@ def parseContent(SMScontent, user, is_local=False, is_testing=False):
         if requestType == BIKES:
             where = ' '.join(requestContent)
             return(fetch.velibParis(where))
+        elif requestType == TRAFIC:
+            return(fetch.trafic_ratp(metro=True, rer=True))
         elif requestType == FORECASTS:
             where = requestContent[0]
             return(fetch.forecasts(where))
