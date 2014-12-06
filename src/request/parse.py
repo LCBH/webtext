@@ -108,6 +108,6 @@ def parseContent(SMScontent, user, is_local=False, is_testing=False):
             extract = ("L'utilisateur %s (numéro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
             answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
                       extract +
-                      ", malheureusement je n'ai pas compris sa requête. " + HELP
+                      ", malheureusement je n'ai pas compris sa requête. " + HELPMESS
                       )
             return(answer)

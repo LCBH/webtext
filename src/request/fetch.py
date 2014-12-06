@@ -56,7 +56,7 @@ def forecasts(zipcode):
             if line.find("UV") >= 1 or line.find("Indice") >= 1:
                 output_trunc += "\n"
     answer = (("J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
-              str(output_trunc))
+              str(output_trunc)[0:800]) # TODO: better handling of very long mess
     return(answer)
 
 def bankInfo(details=False):
