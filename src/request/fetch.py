@@ -51,15 +51,16 @@ def forecasts(zipcode):
     logging.info("Before subprocess: %s" % bashCommandList)
     process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
     output = process.communicate()[0]
-    output_trunc = ""
+    output_trunc = u""
     listLines = output.splitlines()
     for line in listLines:
         if len(line) > 1:
-            output_trunc += line + " "
-            if line.find("UV") >= 1 or line.find("Indice") >= 1:
-                output_trunc += "\n"
-    answer = (("J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
-              str(output_trunc)[0:800]) # TODO: better handling of very long mess
+            output_trunc += line.decode('utf-8') + u" "
+            if line.decode("ascii", "ignore").find("UV") >= 1 or line.decode("ascii", "ignore").find("Indice") >= 1:
+                output_trunc += u"\n"
+    print(type(output_trunc))
+    answer = ((u"J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
+              output_trunc[0:800]) # TODO: better handling of very long mess
     return(answer)
 
 def wikiSummary(query,language="fr"):
@@ -135,31 +136,33 @@ def trafic_ratp(metro=True, rer=True):
     API_url = "http://api-ratp.pierre-grimaud.fr/"
     API_trafic = API_url + "data/trafic/"
     K_trafic = "trafic"
-    K_pertu_metro = "perburations"
+    K_pertu_metro = "perburbations"
     K_pertu_rer = "perburbations"
-    answ = "J'ai compris que tu voulais connaitre l'état du trafic RATP. "
+    answ = u"J'ai compris que tu voulais connaitre l'état du trafic RATP. "
     if rer:
         url = API_trafic + "rer"
         data = json.load(urllib2.urlopen(url))
-        print(str(data))        # DEBUGG
         if data[K_trafic] == "normal":
-            answ += "[RER] Aucune perturbation.\n"
+            answ += u"[RER] Aucune perturbation.\n"
         else:
-            answ += "[RER] Perturbations: "
+            answ += u"[RER] Perturbations: "
             for ligne,status in data[K_pertu_rer].iteritems():
-                answ += "{" + str(ligne.encode('ascii', 'ignore')) + "}" + ": " + str(status.encode('ascii', 'ignore'))
-        answ += "\n"
+                if ligne == "":
+                    answ = (u"Le bulletin contient une remarque générale. Voici une résumé: "
+                            + status[0:80] + u"[...]")
+                else:
+                    answ += u"{" + ligne + u"}" + u": " + status
+        answ += u"\n"
     if metro:
         url = API_trafic + "metro"
         data = json.load(urllib2.urlopen(url))
-        print(str(data))        # DEBUGG
         if data[K_trafic] == "normal":
-            answ += "[METRO] Aucune perturbation.\n"
+            answ += u"[METRO] Aucune perturbation.\n"
         else:
-            answ += "[METRO] Perturbations: "
+            answ += u"[METRO] Perturbations: "
             for ligne,status in data[K_pertu_metro].iteritems():
-                answ += "{" + str(ligne.encode('ascii', 'ignore')) + "}" + ": " + str(status.encode('ascii', 'ignore'))
-        answ += "\n"
+                answ += u"{" + ligne + u"}" + u": " + status
+        answ += u"\n"
     return(answ)
 
 def showtimes_zip(movie, zipcode):
