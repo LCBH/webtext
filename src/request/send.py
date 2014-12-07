@@ -41,7 +41,8 @@ def sendTextFree(text, login, password):
     """ Send the message [text] through the Free API
     (so only to the corresponding nb.)."""
     logging.info("Sending using FREE API....")
-    encodedText = urllib.quote_plus(text) # url-ize the message's content
+    
+    encodedText = urllib.quote_plus(text.encode('utf8')) # url-ize the message's content
     url = ('https://smsapi.free-mobile.fr/sendmsg?user=%s&pass=%s&msg=%s'
            % (login, password, encodedText))
     filename = "./tmp/torm.tmp"
