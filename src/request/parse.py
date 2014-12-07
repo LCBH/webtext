@@ -45,7 +45,7 @@ HELPMESS = (
     "Voici comment écrire vos requêtes:"
     "'" + BIKES + " [lieux]' pour les velibs autour de [lieux]; "
     "'" + TRAFIC + " pour connaitre toutes les perturbations du réseau RATP; "
-    "'" + WIKI + " [requete] cherche la page wikipedia de 'requete' et renvoie un résumé; "
+    "'" + WIKI + " [requete] cherche la page wikipedia de 'requete' et renvoie un résumé (ajoutez '; [lang]' pour préciser la langue); "
     "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
     "'" + MOVIES + " [nom] [code postal]' pour les séances de cinéma des films "
     "contenant [nom] dans [code postal]; "

@@ -66,7 +66,7 @@ def forecasts(zipcode):
 def wikiSummary(query,language="fr"):
     """Fetch the summary of Wikipadia's articles. """
     # language: "en" pour l'anglais et "fr" pour le français
-    wikipedia.set_lang("fr")
+    wikipedia.set_lang(language)
     nb_results = 3
     results = wikipedia.search(query, results=3)
     answ = u"[WIKIPEDIA] "
