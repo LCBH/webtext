@@ -77,11 +77,11 @@ def wikiSummary(query,language="fr"):
         answ += (u"Plusieurs articles répondent à votre requête. J'ai choisi le premier. Voici la liste: "
                  + str(results) + u"\n")
     title = results[0]
+    logging.info(title)
     summary = wikipedia.summary(title)
-    print(summary)
-    print(type(summary))
+    logging.info(summary)
     answ += (u"Voici le résumé: " + summary)
-    return(answ.encode('utf-8'))
+    return(answ[0:800]) # TODO: better handling of very long mess
 
 def bankInfo(details=False):
     """ Fetch the amounts of bank accounts."""
