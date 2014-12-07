@@ -27,6 +27,8 @@
 """ Fetch different types of information using Weboob and some APIs and pretty
 format as a SMS' text."""
 
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+
 import os
 import sys
 import wget                     # wget command (for api free)
@@ -37,6 +39,7 @@ import logging
 from os.path import expanduser
 import datetime
 import json
+import wikipedia
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
@@ -48,16 +51,37 @@ def forecasts(zipcode):
     logging.info("Before subprocess: %s" % bashCommandList)
     process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
     output = process.communicate()[0]
-    output_trunc = ""
+    output_trunc = u""
     listLines = output.splitlines()
     for line in listLines:
         if len(line) > 1:
-            output_trunc += line + " "
-            if line.find("UV") >= 1 or line.find("Indice") >= 1:
-                output_trunc += "\n"
-    answer = (("J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
-              str(output_trunc)[0:800]) # TODO: better handling of very long mess
+            output_trunc += line.decode('utf-8') + u" "
+            if line.decode("ascii", "ignore").find("UV") >= 1 or line.decode("ascii", "ignore").find("Indice") >= 1:
+                output_trunc += u"\n"
+    print(type(output_trunc))
+    answer = ((u"J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
+              output_trunc[0:800]) # TODO: better handling of very long mess
     return(answer)
+
+def wikiSummary(query,language="fr"):
+    """Fetch the summary of Wikipadia's articles. """
+    # language: "en" pour l'anglais et "fr" pour le français
+    wikipedia.set_lang(language)
+    nb_results = 3
+    results = wikipedia.search(query, results=3)
+    answ = u"[WIKIPEDIA] "
+    if len(results) == 0:
+        answ += u"Aucun article ne correspond à votre requête. Essayez avec une requête plus petite."
+        return(answ)
+    if len(results) > 1:
+        answ += (u"Plusieurs articles répondent à votre requête. J'ai choisi le premier. Voici la liste: "
+                 + str(results) + u"\n")
+    title = results[0]
+    summary = wikipedia.summary(title)
+    print(summary)
+    print(type(summary))
+    answ += (u"Voici le résumé: " + summary)
+    return(answ.encode('utf-8'))
 
 def bankInfo(details=False):
     """ Fetch the amounts of bank accounts."""
@@ -112,31 +136,33 @@ def trafic_ratp(metro=True, rer=True):
     API_url = "http://api-ratp.pierre-grimaud.fr/"
     API_trafic = API_url + "data/trafic/"
     K_trafic = "trafic"
-    K_pertu_metro = "perburations"
+    K_pertu_metro = "perburbations"
     K_pertu_rer = "perburbations"
-    answ = "J'ai compris que tu voulais connaitre l'état du trafic RATP. "
+    answ = u"J'ai compris que tu voulais connaitre l'état du trafic RATP. "
     if rer:
         url = API_trafic + "rer"
         data = json.load(urllib2.urlopen(url))
-        print(str(data))        # DEBUGG
         if data[K_trafic] == "normal":
-            answ += "[RER] Aucune perturbation.\n"
+            answ += u"[RER] Aucune perturbation.\n"
         else:
-            answ += "[RER] Perturbations: "
+            answ += u"[RER] Perturbations: "
             for ligne,status in data[K_pertu_rer].iteritems():
-                answ += "{" + str(ligne.encode('ascii', 'ignore')) + "}" + ": " + str(status.encode('ascii', 'ignore'))
-        answ += "\n"
+                if ligne == "":
+                    answ = (u"Le bulletin contient une remarque générale. Voici une résumé: "
+                            + status[0:80] + u"[...]")
+                else:
+                    answ += u"{" + ligne + u"}" + u": " + status
+        answ += u"\n"
     if metro:
         url = API_trafic + "metro"
         data = json.load(urllib2.urlopen(url))
-        print(str(data))        # DEBUGG
         if data[K_trafic] == "normal":
-            answ += "[METRO] Aucune perturbation.\n"
+            answ += u"[METRO] Aucune perturbation.\n"
         else:
-            answ += "[METRO] Perturbations: "
+            answ += u"[METRO] Perturbations: "
             for ligne,status in data[K_pertu_metro].iteritems():
-                answ += "{" + str(ligne.encode('ascii', 'ignore')) + "}" + ": " + str(status.encode('ascii', 'ignore'))
-        answ += "\n"
+                answ += u"{" + ligne + u"}" + u": " + status
+        answ += u"\n"
     return(answ)
 
 def showtimes_zip(movie, zipcode):
@@ -168,3 +194,10 @@ def showtimes_zip(movie, zipcode):
               "les séances de %s dans le %s, voici "
               "ce que j'ai trouvé:\n" % (str(movie),str(zipcode)) + answer)
     return(answer)
+
+
+# API WIKIPEDIA:
+# https://wikipedia.readthedocs.org/en/latest/quickstart.html#quickstart
+
+# API paul grimaud (horaires-ratp-api et trafic):
+# https://github.com/pgrimaud/horaires-ratp-api
