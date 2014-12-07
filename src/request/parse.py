@@ -36,6 +36,7 @@ logging = logging.getLogger(__name__)
 # Requests
 BANK="banque"
 BIKES="velo"
+WIKI="wiki"
 MOVIES="cine"
 FORECASTS="meteo"
 TRAFIC="trafic"
@@ -44,9 +45,10 @@ HELPMESS = (
     "Voici comment écrire vos requêtes:"
     "'" + BIKES + " [lieux]' pour les velibs autour de [lieux]; "
     "'" + TRAFIC + " pour connaitre toutes les perturbations du réseau RATP; "
+    "'" + WIKI + " [requete] cherche la page wikipedia de 'requete' et renvoie un résumé; "
+    "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
     "'" + MOVIES + " [nom] [code postal]' pour les séances de cinéma des films "
     "contenant [nom] dans [code postal]; "
-    "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
     "'" + BANK + " pour récupérer le montant de mes comptes. "
     " Pour avoir l'aide complète d'un type de requête, envoyer 'aide [requete]' "
     "(par exemple 'help cine').")
@@ -89,6 +91,14 @@ def parseContent(SMScontent, user, is_local=False, is_testing=False):
             return(fetch.velibParis(where))
         elif requestType == TRAFIC:
             return(fetch.trafic_ratp(metro=True, rer=True))
+        elif requestType == WIKI:
+            if ";" in requestContent:
+                lang = requestContent[-1]
+                query = ' '.join(requestContent[0:-2])
+                return(fetch.wikiSummary(query=query, language=lang))
+            else:
+                query = ' '.join(requestContent)
+                return(fetch.wikiSummary(query))
         elif requestType == FORECASTS:
             where = requestContent[0]
             return(fetch.forecasts(where))

@@ -27,6 +27,8 @@
 """ Fetch different types of information using Weboob and some APIs and pretty
 format as a SMS' text."""
 
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+
 import os
 import sys
 import wget                     # wget command (for api free)
@@ -37,6 +39,7 @@ import logging
 from os.path import expanduser
 import datetime
 import json
+import wikipedia
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
@@ -58,6 +61,26 @@ def forecasts(zipcode):
     answer = (("J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
               str(output_trunc)[0:800]) # TODO: better handling of very long mess
     return(answer)
+
+def wikiSummary(query,language="fr"):
+    """Fetch the summary of Wikipadia's articles. """
+    # language: "en" pour l'anglais et "fr" pour le français
+    wikipedia.set_lang("fr")
+    nb_results = 3
+    results = wikipedia.search(query, results=3)
+    answ = u"[WIKIPEDIA] "
+    if len(results) == 0:
+        answ += u"Aucun article ne correspond à votre requête. Essayez avec une requête plus petite."
+        return(answ)
+    if len(results) > 1:
+        answ += (u"Plusieurs articles répondent à votre requête. J'ai choisi le premier. Voici la liste: "
+                 + str(results) + u"\n")
+    title = results[0]
+    summary = wikipedia.summary(title)
+    print(summary)
+    print(type(summary))
+    answ += (u"Voici le résumé: " + summary)
+    return(answ.encode('utf-8'))
 
 def bankInfo(details=False):
     """ Fetch the amounts of bank accounts."""
@@ -167,3 +190,10 @@ def showtimes_zip(movie, zipcode):
               "les séances de %s dans le %s, voici "
               "ce que j'ai trouvé:\n" % (str(movie),str(zipcode)) + answer)
     return(answer)
+
+
+# API WIKIPEDIA:
+# https://wikipedia.readthedocs.org/en/latest/quickstart.html#quickstart
+
+# API paul grimaud (horaires-ratp-api et trafic):
+# https://github.com/pgrimaud/horaires-ratp-api

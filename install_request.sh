@@ -14,3 +14,7 @@ sudo mkdir /var/www/webtext
 sudo mkdir /var/www/webtext/api
 sudo cp sms.php /var/www/webtext/api
 sudo chmod u+x /var/www/webtext/api/sms.php
+
+
+# API for WIkipedia
+sudo pip install wikipedia
