@@ -27,8 +27,11 @@
 """ Parse a request and using Fetch, return the required answer.
 We thus define here the conventions of requests."""
 
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+
 import logging
 import fetch
+
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
@@ -54,15 +57,18 @@ HELPMESS = (
     "(par exemple 'help cine').")
 
 # Parse the inputted text and output the corresponding answer
-def parseContent(SMScontent, user, is_local=False, is_testing=False):
+def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=False):
     # TODO: define a common structure for requests ["backend request args] ?
     # extract word per word the request
     # We start with the case: should be executed in local
     # Search for a shortcut:
     matches = [u for u in user['shortcuts'] if u[0] == SMScontent]
     if len(matches) > 0:
+        answer = ""
         for requ in matches[0][1]:
-            answer = parseContent(requ, user, is_local, is_testing) + "|| \n" 
+            answ_req = parseContent(requ, user, is_local, is_testing)
+            if not(answ_req) == None:
+                answer += answ_req + "|| \n"
         return(answer)
     words = SMScontent.split()
     requestType = words[0].lower()
@@ -88,7 +94,7 @@ def parseContent(SMScontent, user, is_local=False, is_testing=False):
     else:
         if requestType == BIKES:
             where = ' '.join(requestContent)
-            return(fetch.velibParis(where))
+            return(fetch.velibParisS(where, config_backends))
         elif requestType == TRAFIC:
             return(fetch.trafic_ratp(metro=True, rer=True))
         elif requestType == WIKI:
