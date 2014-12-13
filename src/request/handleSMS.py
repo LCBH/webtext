@@ -97,13 +97,10 @@ def main(is_testing, is_local, content, number, password=""):
         answer = parse.parseContent(content, user, is_local=is_local, is_testing=is_testing)
         if answer != None:
             logging.info("Answer is: " + answer)
-            if not(is_testing):
-                send.sendText(answer, user)
-                logging.info("Sent OK, END of handleSMS")
+            send.sendText(answer, user, is_testing=is_testing)
+            logging.info("END of handleSMS")
         else:
             logging.info("Pas de réponse! (privée + distant?).")
-    if is_testing:
-        logging.info("I do not send any SMS (we are testing now!).")
 
 
 if __name__ == "__main__":

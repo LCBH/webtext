@@ -37,25 +37,31 @@ from os.path import expanduser
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
-def sendTextFree(text, login, password):
+def sendTextFree(text, login, password, is_testing=False):
     """ Send the message [text] through the Free API
     (so only to the corresponding nb.)."""
     logging.info("Sending using FREE API....")
-    
-    encodedText = urllib.quote_plus(text.encode('utf8')) # url-ize the message's content
+    if type(text) == type(u'unicodesd'):
+        text_enc = text.encode('utf8')
+    else:
+        text_enc = text
+    encodedText = urllib.quote_plus(text_enc) # url-ize the message's content
     url = ('https://smsapi.free-mobile.fr/sendmsg?user=%s&pass=%s&msg=%s'
            % (login, password, encodedText))
     filename = "./tmp/torm.tmp"
-    # TOOD: do not wget when testing (see tests.py)
-    out = wget.download(url,out=filename)
-    os.remove(filename)
+    if not(is_testing):
+        out = wget.download(url,out=filename)
+        os.remove(filename)
+    else:
+        logging.info("I do not send any SMS (we are testing now!).")
 
-def sendText(text, user):
+
+def sendText(text, user, is_testing=False):
     """ Send the message [text] to [user]."""
     logging.info("Starting sendTextFREE.")
     userSend = user['sendSMS']
     if userSend['method'] == "FREE_API":
-        sendTextFree(text, userSend['login'], userSend['password'])
+        sendTextFree(text, userSend['login'], userSend['password'], is_testing=is_testing)
     else:
         logging.info("Sending capabiility is not defined for user %s." % (user['login']))
         
