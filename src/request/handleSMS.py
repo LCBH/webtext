@@ -31,6 +31,7 @@ the result and sends the appropriate answer."""
 # arguments: number, SMS' content, is_testing, run_is_local, ?password 
 # booleans are given as strings
 # if is_testing == "true", we do not send the answer by SMS
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 import os
 import sys
@@ -43,6 +44,7 @@ from os.path import expanduser
 import parse
 import fetch
 import send
+
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -94,7 +96,9 @@ def main(is_testing, is_local, content, number, password=""):
         logging.warning("I will not process the request since the sender is not in the white list")
     else:
         logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
-        answer = parse.parseContent(content, user, is_local=is_local, is_testing=is_testing)
+        # extract config of banckends
+        config_backends = CONF['config_backends']
+        answer = parse.parseContent(content, user, config_backends, is_local=is_local, is_testing=is_testing)
         if answer != None:
             logging.info("Answer is: " + answer)
             send.sendText(answer, user, is_testing=is_testing)

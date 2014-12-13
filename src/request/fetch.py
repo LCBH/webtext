@@ -41,6 +41,8 @@ import datetime
 import json
 import wikipedia
 
+import backends.jcdecaux
+
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
@@ -101,7 +103,14 @@ def bankInfo(details=False):
               str(output))
     return(answer)
 
-def velibParis(where):
+def velibParis(where, config_backends):
+    """ Fetch available stations and bikes around a given location."""
+    logging.info("Starting velibParis")
+    # for now, we delegate the job to the dedicated backend.
+    # -> todo: better architecure
+    return(backends.jcdecaux.searchVelib(where))
+
+def velibParisS(where, config_backends):
     """ Fetch available stations and bikes around a given location."""
     logging.info("Starting velibParis")
     bashPrefix = "boobsize search "
@@ -126,8 +135,7 @@ def velibParis(where):
             line = line[TRUNC:]
             output_trunc += line + "\n"
     answer = ("J'ai compris que tu voulais avoir les dispos des vélos à "+where+"."
-              " Voici ces infos:\n" +
-              str(output_trunc))
+              " Voici ces infos:\n" + output_trunc)
     return(answer)
 
 def trafic_ratp(metro=True, rer=True):
