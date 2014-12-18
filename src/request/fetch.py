@@ -179,7 +179,7 @@ def showtimes_zip(movie, zipcode):
     bashC = bashPrefix+str(movie)+" "+str(zipcode)
     logging.info("Before subprocess: %s." % bashC)
     process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output = process.communicate()[0]
+    output = unicode(process.communicate()[0], "utf-8")
     if "error" in output.lower() or len(output) == 0: # TODO: if error occurs in a cinema/movie ?
         logging.info("PHP failed: %s." % output)
         return("Erreur avec le backend PHP")
