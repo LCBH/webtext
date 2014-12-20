@@ -109,10 +109,14 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
             where = requestContent[0]
             return(fetch.forecasts(where))
         elif requestType == MOVIES:
-            if len(requestContent) < 2:
-                return "Usage pour cine: 'cine [titre] [zip]'\n"
-            movie = " ".join(requestContent[0:-1])
-            zipcode = requestContent[-1]
+            if len(requestContent) < 1:
+                return "Usage pour cine: 'cine [titre] [zip] ou cine [nom de cinema]'\n"
+            elif len(requestContent) == 2:
+                theater = " ".join(requestContent)
+                return(fetch.showtimes_theater(theater))
+            else:
+                movie = " ".join(requestContent[0:-1])
+                zipcode = requestContent[-1]
             return(fetch.showtimes_zip(movie, zipcode))
         elif requestType == HELP:
             if len(requestContent) == 0:
