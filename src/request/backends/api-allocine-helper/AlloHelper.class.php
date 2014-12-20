@@ -231,15 +231,21 @@
                 'partner' => $this->partner,
             ));
             $params = $this->getPresets();
-            $params['filter'] = implode(",", $params['filter']);
-            
+
+	    if(!(isset($params['filter'])))
+	       echo "filter is not set.\n";
+	    else
+	       $params['filter'] = implode(",", $params['filter']);
+
+
             $queryURL = $this->APIUrl . '/' . $type;
                   $searchQuery = str_replace('%2B', '+', http_build_query($params)) . '&sed=' . date('Ymd');
                   $toEncrypt = $this->allocineSecretKey . $searchQuery;
                   $sig = urlencode(base64_encode(sha1($toEncrypt, true)));
                   $queryURL .= '?' . $searchQuery . '&sig=' . $sig;
 
-                  return $queryURL;
+            // echo "URL:\n".$queryURL."\n\n";
+	    return $queryURL;
 		  
         }
         
@@ -733,7 +739,7 @@
         public function showtimesByTheaters($theaters, $date=null, $movieCode=null, $count = 10, $page = 1, &$url = null)
         {
             // Préréglages
-            $this->set('theaters', (array) $theaters);
+            $this->set('theaters', $theaters);
             $this->set('count', (int) $count);
             $this->set('page', (int) $page);
             
@@ -744,6 +750,7 @@
                 $this->set('movie', $movieCode);
             
             // Récupération et revoi des données
+	    
             return $this->getData('rest/v3/showtimelist', 'feed', $url);
         }
         
