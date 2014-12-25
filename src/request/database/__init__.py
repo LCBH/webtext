@@ -24,35 +24,3 @@
 #                                                                         #
 ###########################################################################
 
-""" Set up a light database and simple methods to access it. """
-from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
-
-import os
-import sys
-import wget                     # wget command (for api free)
-import subprocess               # for launching bash programs
-from os.path import expanduser
-import datetime
-import json
-import logging
-import dataset
-
-# -- Setup Logging --
-logging = logging.getLogger(__name__)
-
-# -- Static data (install). --
-REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
-LOG_DIR = PROJECT_DIR + "data/log/"
-execfile(expanduser(PROJECT_DIR+'config_backends.py'))
-conf_database = CONF['config_database']
-
-def connect():
-    path = PROJECT_DIR + conf_database['path'] + conf_database['file']
-    db = dataset.connect('sqlite:///' + path)
-    return(db)
-
-
-
-# LIB:
-# https://dataset.readthedocs.org/en/latest/quickstart.html
