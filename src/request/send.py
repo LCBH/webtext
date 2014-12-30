@@ -55,6 +55,25 @@ def sendTextFree(text, login, password, is_testing=False):
     else:
         logging.info("I do not send any SMS (we are testing now!).")
 
+def sendTextEmail(text, operateur, number, is_testing=False):
+    """ Send the message [text] through e-mails. """
+    logging.info("Sending using EMAIL....")
+    if type(text) == type(u'unicodesd'):
+        text_enc = text.encode('utf8')
+    else:
+        text_enc = text
+
+    if operateur == "orange":
+        address = number + "@" + "orange.fr"
+    else:
+        logging.error("I don't know how to send this email.")
+        return()
+
+    if not(is_testing):
+        # SEND THE EMAIL 'text_enc' to 'address'
+    else:
+        logging.info("I do not send any SMS (we are testing now!).")
+
 
 def sendText(text, user, is_testing=False):
     """ Send the message [text] to [user]."""
@@ -62,6 +81,8 @@ def sendText(text, user, is_testing=False):
     userSend = user['sendSMS']
     if userSend['method'] == "FREE_API":
         sendTextFree(text, userSend['login'], userSend['password'], is_testing=is_testing)
+    elif userSend['method'] == "EMAIL":
+        sendTextEmail(text, userSend['operateur'], user['number'], is_testing=is_testing)
     else:
         logging.info("Sending capabiility is not defined for user %s." % (user['login']))
         
