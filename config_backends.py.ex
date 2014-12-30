@@ -1,3 +1,4 @@
+# -- coding: utf-8 --
 CONF = {
     'config_database' : {
         'path' : 'data/database/',

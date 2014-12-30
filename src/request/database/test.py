@@ -24,41 +24,52 @@
 #                                                                         #
 ###########################################################################
 
-""" Set up a light database and a simple interface. """
+""" Some tests for database/utils.py and database/db.py. """
 from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 import os
 import sys
-import wget
+import wget        
+import subprocess  
 from os.path import expanduser
 import datetime
 import json
 import logging
-import dataset
 
+import db as dat
 import utils
 
 # -- Setup Logging --
-logging = logging.getLogger(__name__)
+logging.basicConfig(stream = sys.stdout,
+                    level=logging.WARNING,
+                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
+                    datefmt='%H:%M:%S')
 
-# NOTE:   print(str(table.find_one(login=lucca['login'])))
+# -- Static data (install). --
+REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
+LOG_DIR = PROJECT_DIR + "data/log/"
+execfile(expanduser(PROJECT_DIR+'config_backends.py'))
+conf_database = CONF['config_database']
 
-def pushMessage(user, message):
-    """ Push a message to the user's queue. """
-    pass()                      # TODO
+def testUtils():
+    print("## Read Config ##")
+    utils.readConfig()
+    
+    print("\n## Test printInfo(): ")
+    utils.printInfo()
+    
+    print("\n## Exporting Json and print ##")
+    print(" Users:")
+    print(utils.exportJson(tableName='users'))
+    print(" SendSMS:")
+    print(utils.exportJson(tableName='sendSMS'))
+    print(" Shortcuts:")
+    print(utils.exportJson(tableName='shortcuts'))
+    print(" Backends:")
+    print(utils.exportJson(tableName='backends'))
 
-def popMessage(user):
-    """ Pop a message to the user's queue. """
-    pass()                      # TODO
-
-def clearQueue(user):
-    """ Clear the user's queue. """
-    pass()                      # TODO
-
-# TODO:
-# - use this databse to store very long answers that would need many SMS to send
-# -> requires a kind of state (for each user)
-# - use it to sore 'reminders'
+testUtils()
 
 # LIB:
 # https://dataset.readthedocs.org/en/latest/quickstart.html

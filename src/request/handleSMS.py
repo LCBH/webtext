@@ -42,7 +42,6 @@ import logging
 from os.path import expanduser
 
 import parse
-import fetch
 import send
 
 
@@ -81,6 +80,7 @@ def searchUser(dic, number):
         return matches[0]
 
 # -- START MAIN --
+MAX_CH = 390
 def main(is_testing, is_local, content, number, password=""):
     logging.info("--------------------------------------------------------------\n"
                  "--- Starting handleSMS.py with number:[%s] and content:[%s]. ---"
@@ -101,7 +101,14 @@ def main(is_testing, is_local, content, number, password=""):
         answer = parse.parseContent(content, user, config_backends, is_local=is_local, is_testing=is_testing)
         if answer != None:
             logging.info("Answer is: " + answer)
-            send.sendText(answer, user, is_testing=is_testing)
+            if len(answer) > MAX_CH:
+            # TODO
+            # Avant send, check la longueur et si c'est > MAX_CH alors appeler une fonction qui exploite
+            # database.db.* en pushant des messages et ne pas oublier d'ajouter en entête un truc
+            # comme [2/3].
+                send.sendText(answer, user, is_testing=is_testing)
+            else:
+                send.sendText(answer, user, is_testing=is_testing)
             logging.info("END of handleSMS")
         else:
             logging.info("Pas de réponse! (privée + distant?).")
