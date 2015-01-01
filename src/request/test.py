@@ -32,6 +32,7 @@ from os.path import expanduser
 import logging
 import handleSMS
 import database
+import send
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -50,6 +51,13 @@ user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
 
 def callHandle(content,number):
     return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
+
+# Testing max length for SMS (disabled)
+#598 -> OK
+MESS = "a" * 599 + "b"
+print (len(MESS))
+send.sendText(MESS, user1, {}, is_testing = False)
+a = 1 + {} + "" + []
 
 print("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
 callHandle("Coucou", user1['number'])

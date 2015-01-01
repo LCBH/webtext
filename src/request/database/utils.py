@@ -82,10 +82,13 @@ def readConfig():
         userSMS = user['sendSMS']
         userDB = {
             'user' : user['login'],
-            'method' : userSMS['method'],
-            'login' : userSMS['login'],
-            'password' : userSMS['password'],
+            'method' : userSMS['method']
             }
+        if userSMS['method'] == "FREE_API":
+            userDB['login'] = userSMS['login']
+            userDB['password'] = userSMS['password']
+        elif userSMS['method'] == "EMAIL":
+            userDB['operateur'] = userSMS['operateur']
         if not(table.update(userDB, ['user'])):
             table.insert(userDB)
     ## Shortcuts

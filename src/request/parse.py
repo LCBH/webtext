@@ -81,6 +81,9 @@ HELPMESS = (
     " Pour avoir l'aide complète d'un type de requête, envoyer 'aide [requete]' "
     "(par exemple 'help cine').")
 
+# Global dictionnary containing options (if there is more than 1 request, options of the last one are taking into account)
+optionsDict = {}
+
 # Parse the inputted text and output the corresponding answer
 def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=False):
     """ Parse the SMS and produce the required answer. """
@@ -115,10 +118,16 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
             # list of options
             optionsList = map(lambda s : s.strip().lower(), options)
             argumentsList = requestCore.split(";")
-            # backendName
-            requestType = argumentsList[0].lower().strip()
-            # list of arguments
-            requestArguments = argumentsList[1:]
+            if len(argumentsList[0].split()) > 0:
+                # backendName
+                requestType = argumentsList[0].split()[0].lower().strip()
+                # list of arguments
+                requestArguments = [(" ".join(argumentsList[0].split()[1:]))] + argumentsList[1:]
+            else:
+                # backendName
+                requestType = argumentsList[0].lower().strip()
+                # list of arguments
+                requestArguments = argumentsList[1:]
             requestArgumentsStrip = map(lambda s : s.strip(), requestArguments)
             # words of the first argument (needed for bikes for instance)
             if len(requestArguments) > 0:
@@ -126,19 +135,20 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
             else:
                 wordsFirstArguments = []
             # Parsing of options
-            options = {}
-            options['all'] = (ALL in optionsList)
-            options['forward'] = (FORWARD in optionsList)
-            options['copy'] = (COPY in optionsList)
+            optionsDict['all'] = (ALL in optionsList)
+            optionsDict['forward'] = (FORWARD in optionsList)
+            optionsDict['copy'] = (COPY in optionsList)
+            logging.debug("requestType: " + str(requestType) +
+                          ", requestArguments: " + str(requestArguments))
             # We first deal with backends that can be executed only in local
             # BANK
             if requestType == BANK:
                 if is_local:
                     if user['login'] == "luccaH":
                         if wordsFirstArgument[0].lower().strip() == "details":
-                            return(fetch.bankInfo(options, details=True))
+                            return(fetch.bankInfo(optionsDict, details=True))
                         else:
-                            return(fetch.bankInfo(options))
+                            return(fetch.bankInfo(optionsDict))
                     else:
                         return("Pas de backend banque configuré pour l'utilisateur %s." % user['login'])
                 else:
@@ -154,7 +164,7 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
                 # BIKES
                 if requestType == BIKES:
                     where = requestArguments[0]
-                    return(fetch.velibParisS(options, where, config_backends))
+                    return(fetch.velibParisS(optionsDict, where, config_backends))
                 # TRAFIC
                 elif requestType == TRAFIC:
                     is_metro = ("metro" in requestArgumentsStrip)
@@ -162,7 +172,7 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
                     if len(requestArguments) == 0:
                         is_metro = True
                         is_rer = True
-                    return(fetch.trafic_ratp(options, metro=is_metro, rer=is_rer))
+                    return(fetch.trafic_ratp(optionsDict, metro=is_metro, rer=is_rer))
                 # WIKI
                 elif requestType == WIKI:
                     if len(requestArguments) > 1:
@@ -172,20 +182,20 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
                                     "(optionnel).")
                         else:
                             lang = requestArguments[1].lower().strip()
-                            return(fetch.wikiSummary(query=requestArguments[0], language=lang))
+                            return(fetch.wikiSummary(optionsDict, query=requestArguments[0], language=lang))
                     else:
-                        return(fetch.wikiSummary(query=requestArguments[0]))
+                        return(fetch.wikiSummary(optionsDict, query=requestArguments[0]))
                 # FORECASTS
                 elif requestType == FORECASTS:
                     where = requestArguments[0]
-                    return(fetch.forecasts(where))
+                    return(fetch.forecasts(optionsDict, where))
                 # MOVIES
                 elif requestType == MOVIES:
                     if len(wordsFirstArgument) < 2:
                         return "Usage pour cine: 'cine [titre] [zip]'\n"
                     movie = " ".join(wordsFirstArgument[0:-1])
                     zipcode = wordsFirstArgument[-1]
-                    return(fetch.showtimes_zip(movie, zipcode))
+                    return(fetch.showtimes_zip(optionsDict, movie, zipcode))
                 # HELP
                 elif requestType == HELP:
                     if len(wordsFirstArgument) == 0:
@@ -200,3 +210,20 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
                               ", malheureusement je n'ai pas compris sa requête. " + HELPMESS
                               )
                     return(answer)
+
+MAX_CH = 390
+
+def produceAnswers(SMScontent, user, config_backends, is_local=False, is_testing=False):
+    """ Given a SMS content, it returns the expected answers maybe using multiple SMS. """
+    whole_answer = parseContent(SMScontent, user, config_backends, is_local=False, is_testing=False)
+    if len(whole_answer) > MAX_CH:
+        if optionsDict['all']:
+            pass
+        else:
+            # TODO
+            # Avant send, check la longueur et si c'est > MAX_CH alors appeler une fonction qui exploite
+            # database.db.* en pushant des messages et ne pas oublier d'ajouter en entête un truc
+            # comme [2/3].
+            pass
+    else:
+        return([answer], optionsDict)

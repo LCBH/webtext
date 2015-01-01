@@ -80,7 +80,6 @@ def searchUser(dic, number):
         return matches[0]
 
 # -- START MAIN --
-MAX_CH = 390
 def main(is_testing, is_local, content, number, password=""):
     logging.info("--------------------------------------------------------------\n"
                  "--- Starting handleSMS.py with number:[%s] and content:[%s]. ---"
@@ -98,22 +97,15 @@ def main(is_testing, is_local, content, number, password=""):
         logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
         # extract config of banckends
         config_backends = CONF['config_backends']
-        answer = parse.parseContent(content, user, config_backends, is_local=is_local, is_testing=is_testing)
-        if answer != None:
-            logging.info("Answer is: " + answer)
-            if len(answer) > MAX_CH:
-            # TODO
-            # Avant send, check la longueur et si c'est > MAX_CH alors appeler une fonction qui exploite
-            # database.db.* en pushant des messages et ne pas oublier d'ajouter en entête un truc
-            # comme [2/3].
-                send.sendText(answer, user, is_testing=is_testing)
-            else:
-                send.sendText(answer, user, is_testing=is_testing)
+        answers, optionsDict = parse.produceAnswer(content, user, config_backends, is_local=is_local, is_testing=is_testing)
+        if answer != None and answers != []:
+            logging.info("Answer is: " + str(answers))
+            send.sendText(answers, user, optionsDict, is_testing=is_testing)
             logging.info("END of handleSMS")
         else:
             logging.info("Pas de réponse! (privée + distant?).")
 
-
+# If this is executed as a script, we parse argv
 if __name__ == "__main__":
     # arguments: number, SMS' content, is_testing, run_is_local, ?password 
     SMSnumber = sys.argv[1]

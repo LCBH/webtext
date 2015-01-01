@@ -56,12 +56,13 @@ def sendTextFree(text, login, password, is_testing=False):
         logging.info("I do not send any SMS (we are testing now!).")
 
 
-def sendText(text, user, is_testing=False):
+def sendText(texts, user, optionsDict, is_testing=False):
     """ Send the message [text] to [user]."""
     logging.info("Starting sendTextFREE.")
     userSend = user['sendSMS']
     if userSend['method'] == "FREE_API":
-        sendTextFree(text, userSend['login'], userSend['password'], is_testing=is_testing)
+        for text in texts:
+            sendTextFree(text, userSend['login'], userSend['password'], is_testing=is_testing)
     else:
         logging.info("Sending capabiility is not defined for user %s." % (user['login']))
         

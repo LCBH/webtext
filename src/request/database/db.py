@@ -45,15 +45,15 @@ logging = logging.getLogger(__name__)
 
 def pushMessage(user, message):
     """ Push a message to the user's queue. """
-    pass()                      # TODO
+    pass                      # TODO
 
 def popMessage(user):
     """ Pop a message to the user's queue. """
-    pass()                      # TODO
+    pass                      # TODO
 
 def clearQueue(user):
     """ Clear the user's queue. """
-    pass()                      # TODO
+    pass                      # TODO
 
 # TODO:
 # - use this databse to store very long answers that would need many SMS to send
