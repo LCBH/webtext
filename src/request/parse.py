@@ -84,6 +84,86 @@ HELPMESS = (
 # Global dictionnary containing options (if there is more than 1 request, options of the last one are taking into account)
 optionsDict = {}
 
+def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_testing):
+    """ Parse a request and returns the expected answer. """
+    requestArgumentsStrip = map(lambda s : s.strip(), requestArguments)
+    # words of the first argument (needed for bikes for instance)
+    if len(requestArguments) > 0:
+        wordsFirstArgument = requestArguments[0].split()
+    else:
+        wordsFirstArguments = []
+    # We first deal with backend involving private data (they cannot be executed on the request server)
+    # BANK
+    if requestType == BANK:
+        if is_local:
+            if user['login'] == "luccaH":
+                if wordsFirstArgument[0].lower().strip() == "details":
+                    return(fetch.bankInfo(optionsDict, details=True))
+                else:
+                    return(fetch.bankInfo(optionsDict))
+            else:
+                return("Pas de backend banque configuré pour l'utilisateur %s." % user['login'])
+        else:
+            logging.info("I cannot answer because I am executed on the request server but the data needed are private.")
+            return None
+    # END of private backends
+
+    if is_local and not(is_testing):
+        logging.info("No answer will be produced because the backend we need is not private and so the request server will answer.")
+        return None
+    # We now deal with backends that can be executed on the request server    
+    else:
+        # BIKES
+        if requestType == BIKES:
+            where = requestArguments[0]
+            return(fetch.velibParisS(optionsDict, where, config_backends))
+        # TRAFIC
+        elif requestType == TRAFIC:
+            is_metro = ("metro" in requestArgumentsStrip)
+            is_rer = ("rer" in requestArgumentsStrip)
+            if len(requestArguments) == 0:
+                is_metro = True
+                is_rer = True
+                return(fetch.trafic_ratp(optionsDict, metro=is_metro, rer=is_rer))
+        # WIKI
+        elif requestType == WIKI:
+            if len(requestArguments) > 1:
+                if (len(requestArguments) <> 2 or
+                    ("fr" <> requestArguments[1].lower.strip()) and "en" <> requestArguments[1].lower().strip()):
+                    return ("Usage pour wiki: la requête en premier argument et la langue (fr ou en) en second argument"
+                            "(optionnel).")
+                else:
+                    lang = requestArguments[1].lower().strip()
+                    return(fetch.wikiSummary(optionsDict, query=requestArguments[0], language=lang))
+            else:
+                return(fetch.wikiSummary(optionsDict, query=requestArguments[0]))
+        # FORECASTS
+        elif requestType == FORECASTS:
+            where = requestArguments[0]
+            return(fetch.forecasts(optionsDict, where))
+        # MOVIES
+        elif requestType == MOVIES:
+            if len(wordsFirstArgument) < 2:
+                return "Usage pour cine: 'cine [titre] [zip]'\n"
+            movie = " ".join(wordsFirstArgument[0:-1])
+            zipcode = wordsFirstArgument[-1]
+            return(fetch.showtimes_zip(optionsDict, movie, zipcode))
+        # HELP
+        elif requestType == HELP:
+            if len(wordsFirstArgument) == 0:
+                return(HELPMESS)
+            else:
+                answer = ("Vous avez demandé de l'aide à propos de %s." % wordsFirstArgument[0])
+                return(answer + " Désolé mais l'aide n'est pas encore complète.")
+        else:
+            extract = ("L'utilisateur %s (numéro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
+            answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
+                      extract +
+                      ", malheureusement je n'ai pas compris sa requête. " + HELPMESS
+                      )
+            return(answer)
+
+
 # Parse the inputted text and output the corresponding answer
 def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=False):
     """ Parse the SMS and produce the required answer. """
