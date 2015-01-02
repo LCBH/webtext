@@ -60,7 +60,6 @@ def forecasts(options, zipcode):
             output_trunc += line.decode('utf-8') + u" "
             if line.decode("ascii", "ignore").find("UV") >= 1 or line.decode("ascii", "ignore").find("Indice") >= 1:
                 output_trunc += u"\n"
-    print(type(output_trunc))
     answer = ((u"J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
               output_trunc[0:800]) # TODO: better handling of very long mess
     return(answer)

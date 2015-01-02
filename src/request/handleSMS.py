@@ -74,7 +74,6 @@ def searchUser(dic, number):
     if number[0] == " ":
         # Means that it was a '+' but it has been URLencoded
         number = "+" + number[1:]
-    print(number)
     matches = [u for u in dic['users'] if u['number']==number]
     if matches != []:
         return matches[0]
@@ -97,9 +96,9 @@ def main(is_testing, is_local, content, number, password=""):
         logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
         # extract config of banckends
         config_backends = CONF['config_backends']
-        answers, optionsDict = parse.produceAnswer(content, user, config_backends, is_local=is_local, is_testing=is_testing)
-        if answer != None and answers != []:
-            logging.info("Answer is: " + str(answers))
+        answers, optionsDict = parse.produceAnswers(content, user, config_backends, is_local=is_local, is_testing=is_testing)
+        if answers != None and answers != []:
+            logging.info("Answer is: " + '|| '.join(answers))
             send.sendText(answers, user, optionsDict, is_testing=is_testing)
             logging.info("END of handleSMS")
         else:

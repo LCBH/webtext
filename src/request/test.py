@@ -42,7 +42,7 @@ PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 
 logging.basicConfig(stream = sys.stdout,
-                    level=logging.DEBUG,
+                    level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
                     datefmt='%H:%M:%S')
 
@@ -54,12 +54,12 @@ def callHandle(content,number):
 
 # Testing max length for SMS (disabled)
 #598 -> OK
+# 640: le découpage fait par FREE - to test
 MESS = "a" * 599 + "b"
-print (len(MESS))
-send.sendText(MESS, user1, {}, is_testing = False)
-a = 1 + {} + "" + []
+# send.sendText(MESS, user1, {}, is_testing = False)
+#a = 1 + {} + "" + []
 
-print("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
+logging.info("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
 callHandle("Coucou", user1['number'])
 callHandle("wiki github", user1['number'])
 callHandle("trafic", user1['number'])
@@ -68,7 +68,7 @@ callHandle("velo marx dormoy", user1['number'])
 callHandle("meteo 75020", user1['number'])
 callHandle("retour", user1['number'])
 
-print("\n" + "=" * 40 + "  TESTING database/  " + 40 * "=")
+logging.info("\n" + "=" * 40 + "  TESTING database/  " + 40 * "=")
 import database.test
 
 # TODO: focus on testing all backends

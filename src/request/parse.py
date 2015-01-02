@@ -30,8 +30,9 @@ We thus define here the conventions of requests."""
 from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 import logging
+
 import fetch
-import database
+import database.db
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
@@ -73,13 +74,13 @@ HELPMESS = (
     "Voici comment écrire vos requêtes:"
     "'" + BIKES + " [lieux]' pour les velibs autour de [lieux]; "
     "'" + TRAFIC + " pour récup. les perturbations RATP; "
-    "'" + WIKI + " [requete] pour la page wikipe. de 'requete' et renvoie un résumé (argument optio. pour la langue:fr ou en); "
+    "'" + WIKI + " [requete] pour la page wikipedia contenant'requete', renvoie un résumé (argument optio. pour la langue:fr ou en); "
     "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
-    "'" + MOVIES + " [nom] [code postal]' pour les séances de cinéma des films "
+    "'" + MOVIES + " [nom] [code postal]' pour les séances de ciné des films "
     "contenant [nom] dans [code postal]; "
-    "'" + BANK + " pour récupérer le montant de mes comptes. "
-    " Pour avoir l'aide complète d'un type de requête, envoyer 'aide [requete]' "
-    "(par exemple 'help cine').")
+    "'" + BANK + " pour le montant de mes comptes. "
+    " Pour l'aide complète d'un type de requête, envoyer 'aide [requete]'"
+    )
 
 # Global dictionnary containing options (if there is more than 1 request, options of the last one are taking into account)
 optionsDict = {}
@@ -156,8 +157,8 @@ def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_t
                 answer = ("Vous avez demandé de l'aide à propos de %s." % wordsFirstArgument[0])
                 return(answer + " Désolé mais l'aide n'est pas encore complète.")
         else:
-            extract = ("L'utilisateur %s (numéro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
-            answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
+            extract = ("L'utilisateur %s m'a envoyé le texte %s" % (user['name'], SMScontent))
+            answer = ("" +
                       extract +
                       ", malheureusement je n'ai pas compris sa requête. " + HELPMESS
                       )
@@ -208,102 +209,62 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
                 requestType = argumentsList[0].lower().strip()
                 # list of arguments
                 requestArguments = argumentsList[1:]
-            requestArgumentsStrip = map(lambda s : s.strip(), requestArguments)
-            # words of the first argument (needed for bikes for instance)
-            if len(requestArguments) > 0:
-                wordsFirstArgument = requestArguments[0].split()
-            else:
-                wordsFirstArguments = []
             # Parsing of options
             optionsDict['all'] = (ALL in optionsList)
             optionsDict['forward'] = (FORWARD in optionsList)
             optionsDict['copy'] = (COPY in optionsList)
             logging.debug("requestType: " + str(requestType) +
                           ", requestArguments: " + str(requestArguments))
-            # We first deal with backends that can be executed only in local
-            # BANK
-            if requestType == BANK:
-                if is_local:
-                    if user['login'] == "luccaH":
-                        if wordsFirstArgument[0].lower().strip() == "details":
-                            return(fetch.bankInfo(optionsDict, details=True))
-                        else:
-                            return(fetch.bankInfo(optionsDict))
-                    else:
-                        return("Pas de backend banque configuré pour l'utilisateur %s." % user['login'])
-                else:
-                    logging.info("Je ne vais pas répondre à la requête car je ne suis pas exécuté en local"
-                                 "et les données demandées sont privées.")
-                    return None
-            # Now, we deal with all others backends
-            if is_local and not(is_testing):
-                logging.info("Je ne vais pas répondre à la requête car je suis éxécuté en local"
-                             "et les données demandées ne sont privées.")
-                return None
-            else:
-                # BIKES
-                if requestType == BIKES:
-                    where = requestArguments[0]
-                    return(fetch.velibParisS(optionsDict, where, config_backends))
-                # TRAFIC
-                elif requestType == TRAFIC:
-                    is_metro = ("metro" in requestArgumentsStrip)
-                    is_rer = ("rer" in requestArgumentsStrip)
-                    if len(requestArguments) == 0:
-                        is_metro = True
-                        is_rer = True
-                    return(fetch.trafic_ratp(optionsDict, metro=is_metro, rer=is_rer))
-                # WIKI
-                elif requestType == WIKI:
-                    if len(requestArguments) > 1:
-                        if (len(requestArguments) <> 2 or
-                            ("fr" <> requestArguments[1].lower.strip()) and "en" <> requestArguments[1].lower().strip()):
-                            return ("Usage pour wiki: la requête en premier argument et la langue (fr ou en) en second argument"
-                                    "(optionnel).")
-                        else:
-                            lang = requestArguments[1].lower().strip()
-                            return(fetch.wikiSummary(optionsDict, query=requestArguments[0], language=lang))
-                    else:
-                        return(fetch.wikiSummary(optionsDict, query=requestArguments[0]))
-                # FORECASTS
-                elif requestType == FORECASTS:
-                    where = requestArguments[0]
-                    return(fetch.forecasts(optionsDict, where))
-                # MOVIES
-                elif requestType == MOVIES:
-                    if len(wordsFirstArgument) < 2:
-                        return "Usage pour cine: 'cine [titre] [zip]'\n"
-                    movie = " ".join(wordsFirstArgument[0:-1])
-                    zipcode = wordsFirstArgument[-1]
-                    return(fetch.showtimes_zip(optionsDict, movie, zipcode))
-                # HELP
-                elif requestType == HELP:
-                    if len(wordsFirstArgument) == 0:
-                        return(HELPMESS)
-                    else:
-                        answer = ("Vous avez demandé de l'aide à propos de %s." % wordsFirstArgument[0])
-                        return(answer + " Désolé mais l'aide n'est pas encore complète.")
-                else:
-                    extract = ("L'utilisateur %s (numéro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
-                    answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
-                              extract +
-                              ", malheureusement je n'ai pas compris sa requête. " + HELPMESS
-                              )
-                    return(answer)
+            return(parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_testing))
 
-MAX_CH = 390
+
+MAX_CH = 640
+def countCar(mess):
+    countDouble = ['(', ')', '{', '}']
+    nbDouble = len(filter(lambda c: c in countDouble, mess))
+    return(nbDouble + len(mess))
+
+def splitSize(mess, maxSize):
+    if countCar(mess) < maxSize:
+        return([mess])
+    else:
+        mod = countCar(mess) % maxSize
+        exact = countCar(mess) - mod
+        nbPartsExact = exact / maxSize
+        listSplit = []
+        pos = 0
+        pos2 = 0
+        for i in range(nbPartsExact):
+            while pos2+1 < len(mess) and countCar(mess[pos:pos2+1]) <= maxSize:
+                pos2 += 1
+            part = mess[pos:pos2]
+            listSplit.append(part)
+            pos = pos2
+        lastPart = mess[pos:]
+        if lastPart != "":
+            listSplit.append(lastPart)
+        return(listSplit)
 
 def produceAnswers(SMScontent, user, config_backends, is_local=False, is_testing=False):
     """ Given a SMS content, it returns the expected answers maybe using multiple SMS. """
     whole_answer = parseContent(SMScontent, user, config_backends, is_local=False, is_testing=False)
-    if len(whole_answer) > MAX_CH:
+    if countCar(whole_answer) > MAX_CH:
+        splitMaxSize = MAX_CH - (4 + 4 + 1 +1) # pour '[XX/XX] '
+        listAnswers = splitSize(whole_answer, splitMaxSize)
+        logging.info("The answers requires multiple SMS: nb=%d." % len(listAnswers))
+        logging.info(str(listAnswers))
+        listAnswersFormat = []
+        for nb in range(len(listAnswers)):
+            answer = listAnswers[nb]
+            answerFormat = ("[" + str(nb+1) + "/" + str(len(listAnswers)) + "] ") + answer
+            listAnswersFormat.append(answerFormat)
         if optionsDict['all']:
-            pass
+            return(listAnswersFormat, optionsDict)
         else:
-            # TODO
-            # Avant send, check la longueur et si c'est > MAX_CH alors appeler une fonction qui exploite
-            # database.db.* en pushant des messages et ne pas oublier d'ajouter en entête un truc
-            # comme [2/3].
-            pass
+            toSend = listAnswersFormat[0]
+            toStore = listAnswersFormat[1:]
+            for mess in toStore:
+                database.db.pushMessage(user, mess)
+            return(toSend, optionsDict)
     else:
-        return([answer], optionsDict)
+        return([whole_answer], optionsDict)
