@@ -42,7 +42,7 @@ PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 
 logging.basicConfig(stream = sys.stdout,
-                    level=logging.INFO,
+                    level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
                     datefmt='%H:%M:%S')
 
@@ -59,7 +59,7 @@ MESS = "a" * 599 + "b"
 # send.sendText(MESS, user1, {}, is_testing = False)
 #a = 1 + {} + "" + []
 
-logging.info("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
+logging.debug("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
 callHandle("Coucou", user1['number'])
 callHandle("wiki github", user1['number'])
 callHandle("trafic", user1['number'])

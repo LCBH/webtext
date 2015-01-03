@@ -60,7 +60,7 @@ if __name__ == "__main__":
                         datefmt='%d/%m %H:%M:%S')
 else:
     # otherwise, we are testing using test.py -> use sdout
-    logger = logging.getLogger(__name__)
+    logging = logging.getLogger(__name__)
 
 
 # -- Helping functions --

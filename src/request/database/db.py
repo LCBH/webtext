@@ -34,6 +34,7 @@ from os.path import expanduser
 import datetime
 import json
 import logging
+from datetime import *
 import dataset
 
 import utils
@@ -41,15 +42,30 @@ import utils
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
-# NOTE:   print(str(table.find_one(login=lucca['login'])))
 
-def pushMessage(user, message):
+def pushMessage(user, messages):
     """ Push a message to the user's queue. """
-    pass                      # TODO
+    hashAnswer = hash(messages[0])
+    date = datetime.today()
+    dB = utils.connect()
+    table = dB['store']
+    for nb in range(len(messages)):
+        toStore = {
+            'user' : user['login'],
+            'date' : str(date),
+            'message' : messages[nb],
+            'hashAnswers' : hashAnswer,
+            'nb' : nb,
+            }
+        table.insert(toStore)
 
 def popMessage(user):
     """ Pop a message to the user's queue. """
-    pass                      # TODO
+    dB = utils.connect()
+    table = dB['store']
+    elts = table.find_one(user=user['login'])
+    # TODO REMOVE ELT
+    return(elts[0])
 
 def clearQueue(user):
     """ Clear the user's queue. """

@@ -263,8 +263,7 @@ def produceAnswers(SMScontent, user, config_backends, is_local=False, is_testing
         else:
             toSend = listAnswersFormat[0]
             toStore = listAnswersFormat[1:]
-            for mess in toStore:
-                database.db.pushMessage(user, mess)
+            database.db.pushMessage(user, toStore)
             return(toSend, optionsDict)
     else:
         return([whole_answer], optionsDict)

@@ -41,7 +41,7 @@ import utils
 
 # -- Setup Logging --
 logging.basicConfig(stream = sys.stdout,
-                    level=logging.WARNING,
+                    level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
                     datefmt='%H:%M:%S')
 
@@ -59,6 +59,10 @@ def testUtils():
     print("\n## Test printInfo(): ")
     utils.printInfo()
     
+    print("\n## Test db.py: ")
+    dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] COUCOU", "[2/2] RECOUCOU"])
+    print(dat.popMessage({'login' : 'lutcheti'}))
+
     print("\n## Exporting Json and print ##")
     print(" Users:")
     print(utils.exportJson(tableName='users'))

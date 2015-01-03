@@ -136,6 +136,10 @@ def printInfo():
     print("# Columns: " + str(db['backends'].columns))
     for backend in db['backends']:
         print(backend['backend'] + ", API_key: " + backend['API_key'])
+    print("## Table Store, size: " + str(len(db['store'])))
+    print("# Columns: " + str(db['store'].columns))
+    for mess in db['store']:
+        print(mess['user'] + ", nb: " + str(mess['nb']) + ", message: " + mess['message'])
        
 
 def exportJson(tableName='users', filename='toRemove.json'):
