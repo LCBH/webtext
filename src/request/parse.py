@@ -187,13 +187,17 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
         # --- We check wheter the request is actually a navigation command ---
         elif (NEXT == requestStrip) or (ALL == requestStrip) or (CLEAR == requestStrip):
             logging.info("A request correspond to a navigation command...")
-            if NEXT == requestStrip:
-                return("".join(database.db.popMessage(user))) # TODO
-            elif ALL == requestStrip:
-                return("|".join(database.db.popMessage(user, number=10000))) # TODO
-            elif CLEAR == requestStrip:
-                database.db.clearQueue(user)
+            if is_local:
+                logging.info("I won't process this kind of request in local ...")
                 return(None)
+            else:
+                if NEXT == requestStrip:
+                    return("".join(database.db.popMessage(user))) # TODO
+                elif ALL == requestStrip:
+                    return("|".join(database.db.popMessage(user, number=10000))) # TODO
+                elif CLEAR == requestStrip:
+                    database.db.clearQueue(user)
+                    return(None)
         # --- Otherwise, the request should ba a truly request for a given backend ---        else:
         if "|" in request:
             options = request.split("|")[1]
