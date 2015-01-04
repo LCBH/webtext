@@ -85,7 +85,7 @@ HELPMESS = (
 # Global dictionnary containing options (if there is more than 1 request, options of the last one are taking into account)
 optionsDict = {}
 
-def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_testing):
+def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_testing, config_backends):
     """ Parse a request and returns the expected answer. """
     requestArgumentsStrip = map(lambda s : s.strip(), requestArguments)
     # words of the first argument (needed for bikes for instance)
@@ -220,7 +220,7 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
         optionsDict['copy'] = (COPY in optionsList)
         logging.debug("requestType: " + str(requestType) +
                       ", requestArguments: " + str(requestArguments))
-        return(parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_testing))
+        return(parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_testing, config_backends))
 
 
 MAX_CH = 640

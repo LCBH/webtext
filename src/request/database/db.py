@@ -34,7 +34,7 @@ from os.path import expanduser
 import datetime
 import json
 import logging
-from datetime import *
+import datetime
 import dataset
 
 import utils
@@ -46,13 +46,15 @@ logging = logging.getLogger(__name__)
 def pushMessage(user, messages):
     """ Push a message to the user's queue. """
     hashAnswer = hash(messages[0])
-    date = datetime.today()
+    # We store date as Int because dataset does not handle correctly datetime.datetime objects using SQLite
+    date = datetime.datetime.now()
+    dateInt = int(10*(date - datetime.datetime(1970,1,1)).total_seconds())
     dB = utils.connect()
     table = dB['store']
     for nb in range(len(messages)):
         toStore = {
             'user' : user['login'],
-            'date' : date,
+            'dateInt' : dateInt,
             'message' : messages[nb],
             'hashAnswers' : hashAnswer,
             'nb' : nb,
@@ -64,14 +66,14 @@ def popMessage(user, number=1):
     dB = utils.connect()
     table = dB['store']
     # We find the last stored message
-    allStore = table.find(user=user['login'], order_by='date')
+    allStore = table.find(user=user['login'], order_by='dateInt')
     allStoreList = list(allStore)
     lastStore = allStoreList[-1]
     # We extract teh date and the hash of all stored messages related
     # to the last answer
-    dateLast = lastStore['date']
+    dateLast = lastStore['dateInt']
     hashLast = lastStore['hashAnswers']
-    lastAnswerMess = table.find(user=user['login'], date=dateLast, hashAnswers=hashLast)
+    lastAnswerMess = table.find(user=user['login'], dateInt=dateLast, hashAnswers=hashLast)
     lastAnswerList = list(lastAnswerMess)
     listMessages = []
     for i in range(min(len(lastAnswerList), number)):
