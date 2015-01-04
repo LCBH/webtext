@@ -52,24 +52,40 @@ def pushMessage(user, messages):
     for nb in range(len(messages)):
         toStore = {
             'user' : user['login'],
-            'date' : str(date),
+            'date' : date,
             'message' : messages[nb],
             'hashAnswers' : hashAnswer,
             'nb' : nb,
             }
         table.insert(toStore)
 
-def popMessage(user):
+def popMessage(user, number=1):
     """ Pop a message to the user's queue. """
     dB = utils.connect()
     table = dB['store']
-    elts = table.find_one(user=user['login'])
-    # TODO REMOVE ELT
-    return(elts[0])
+    # We find the last stored message
+    allStore = table.find(user=user['login'], order_by='date')
+    allStoreList = list(allStore)
+    lastStore = allStoreList[-1]
+    # We extract teh date and the hash of all stored messages related
+    # to the last answer
+    dateLast = lastStore['date']
+    hashLast = lastStore['hashAnswers']
+    lastAnswerMess = table.find(user=user['login'], date=dateLast, hashAnswers=hashLast)
+    lastAnswerList = list(lastAnswerMess)
+    listMessages = []
+    for i in range(min(len(lastAnswerList), number)):
+        message = lastAnswerList[0]
+        listMessages.append(message['message'])
+        table.delete(id = message['id'])
+    return(listMessages)
 
 def clearQueue(user):
     """ Clear the user's queue. """
-    pass                      # TODO
+    dB = utils.connect()
+    table = dB['store']
+    table.delete(user=user['login'])
+    
 
 # TODO:
 # - use this databse to store very long answers that would need many SMS to send
