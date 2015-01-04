@@ -175,7 +175,7 @@ def trafic_ratp(metro=True, rer=True):
 
 def showtimes_zip(movie, zipcode):
     """ Fetch showtimes for a given movie and location."""
-    logging.info("Starting allocine")
+    logging.info("Starting allocine (zip)")
     bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/backends/allocine_showtimes_zip.php "
     bashC = bashPrefix+str(movie)+" "+str(zipcode)
     logging.info("Before subprocess: %s." % bashC)
@@ -206,7 +206,7 @@ def showtimes_zip(movie, zipcode):
 
 
 def showtimes_theater(theater):
-    logging.info("Starting allocine")
+    logging.info("Starting allocine (theater)")
     bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/backends/allocine_showtimes_theater.php "
     bashC = bashPrefix+str(theater)
     logging.info("Before subprocess: %s." % bashC)
