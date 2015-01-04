@@ -271,7 +271,7 @@ def produceAnswers(SMScontent, user, config_backends, is_local=False, is_testing
             toSend = listAnswersFormat[0]
             toStore = listAnswersFormat[1:]
             database.db.pushMessage(user, toStore)
-            return(toSend, optionsDict)
+            return([toSend], optionsDict)
     else:
         if whole_answer == None:
             return(["Error"], optionsDict)
