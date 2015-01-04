@@ -22,3 +22,4 @@ sudo chmod u+x /var/www/webtext/api/sms.php
 
 # API for WIkipedia
 sudo pip install wikipedia
+sudo pip install dataset

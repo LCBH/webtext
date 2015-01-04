@@ -60,8 +60,14 @@ def testUtils():
     utils.printInfo()
     
     print("\n## Test db.py: ")
-    print("PUSH...")
+    # WARNING:
+    dB = utils.connect()
+    table = dB['store']
+    table.delete()
+
+    print("CLEAR...")
     dat.clearQueue({'login' : 'lutcheti'})
+    print("PUSH...")
     dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] COUCOU", "[2/2] RECOUCOU"])
     dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] AHAH", "[2/2] REAHAHAH"])
     print("POP: ")
