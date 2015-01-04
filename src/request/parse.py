@@ -222,10 +222,11 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
                       ", requestArguments: " + str(requestArguments))
         return(parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_testing))
 
+# 611 the the greatest nb. of car. that a multiple SMS can contain
+MAX_CH = 611
 
-MAX_CH = 640
 def countCar(mess):
-#double: (|^€{}[]~) 
+# those car. count double: (|^€{}[]~) 
     countDouble = ['(','|','^','€','{','}','[',']','~',')']
     nbDouble = len(filter(lambda c: c in countDouble, mess))
     return(nbDouble + len(mess))
