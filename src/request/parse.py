@@ -176,46 +176,48 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
         # --- We check whether the request is actually a shortcut ---
         matches = [u for u in user['shortcuts'] if u[0] == requestStrip]
         if len(matches) > 0:
+            logging.info("A request correspond to a shortcut...")
             requestS = matches[0][1]
             answ_req = parseContent(requestS, user, is_local, is_testing)
             if not(answ_req) == None:
                 answer += answ_req + "||\n"
         # --- We check wheter the request is actually a navigation command ---
         elif (NEXT == requestStrip) or (ALL == requestStrip) or (CLEAR == requestStrip):
+            logging.info("A request correspond to a navigation command...")
             if NEXT == requestStrip:
-                return(database.db.popMessage()) # TODO: qd on push des messages, ne pas oublier d'ajouter [2/3] au début par exemple.
+                return("".join(database.db.popMessage(user))) # TODO
             elif ALL == requestStrip:
-                pass
+                return("|".join(database.db.popMessage(user, number=10000))) # TODO
             elif CLEAR == requestStrip:
-                pass
-        # --- Otherwise, the request should ba a truly request for a given backend ---
+                database.db.clearQueue(user)
+                return(None)
+        # --- Otherwise, the request should ba a truly request for a given backend ---        else:
+        if "|" in request:
+            options = request.split("|")[1]
+            requestCore = request.split("|")[0]
         else:
-            if "|" in request:
-                options = request.split("|")[1]
-                requestCore = request.split("|")[0]
-            else:
-                options = []
-                requestCore = request
-            # list of options
-            optionsList = map(lambda s : s.strip().lower(), options)
-            argumentsList = requestCore.split(";")
-            if len(argumentsList[0].split()) > 0:
-                # backendName
-                requestType = argumentsList[0].split()[0].lower().strip()
-                # list of arguments
-                requestArguments = [(" ".join(argumentsList[0].split()[1:]))] + argumentsList[1:]
-            else:
-                # backendName
-                requestType = argumentsList[0].lower().strip()
-                # list of arguments
-                requestArguments = argumentsList[1:]
+            options = []
+            requestCore = request
+        # list of options
+        optionsList = map(lambda s : s.strip().lower(), options)
+        argumentsList = requestCore.split(";")
+        if len(argumentsList[0].split()) > 0:
+            # backendName
+            requestType = argumentsList[0].split()[0].lower().strip()
+            # list of arguments
+            requestArguments = [(" ".join(argumentsList[0].split()[1:]))] + argumentsList[1:]
+        else:
+            # backendName
+            requestType = argumentsList[0].lower().strip()
+            # list of arguments
+            requestArguments = argumentsList[1:]
             # Parsing of options
-            optionsDict['all'] = (ALL in optionsList)
-            optionsDict['forward'] = (FORWARD in optionsList)
-            optionsDict['copy'] = (COPY in optionsList)
-            logging.debug("requestType: " + str(requestType) +
-                          ", requestArguments: " + str(requestArguments))
-            return(parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_testing))
+        optionsDict['all'] = (ALL in optionsList)
+        optionsDict['forward'] = (FORWARD in optionsList)
+        optionsDict['copy'] = (COPY in optionsList)
+        logging.debug("requestType: " + str(requestType) +
+                      ", requestArguments: " + str(requestArguments))
+        return(parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_testing))
 
 
 MAX_CH = 640
