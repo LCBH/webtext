@@ -220,7 +220,8 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
 
 MAX_CH = 640
 def countCar(mess):
-    countDouble = ['(', ')', '{', '}']
+#double: (|^€{}[]~) 
+    countDouble = ['(','|','^','€','{','}','[',']','~',')']
     nbDouble = len(filter(lambda c: c in countDouble, mess))
     return(nbDouble + len(mess))
 
