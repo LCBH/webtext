@@ -31,6 +31,8 @@ import sys
 from os.path import expanduser
 import logging
 import handleSMS
+import database
+import send
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -50,6 +52,14 @@ user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
 def callHandle(content,number):
     return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
 
+# Testing max length for SMS (disabled)
+#598 -> OK
+# 640: le découpage fait par FREE - to test
+MESS = "a" * 599 + "b"
+# send.sendText(MESS, user1, {}, is_testing = False)
+#a = 1 + {} + "" + []
+
+logging.debug("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
 callHandle("Coucou", user1['number'])
 callHandle("wiki github", user1['number'])
 callHandle("trafic", user1['number'])
@@ -58,5 +68,8 @@ callHandle("cine louxor", user2['number'])
 callHandle("velo marx dormoy", user1['number'])
 callHandle("meteo 75020", user1['number'])
 callHandle("retour", user1['number'])
+
+logging.info("\n" + "=" * 40 + "  TESTING database/  " + 40 * "=")
+import database.test
 
 # TODO: focus on testing all backends

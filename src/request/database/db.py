@@ -24,46 +24,73 @@
 #                                                                         #
 ###########################################################################
 
-""" Using either carrier API's or the raspberry pi, we define functions
-that send SMSs."""
+""" Set up a light database and a simple interface. """
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 import os
 import sys
-import wget                     # wget command (for api free)
-import urllib                   # used to transform text into url
-import logging
+import wget
 from os.path import expanduser
+import datetime
+import json
+import logging
+from datetime import *
+import dataset
+
+import utils
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
-def sendTextFree(text, login, password, is_testing=False):
-    """ Send the message [text] through the Free API
-    (so only to the corresponding nb.)."""
-    logging.info("Sending using FREE API....")
-    if type(text) == type(u'unicodesd'):
-        text_enc = text.encode('utf8')
-    else:
-        text_enc = text
-    encodedText = urllib.quote_plus(text_enc) # url-ize the message's content
-    url = ('https://smsapi.free-mobile.fr/sendmsg?user=%s&pass=%s&msg=%s'
-           % (login, password, encodedText))
-    filename = "./tmp/torm.tmp"
-    if not(is_testing):
-        out = wget.download(url,out=filename)
-        os.remove(filename)
-    else:
-        logging.info("I do not send any SMS (we are testing now!).")
 
+def pushMessage(user, messages):
+    """ Push a message to the user's queue. """
+    hashAnswer = hash(messages[0])
+    date = datetime.today()
+    dB = utils.connect()
+    table = dB['store']
+    for nb in range(len(messages)):
+        toStore = {
+            'user' : user['login'],
+            'date' : date,
+            'message' : messages[nb],
+            'hashAnswers' : hashAnswer,
+            'nb' : nb,
+            }
+        table.insert(toStore)
 
-def sendText(texts, user, optionsDict, is_testing=False):
-    """ Send the message [text] to [user]."""
-    logging.info("Starting sendTextFREE.")
-    userSend = user['sendSMS']
-    if userSend['method'] == "FREE_API":
-        for text in texts:
-            sendTextFree(text, userSend['login'], userSend['password'], is_testing=is_testing)
-    else:
-        logging.info("Sending capabiility is not defined for user %s." % (user['login']))
-        
-        
+def popMessage(user, number=1):
+    """ Pop a message to the user's queue. """
+    dB = utils.connect()
+    table = dB['store']
+    # We find the last stored message
+    allStore = table.find(user=user['login'], order_by='date')
+    allStoreList = list(allStore)
+    lastStore = allStoreList[-1]
+    # We extract teh date and the hash of all stored messages related
+    # to the last answer
+    dateLast = lastStore['date']
+    hashLast = lastStore['hashAnswers']
+    lastAnswerMess = table.find(user=user['login'], date=dateLast, hashAnswers=hashLast)
+    lastAnswerList = list(lastAnswerMess)
+    listMessages = []
+    for i in range(min(len(lastAnswerList), number)):
+        message = lastAnswerList[0]
+        listMessages.append(message['message'])
+        table.delete(id = message['id'])
+    return(listMessages)
+
+def clearQueue(user):
+    """ Clear the user's queue. """
+    dB = utils.connect()
+    table = dB['store']
+    table.delete(user=user['login'])
+    
+
+# TODO:
+# - use this databse to store very long answers that would need many SMS to send
+# -> requires a kind of state (for each user)
+# - use it to sore 'reminders'
+
+# LIB:
+# https://dataset.readthedocs.org/en/latest/quickstart.html

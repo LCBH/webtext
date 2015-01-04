@@ -24,46 +24,62 @@
 #                                                                         #
 ###########################################################################
 
-""" Using either carrier API's or the raspberry pi, we define functions
-that send SMSs."""
+""" Some tests for database/utils.py and database/db.py. """
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 import os
 import sys
-import wget                     # wget command (for api free)
-import urllib                   # used to transform text into url
-import logging
+import wget        
+import subprocess  
 from os.path import expanduser
+import datetime
+import json
+import logging
+
+import db as dat
+import utils
 
 # -- Setup Logging --
-logging = logging.getLogger(__name__)
+logging.basicConfig(stream = sys.stdout,
+                    level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
+                    datefmt='%H:%M:%S')
 
-def sendTextFree(text, login, password, is_testing=False):
-    """ Send the message [text] through the Free API
-    (so only to the corresponding nb.)."""
-    logging.info("Sending using FREE API....")
-    if type(text) == type(u'unicodesd'):
-        text_enc = text.encode('utf8')
-    else:
-        text_enc = text
-    encodedText = urllib.quote_plus(text_enc) # url-ize the message's content
-    url = ('https://smsapi.free-mobile.fr/sendmsg?user=%s&pass=%s&msg=%s'
-           % (login, password, encodedText))
-    filename = "./tmp/torm.tmp"
-    if not(is_testing):
-        out = wget.download(url,out=filename)
-        os.remove(filename)
-    else:
-        logging.info("I do not send any SMS (we are testing now!).")
+# -- Static data (install). --
+REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
+LOG_DIR = PROJECT_DIR + "data/log/"
+execfile(expanduser(PROJECT_DIR+'config_backends.py'))
+conf_database = CONF['config_database']
 
+def testUtils():
+    print("## Read Config ##")
+    utils.readConfig()
+    
+    print("\n## Test printInfo(): ")
+    utils.printInfo()
+    
+    print("\n## Test db.py: ")
+    print("PUSH...")
+    dat.clearQueue({'login' : 'lutcheti'})
+    dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] COUCOU", "[2/2] RECOUCOU"])
+    dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] AHAH", "[2/2] REAHAHAH"])
+    print("POP: ")
+    print(dat.popMessage({'login' : 'lutcheti'}))
 
-def sendText(texts, user, optionsDict, is_testing=False):
-    """ Send the message [text] to [user]."""
-    logging.info("Starting sendTextFREE.")
-    userSend = user['sendSMS']
-    if userSend['method'] == "FREE_API":
-        for text in texts:
-            sendTextFree(text, userSend['login'], userSend['password'], is_testing=is_testing)
-    else:
-        logging.info("Sending capabiility is not defined for user %s." % (user['login']))
-        
-        
+    print("\n## Exporting Json and print ##")
+    print(" Users:")
+    print(utils.exportJson(tableName='users'))
+    print(" SendSMS:")
+    print(utils.exportJson(tableName='sendSMS'))
+    print(" Shortcuts:")
+    print(utils.exportJson(tableName='shortcuts'))
+    print(" Backends:")
+    print(utils.exportJson(tableName='backends'))
+    print(" Store:")
+    print(utils.exportJson(tableName='store'))
+
+testUtils()
+
+# LIB:
+# https://dataset.readthedocs.org/en/latest/quickstart.html

@@ -46,7 +46,7 @@ import backends.jcdecaux
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
-def forecasts(zipcode):
+def forecasts(options, zipcode):
     """ Fetch forecasts in Zipcode."""
     logging.info("Starting bankInfo")
     bashCommandList = ("wetboobs forecasts %s" % zipcode)
@@ -60,12 +60,11 @@ def forecasts(zipcode):
             output_trunc += line.decode('utf-8') + u" "
             if line.decode("ascii", "ignore").find("UV") >= 1 or line.decode("ascii", "ignore").find("Indice") >= 1:
                 output_trunc += u"\n"
-    print(type(output_trunc))
     answer = ((u"J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
               output_trunc[0:800]) # TODO: better handling of very long mess
     return(answer)
 
-def wikiSummary(query,language="fr"):
+def wikiSummary(options, query,language="fr"):
     """Fetch the summary of Wikipadia's articles. """
     # language: "en" pour l'anglais et "fr" pour le français
     wikipedia.set_lang(language)
@@ -85,7 +84,7 @@ def wikiSummary(query,language="fr"):
     answ += (u"Voici le résumé: " + summary)
     return(answ[0:800]) # TODO: better handling of very long mess
 
-def bankInfo(details=False):
+def bankInfo(options, details=False):
     """ Fetch the amounts of bank accounts."""
     logging.info("Starting bankInfo")
     bashCommandList = "boobank list --formatter=multiline --select=label,balance"
@@ -103,14 +102,14 @@ def bankInfo(details=False):
               str(output))
     return(answer)
 
-def velibParis(where, config_backends):
+def velibParis(options, where, config_backends):
     """ Fetch available stations and bikes around a given location."""
     logging.info("Starting velibParis")
     # for now, we delegate the job to the dedicated backend.
     # -> todo: better architecure
     return(backends.jcdecaux.searchVelib(where))
 
-def velibParisS(where, config_backends):
+def velibParisS(options, where, config_backends):
     """ Fetch available stations and bikes around a given location."""
     logging.info("Starting velibParis")
     bashPrefix = "boobsize search "
@@ -138,7 +137,7 @@ def velibParisS(where, config_backends):
               " Voici ces infos:\n" + output_trunc)
     return(answer)
 
-def trafic_ratp(metro=True, rer=True):
+def trafic_ratp(options, metro=True, rer=True):
     """Fetch trafic information of RATP network (for metro or/and RER) using API made by
     Paul Grimaud."""
     API_url = "http://api-ratp.pierre-grimaud.fr/"
