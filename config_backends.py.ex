@@ -1,6 +1,16 @@
+# -- coding: utf-8 --
 CONF = {
+    'config_database' : {
+        'path' : 'data/database/',
+        'file' : 'name.db',
+        },
+    'config_backends' :  {
+        'jcdecaux' : {
+            'API_key' : 'yourJcDecauxKey',
+            }
+        },  
     'config_api' : {
-        'api_secret_key' : "XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        'api_secret_key' : "XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         },		 
     'users' : [
         {

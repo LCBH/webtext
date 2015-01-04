@@ -24,53 +24,74 @@
 #                                                                         #
 ###########################################################################
 
-""" Tests all the scripts."""
+""" Some tests for database/utils.py and database/db.py. """
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 import os
 import sys
+import wget        
+import subprocess  
 from os.path import expanduser
+import datetime
+import json
 import logging
-import handleSMS
-import database
-import send
+
+import db as dat
+import utils
+
+# -- Setup Logging --
+if __name__ == "__main__":
+    # if this is executed as a script: logging using stdout
+    logging.basicConfig(stream = sys.stdout,
+                        level=logging.DEBUG,
+                        format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
+                        datefmt='%H:%M:%S')
+else:
+    print("logger")
+    # otherwise, we are testing using test.py -> use its logger
+    logging = logging.getLogger(__name__)
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
-# -- User Data --
-# if os.path.isfile(PROJECT_DIR+'config_backends.py'):
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
+LOG_DIR = PROJECT_DIR + "data/log/"
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
+conf_database = CONF['config_database']
 
-logging.basicConfig(stream = sys.stdout,
-                    level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
-                    datefmt='%H:%M:%S')
+def testUtils():
+    print("## Read Config ##")
+    utils.readConfig()
+    
+    print("\n## Test printInfo(): ")
+    utils.printInfo()
+    
+    print("\n## Test db.py: ")
+    # WARNING:
+    dB = utils.connect()
+    table = dB['store']
+    table.delete()
 
-user1 = [ u for u in CONF['users'] if u['login'] == 'luccaH'][0]
-user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
+    print("CLEAR...")
+    dat.clearQueue({'login' : 'lutcheti'})
+    print("PUSH...")
+    dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] COUCOU", "[2/2] RECOUCOU"])
+    dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] AHAH", "[2/2] REAHAHAH"])
+    print("POP: ")
+    print(dat.popMessage({'login' : 'lutcheti'}))
 
-def callHandle(content,number):
-    return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
+    print("\n## Exporting Json and print ##")
+    print(" Users:")
+    print(utils.exportJson(tableName='users'))
+    print(" SendSMS:")
+    print(utils.exportJson(tableName='sendSMS'))
+    print(" Shortcuts:")
+    print(utils.exportJson(tableName='shortcuts'))
+    print(" Backends:")
+    print(utils.exportJson(tableName='backends'))
+    print(" Store:")
+    print(utils.exportJson(tableName='store'))
 
-# Testing max length for SMS (disabled)
-#598 -> OK
-# 640: le découpage fait par FREE - to test
-MESS = "a" * 599 + "b"
-# send.sendText(MESS, user1, {}, is_testing = False)
-#a = 1 + {} + "" + []
+testUtils()
 
-logging.debug("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
-callHandle("Coucou", user1['number'])
-callHandle("wiki github", user1['number'])
-callHandle("trafic", user1['number'])
-callHandle("banque ", user1['number'])
-callHandle("cine mommy 75018", user2['number'])
-callHandle("cine louxor", user2['number'])
-callHandle("velo marx dormoy", user1['number'])
-callHandle("meteo 75020", user1['number'])
-callHandle("retour", user1['number'])
-
-logging.info("\n" + "=" * 40 + "  TESTING database/  " + 40 * "=")
-import database.test
-
-# TODO: focus on testing all backends
+# LIB:
+# https://dataset.readthedocs.org/en/latest/quickstart.html

@@ -42,7 +42,6 @@ import logging
 from os.path import expanduser
 
 import parse
-import fetch
 import send
 
 
@@ -61,7 +60,7 @@ if __name__ == "__main__":
                         datefmt='%d/%m %H:%M:%S')
 else:
     # otherwise, we are testing using test.py -> use sdout
-    logger = logging.getLogger(__name__)
+    logging = logging.getLogger(__name__)
 
 
 # -- Helping functions --
@@ -75,7 +74,6 @@ def searchUser(dic, number):
     if number[0] == " ":
         # Means that it was a '+' but it has been URLencoded
         number = "+" + number[1:]
-    print(number)
     matches = [u for u in dic['users'] if u['number']==number]
     if matches != []:
         return matches[0]
@@ -98,15 +96,15 @@ def main(is_testing, is_local, content, number, password=""):
         logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
         # extract config of banckends
         config_backends = CONF['config_backends']
-        answer = parse.parseContent(content, user, config_backends, is_local=is_local, is_testing=is_testing)
-        if answer != None:
-            logging.info("Answer is: " + answer)
-            send.sendText(answer, user, is_testing=is_testing)
+        answers, optionsDict = parse.produceAnswers(content, user, config_backends, is_local=is_local, is_testing=is_testing)
+        if answers != None and answers != []:
+            logging.info("Answer is: " + '|| '.join(answers))
+            send.sendText(answers, user, optionsDict, is_testing=is_testing)
             logging.info("END of handleSMS")
         else:
             logging.info("Pas de réponse! (privée + distant?).")
 
-
+# If this is executed as a script, we parse argv
 if __name__ == "__main__":
     # arguments: number, SMS' content, is_testing, run_is_local, ?password 
     SMSnumber = sys.argv[1]

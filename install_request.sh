@@ -7,7 +7,12 @@ sudo aptitude install weboob
 sudo aptitude install php5 
 sudo aptitude install curl libcurl3 php5-curl
 
-mkdir src/request/tmp
+mkdir data
+mkdir data/log
+mkdir data/database
+mkdir data/backends
+mkdir src/request/tmpsudo
+
 # for the webtext's API
 sudo chgrp www-data -R /var/www/webtext
 sudo mkdir /var/www/webtext
@@ -18,3 +23,5 @@ sudo chmod u+x /var/www/webtext/api/sms.php
 
 # API for WIkipedia
 sudo pip install wikipedia
+sudo pip install dataset
+
