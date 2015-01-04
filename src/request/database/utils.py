@@ -39,10 +39,7 @@ import logging
 import dataset
 
 # -- Setup Logging --
-logging.basicConfig(stream = sys.stdout,
-                    level=logging.WARNING,
-                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
-                    datefmt='%H:%M:%S')
+logging = logging.getLogger(__name__)
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))

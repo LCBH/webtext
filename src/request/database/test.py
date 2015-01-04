@@ -40,10 +40,16 @@ import db as dat
 import utils
 
 # -- Setup Logging --
-logging.basicConfig(stream = sys.stdout,
-                    level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
-                    datefmt='%H:%M:%S')
+if __name__ == "__main__":
+    # if this is executed as a script: logging using stdout
+    logging.basicConfig(stream = sys.stdout,
+                        level=logging.DEBUG,
+                        format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
+                        datefmt='%H:%M:%S')
+else:
+    print("logger")
+    # otherwise, we are testing using test.py -> use its logger
+    logging = logging.getLogger(__name__)
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
