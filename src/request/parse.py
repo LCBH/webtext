@@ -128,7 +128,7 @@ def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_t
             if len(requestArguments) == 0:
                 is_metro = True
                 is_rer = True
-                return(fetch.trafic_ratp(optionsDict, metro=is_metro, rer=is_rer))
+            return(fetch.trafic_ratp(optionsDict, metro=is_metro, rer=is_rer))
         # WIKI
         elif requestType == WIKI:
             if len(requestArguments) > 1:
