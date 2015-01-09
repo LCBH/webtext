@@ -115,28 +115,28 @@ def readConfig():
 def printInfo():
     """ Print all relevant information about the current database. """
     db = connect()
-    print("## List of all tables: " + str(db.tables))
-    print("## Table Users, size: " + str(len(db['users'])))
-    print("# Columns: " + str(db['users'].columns))
+    logging.info("## List of all tables: " + str(db.tables))
+    logging.info("## Table Users, size: " + str(len(db['users'])))
+    logging.info("# Columns: " + str(db['users'].columns))
     for user in db['users']:
-        print(user['user'] + ", name:" + user['name'])
-    print("## Table SendSMS, size: " + str(len(db['sendSMS'])))
-    print("# Columns: " + str(db['sendSMS'].columns))
+        logging.info(user['user'] + ", name:" + user['name'])
+    logging.info("## Table SendSMS, size: " + str(len(db['sendSMS'])))
+    logging.info("# Columns: " + str(db['sendSMS'].columns))
     for user in db['sendSMS']:
-        print(user['user'] + ", method:" + user['method'])
-    print("## Table Users, size: " + str(len(db['shortcuts'])))
-    print("# Columns: " + str(db['shortcuts'].columns))
+        logging.info(user['user'] + ", method:" + user['method'])
+    logging.info("## Table Users, size: " + str(len(db['shortcuts'])))
+    logging.info("# Columns: " + str(db['shortcuts'].columns))
     for short in db['shortcuts']:
-        print(short['user'] + ", shortcut: " + short['shortcut'] +
+        logging.info(short['user'] + ", shortcut: " + short['shortcut'] +
               ", command:" + short['command'])
-    print("## Table Backends, size: " + str(len(db['backends'])))
-    print("# Columns: " + str(db['backends'].columns))
+    logging.info("## Table Backends, size: " + str(len(db['backends'])))
+    logging.info("# Columns: " + str(db['backends'].columns))
     for backend in db['backends']:
-        print(backend['backend'] + ", API_key: " + backend['API_key'])
-    print("## Table Store, size: " + str(len(db['store'])))
-    print("# Columns: " + str(db['store'].columns))
+        logging.info(backend['backend'] + ", API_key: " + backend['API_key'])
+    logging.info("## Table Store, size: " + str(len(db['store'])))
+    logging.info("# Columns: " + str(db['store'].columns))
     for mess in db['store']:
-        print(mess['user'] + ", nb: " + str(mess['nb']) + ", message: " + mess['message'])
+        logging.info(mess['user'] + ", nb: " + str(mess['nb']) + ", message: " + mess['message'])
        
 
 def exportJson(tableName='users', filename='toRemove.json'):

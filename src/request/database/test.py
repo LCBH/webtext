@@ -47,7 +47,6 @@ if __name__ == "__main__":
                         format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
                         datefmt='%H:%M:%S')
 else:
-    print("logger")
     # otherwise, we are testing using test.py -> use its logger
     logging = logging.getLogger(__name__)
 
@@ -59,37 +58,37 @@ execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 conf_database = CONF['config_database']
 
 def testUtils():
-    print("## Read Config ##")
+    logging.info("## Read Config ##")
     utils.readConfig()
     
-    print("\n## Test printInfo(): ")
+    logging.info("\n## Test printInfo(): ")
     utils.printInfo()
     
-    print("\n## Test db.py: ")
+    logging.info("\n## Test db.py: ")
     # WARNING:
     dB = utils.connect()
     table = dB['store']
     table.delete()
 
-    print("CLEAR...")
+    logging.info("CLEAR...")
     dat.clearQueue({'login' : 'lutcheti'})
-    print("PUSH...")
+    logging.info("PUSH...")
     dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] COUCOU", "[2/2] RECOUCOU"])
     dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] AHAH", "[2/2] REAHAHAH"])
-    print("POP: ")
-    print(dat.popMessage({'login' : 'lutcheti'}))
+    logging.info("POP: ")
+    logging.info(dat.popMessage({'login' : 'lutcheti'}))
 
-    print("\n## Exporting Json and print ##")
-    print(" Users:")
-    print(utils.exportJson(tableName='users'))
-    print(" SendSMS:")
-    print(utils.exportJson(tableName='sendSMS'))
-    print(" Shortcuts:")
-    print(utils.exportJson(tableName='shortcuts'))
-    print(" Backends:")
-    print(utils.exportJson(tableName='backends'))
-    print(" Store:")
-    print(utils.exportJson(tableName='store'))
+    logging.info("\n## Exporting Json and print ##")
+    logging.info(" Users:")
+    logging.info(utils.exportJson(tableName='users'))
+    logging.info(" SendSMS:")
+    logging.info(utils.exportJson(tableName='sendSMS'))
+    logging.info(" Shortcuts:")
+    logging.info(utils.exportJson(tableName='shortcuts'))
+    logging.info(" Backends:")
+    logging.info(utils.exportJson(tableName='backends'))
+    logging.info(" Store:")
+    logging.info(utils.exportJson(tableName='store'))
 
 testUtils()
 

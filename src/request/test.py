@@ -42,7 +42,9 @@ PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 
 logging.basicConfig(stream = sys.stdout,
-                    level=logging.DEBUG,
+# If you want to only display errors and warnings;
+#                   level=logging.WARNING,
+                    level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
                     datefmt='%H:%M:%S')
 
