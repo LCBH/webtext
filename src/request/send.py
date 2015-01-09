@@ -50,8 +50,12 @@ def sendTextFree(text, login, password, is_testing=False):
            % (login, password, encodedText))
     filename = "./tmp/torm.tmp"
     if not(is_testing):
-        out = wget.download(url,out=filename)
-        os.remove(filename)
+        try:
+            out = wget.download(url,out=filename)
+            os.remove(filename)
+        except IOError as e:
+            logging.error("sendTextFree > wget | I/O error({0}): {1}".format(e.errno, e.strerror))
+            exit(0)
     else:
         logging.info("I do not send any SMS (we are testing now!).")
 
