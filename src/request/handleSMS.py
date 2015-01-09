@@ -96,11 +96,19 @@ def main(is_testing, is_local, content, number, password=""):
         logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
         # extract config of banckends
         config_backends = CONF['config_backends']
-        answers, optionsDict = parse.produceAnswers(content, user, config_backends, is_local=is_local, is_testing=is_testing)
+        try:
+            answers, optionsDict = parse.produceAnswers(content, user, config_backends, is_local=is_local, is_testing=is_testing)
+        except IOError as e:
+            logging.error("produceAnswers has failed: I/O error({0}): {1}".format(e.errno, e.strerror))
+            exit(0)
         if answers != None and answers != []:
             logging.info("Answer is: " + '|| '.join(answers))
-            send.sendText(answers, user, optionsDict, is_testing=is_testing)
-            logging.info("END of handleSMS")
+            try:
+                send.sendText(answers, user, optionsDict, is_testing=is_testing)
+                logging.info("END of handleSMS")
+            except IOError as e:
+                logging.error("sendText has failed: I/O error({0}): {1}".format(e.errno, e.strerror))
+                exit(0)
         else:
             logging.info("Pas de réponse! (privée + distant?).")
 

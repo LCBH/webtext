@@ -46,12 +46,21 @@ import backends.jcdecaux
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
+MESS_BUG = ("Désolé, nous avons rencontré une erreur. Il nous serait très "
+            "utile de nous prévenir de ce bug (il suffit d'envoyer un mail "
+            "contenant votre numéro, la requête que vous avez faite et l'heure "
+            "et la date à laquelle vous avez reçu ce message).")
+
 def forecasts(options, zipcode):
     """ Fetch forecasts in Zipcode."""
     logging.info("Starting bankInfo")
     bashCommandList = ("wetboobs forecasts %s" % zipcode)
     logging.info("Before subprocess: %s" % bashCommandList)
-    process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
+    try:
+        process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
+    except OSError as e:
+        logging.error("forecasts > Popen | Execution failed:" + str(e))
+        return(MESS_BUGG)
     output = process.communicate()[0]
     output_trunc = u""
     listLines = output.splitlines()
@@ -69,7 +78,11 @@ def wikiSummary(options, query,language="fr"):
     # language: "en" pour l'anglais et "fr" pour le français
     wikipedia.set_lang(language)
     nb_results = 3
-    results = wikipedia.search(query, results=3)
+    try:
+        results = wikipedia.search(query, results=3)
+    except IOError as e:
+        logging.error("wikiSummary > wikipedia.search | I/O error({0}): {1}".format(e.errno, e.strerror))
+        return(MESS_BUG)
     answ = u"[WIKIPEDIA] "
     if len(results) == 0:
         answ += u"Aucun article ne correspond à votre requête. Essayez avec une requête plus petite."
@@ -91,11 +104,19 @@ def bankInfo(options, details=False):
     bashCommandHistory = ("boobank history 102780735700020237601EUR@creditmutuel "
                           "--formatter=multiline --select=date,raw,amount")
     logging.info("Before subprocess: %s" % bashCommandList)
-    process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
+    try:
+        process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
+    except OSError as e:
+        logging.error("bankInfo > Popen | Execution failed:" + str(e))
+        return(MESS_BUG)
     output = process.communicate()[0]
     if details:
         logging.info("More details needed, before subprocess: %s" % bashCommandHistory)
-        process = subprocess.Popen(bashCommandHistory.split(), stdout=subprocess.PIPE)
+        try:
+            process = subprocess.Popen(bashCommandHistory.split(), stdout=subprocess.PIPE)
+        except OSError as e:
+            logging.error("bankInfo > Popen | Execution failed:" + str(e))
+            return(MESS_BUG)
         outputHistory = process.communicate()[0]
         output = output + "||| Les détails:\n" + str(outputHistory)
     answer = ("J'ai compris que tu voulais un point sur tes comptes:\n" +
@@ -122,7 +143,11 @@ def velibParisS(options, where, config_backends):
     # stationRiquetP = ".18109.Paris.jcvelaux"
     bashC = bashPrefix + where
     logging.info("Before subprocess: %s." % bashC)
-    process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE)
+    try:
+        process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE)
+    except OSError as e:
+        logging.error("velibParis > Popen | Execution failed:" + str(e))
+        return(MESS_BUG)
     output = process.communicate()[0]
     # PB: only table formatter shows all required info but not adapted for SMS
     # SOL: truncatated 47 first caracters of all lines
@@ -148,7 +173,12 @@ def trafic_ratp(options, metro=True, rer=True):
     answ = u"J'ai compris que tu voulais connaitre l'état du trafic RATP. "
     if rer:
         url = API_trafic + "rer"
-        data = json.load(urllib2.urlopen(url))
+        try:
+            resp = urllib2.urlopen(url)
+        except IOError as e:
+            logging.error("trafic_ratp > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
+            return(MESS_BUG)
+        data = json.load(resp)
         if data[K_trafic] == "normal":
             answ += u"[RER] Aucune perturbation.\n"
         else:
@@ -162,7 +192,12 @@ def trafic_ratp(options, metro=True, rer=True):
         answ += u"\n"
     if metro:
         url = API_trafic + "metro"
-        data = json.load(urllib2.urlopen(url))
+        try:
+            resp = urllib2.urlopen(url)
+        except IOError as e:
+            logging.error("trafic_ratp > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
+            return(MESS_BUG)
+        data = json.load(resp)
         if data[K_trafic] == "normal":
             answ += u"[METRO] Aucune perturbation.\n"
         else:
@@ -177,11 +212,15 @@ def showtimes_zip(movie, zipcode):
     bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/backends/allocine_showtimes_zip.php "
     bashC = bashPrefix+str(movie)+" "+str(zipcode)
     logging.info("Before subprocess: %s." % bashC)
-    process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError as e:
+        logging.error("showtimes_zip > Popen | Execution failed:" + str(e))
+        return(MESS_BUG)
     output = unicode(process.communicate()[0], "utf-8")
     if "error" in output.lower() or len(output) == 0: # TODO: if error occurs in a cinema/movie ?
         logging.info("PHP failed: %s." % output)
-        return("Erreur avec le backend PHP\nUsage pour cine: 'cine [titre] [zip] ou cine [nom de cinema]'\n")
+        return(MESS_BUG)
     cine = output.split("THEATER")
     day = int(str(datetime.date.today()).split('-')[2])
     answer = ""    
@@ -208,7 +247,11 @@ def showtimes_theater(theater):
     bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/backends/allocine_showtimes_theater.php "
     bashC = bashPrefix+str(theater)
     logging.info("Before subprocess: %s." % bashC)
-    process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError as e:
+        logging.error("showtimes_theater > Popen | Execution failed:" + str(e))
+        return(MESS_BUG)
     output = unicode(process.communicate()[0], "utf-8")
     if "error" in output.lower() or len(output) == 0: # TODO: if error occurs in a cinema/movie ?
         logging.info("PHP failed: %s." % output)
