@@ -101,7 +101,7 @@ def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_t
     if requestType == BANK:
         if is_local:
             if user['login'] == "luccaH":
-                if wordsFirstArgument[0].lower().strip() == "details":
+                if len(wordsFirstArgument) > 0 and wordsFirstArgument[0].lower().strip() == "details":
                     return(fetch.bankInfo(optionsDict, details=True))
                 else:
                     return(fetch.bankInfo(optionsDict))
