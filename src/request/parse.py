@@ -266,7 +266,9 @@ def splitSize(mess, maxSize):
 def produceAnswers(SMScontent, user, config_backends, is_local=False, is_testing=False):
     """ Given a SMS content, it returns the expected answers maybe using multiple SMS. """
     whole_answer = parseContent(SMScontent, user, config_backends, is_local=False, is_testing=False)
-    if whole_answer != None and countCar(whole_answer) > MAX_CH:
+    if whole_answer == None:
+        return None
+    if countCar(whole_answer) > MAX_CH:
         splitMaxSize = MAX_CH - (4 + 4 + 1 +1) # pour '[XX/XX] '
         listAnswers = splitSize(whole_answer, splitMaxSize)
         logging.info("The answers requires multiple SMS: nb=%d." % len(listAnswers))
@@ -284,7 +286,4 @@ def produceAnswers(SMScontent, user, config_backends, is_local=False, is_testing
             database.db.pushMessage(user, toStore)
             return([toSend], optionsDict)
     else:
-        if whole_answer == None:
-            return(["Error"], optionsDict)
-        else:
-            return([whole_answer], optionsDict)
+        return([whole_answer], optionsDict)
