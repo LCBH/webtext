@@ -59,6 +59,9 @@ logging = logging.getLogger(__name__)
 NEXT="plus"
 ALL="tout"
 CLEAR="reset"
+# Syntax
+SEP_REQ = "||"
+SEP_OPTION = "|"
 # Options
 FORWARD = "transfert"
 COPY = "copie"
@@ -125,7 +128,7 @@ def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_t
             if len(requestArguments) == 0:
                 is_metro = True
                 is_rer = True
-                return(fetch.trafic_ratp(optionsDict, metro=is_metro, rer=is_rer))
+            return(fetch.trafic_ratp(optionsDict, metro=is_metro, rer=is_rer))
         # WIKI
         elif requestType == WIKI:
             if len(requestArguments) > 1:
@@ -172,7 +175,7 @@ def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_t
 def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=False):
     """ Parse the SMS and produce the required answer. """
     # --- We extract the list of requests ---
-    listRequests = SMScontent.split("||")
+    listRequests = SMScontent.split(SEP_REQ)
     answer = ""
     for request in listRequests:
         requestStrip = request.strip()
@@ -199,9 +202,9 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
                     database.db.clearQueue(user)
                     return(None)
         # --- Otherwise, the request should ba a truly request for a given backend ---        else:
-        if "|" in request:
-            options = request.split("|")[1]
-            requestCore = request.split("|")[0]
+        if SEP_OPTION in request:
+            options = request.split(SEP_OPTION)[1]
+            requestCore = request.split(SEP_OPTION)[0]
         else:
             options = []
             requestCore = request
@@ -213,11 +216,15 @@ def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=F
             requestType = argumentsList[0].split()[0].lower().strip()
             # list of arguments
             requestArguments = [(" ".join(argumentsList[0].split()[1:]))] + argumentsList[1:]
+            if len(requestArguments) == 1 and len(requestArguments[0]) == 0:
+                requestArguments = []
         else:
             # backendName
             requestType = argumentsList[0].lower().strip()
             # list of arguments
             requestArguments = argumentsList[1:]
+            if len(requestArguments) == 1 and len(requestArguments[0]) == 0:
+                requestArguments = []
             # Parsing of options
         optionsDict['all'] = (ALL in optionsList)
         optionsDict['forward'] = (FORWARD in optionsList)
