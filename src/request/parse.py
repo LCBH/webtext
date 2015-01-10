@@ -172,7 +172,7 @@ def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_t
 
 
 # Parse the inputted text and output the corresponding answer
-def parseContent(SMScontent, user, config_backends, is_local=False, is_testing=False):
+def parseContent(SMScontent, user, config_backends, is_local, is_testing):
     """ Parse the SMS and produce the required answer. """
     # --- We extract the list of requests ---
     listRequests = SMScontent.split(SEP_REQ)
@@ -265,7 +265,7 @@ def splitSize(mess, maxSize):
 
 def produceAnswers(SMScontent, user, config_backends, is_local=False, is_testing=False):
     """ Given a SMS content, it returns the expected answers maybe using multiple SMS. """
-    whole_answer = parseContent(SMScontent, user, config_backends, is_local=False, is_testing=False)
+    whole_answer = parseContent(SMScontent, user, config_backends, is_local, is_testing)
     if whole_answer == None:
         return None
     if countCar(whole_answer) > MAX_CH:
