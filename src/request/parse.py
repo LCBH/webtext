@@ -95,7 +95,7 @@ def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_t
     if len(requestArguments) > 0:
         wordsFirstArgument = requestArguments[0].split()
     else:
-        wordsFirstArguments = []
+        wordsFirstArgument = []
     # We first deal with backend involving private data (they cannot be executed on the request server)
     # BANK
     if requestType == BANK:
