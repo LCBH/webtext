@@ -147,13 +147,14 @@ def parseRequest(SMScontent, user, requestType, requestArguments, is_local, is_t
             return(fetch.forecasts(optionsDict, where))
         # MOVIES
         elif requestType == MOVIES:
-            if len(requestArguments) < 1 or len(requestArguments) > 2:
+            reqArgArray = requestArguments[0].split()
+            if len(reqArgArray) < 1 or len(reqArgArray) > 2:
                 return "Usage pour cine: 'cine [titre] ; [zip] ou cine [nom de cinema]'\n"
-            elif len(requestArguments) == 1:
-                return(fetch.showtimes_theater(requestArguments[0]))
+            elif len(reqArgArray) == 1:
+                return(fetch.showtimes_theater(reqArgArray[0]))
             else:
-                movie = requestArguments[0]
-                zipcode = requestArguments[1]
+                movie = reqArgArray[0]
+                zipcode = reqArgArray[1]
             return(fetch.showtimes_zip(movie, zipcode))
         # HELP
         elif requestType == HELP:
