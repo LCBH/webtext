@@ -24,57 +24,41 @@
 #                                                                         #
 ###########################################################################
 
-""" Tests all the scripts."""
-
-import os
-import sys
-from os.path import expanduser
 import logging
-import handleSMS
-import database
-import send
+import subprocess
 
-# -- Static data (install). --
-REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
-# -- User Data --
-# if os.path.isfile(PROJECT_DIR+'config_backends.py'):
-execfile(expanduser(PROJECT_DIR+'config_backends.py'))
+from static import *
+from mainClass import *
 
-logging.basicConfig(stream = sys.stdout,
-# If you want to only display errors and warnings;
-#                   level=logging.WARNING,
-                    level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
-                    datefmt='%H:%M:%S')
+# -- Setup Logging --
+logging = logging.getLogger(__name__)
 
-user1 = [ u for u in CONF['users'] if u['login'] == 'luccaH'][0]
-user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
+def forecasts(zipcode, config):
+    """ Fetch forecasts in Zipcode."""
+    logging.info("Starting bankInfo")
+    bashCommandList = ("wetboobs forecasts %s" % zipcode)
+    logging.info("Before subprocess: %s" % bashCommandList)
+    try:
+        process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
+    except OSError as e:
+        logging.error("forecasts > Popen | Execution failed:" + str(e))
+        return(MESS_BUGG)
+    output = process.communicate()[0]
+    output_trunc = u""
+    listLines = output.splitlines()
+    for line in listLines:
+        if len(line) > 1:
+            output_trunc += line.decode('utf-8') + u" "
+            if line.decode("ascii", "ignore").find("UV") >= 1 or line.decode("ascii", "ignore").find("Indice") >= 1:
+                output_trunc += u"\n"
+    answer = ((u"J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
+              output_trunc[0:800]) # TODO: better handling of very long mess
+    return(answer)
 
-def callHandle(content,number):
-    return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
+class BackendForecasts(Backend):
+    backendName = FORECASTS # defined in static.py
 
-# Testing max length for SMS (disabled)
-#598 -> OK
-# 640: le découpage fait par FREE - to test
-MESS = "a" * 599 + "b"
-# send.sendText(MESS, user1, {}, is_testing = False)
-#a = 1 + {} + "" + []
+    def answer(self, request, config):
+        where = request.argsList[0]
+        return(forecasts(where, config))
 
-callHandle("meteo 75018", user1['number'])
-exit()
-
-logging.debug("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
-callHandle("Coucou", user1['number'])
-callHandle("wiki github", user1['number'])
-callHandle("trafic", user1['number'])
-callHandle("cine birdman 75000", user2['number'])
-callHandle("cine louxor", user2['number'])
-callHandle("velo marx dormoy", user1['number'])
-callHandle("meteo 75020", user1['number'])
-callHandle("retour", user1['number'])
-
-logging.info("\n" + "=" * 40 + "  TESTING database/  " + 40 * "=")
-import database.test
-
-# TODO: focus on testing all backends

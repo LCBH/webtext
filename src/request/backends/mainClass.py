@@ -24,57 +24,45 @@
 #                                                                         #
 ###########################################################################
 
-""" Tests all the scripts."""
+""" Generic classes and methods for backends. """
 
-import os
-import sys
-from os.path import expanduser
 import logging
-import handleSMS
-import database
-import send
 
-# -- Static data (install). --
-REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
-# -- User Data --
-# if os.path.isfile(PROJECT_DIR+'config_backends.py'):
-execfile(expanduser(PROJECT_DIR+'config_backends.py'))
+from request import *
 
-logging.basicConfig(stream = sys.stdout,
-# If you want to only display errors and warnings;
-#                   level=logging.WARNING,
-                    level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
-                    datefmt='%H:%M:%S')
+# -- Setup Logging --
+# logging = logging.getLogger(__name__)
 
-user1 = [ u for u in CONF['users'] if u['login'] == 'luccaH'][0]
-user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
+class IterRegistry(type):
+    def __iter__(cls):
+        return iter(cls._registry)
 
-def callHandle(content,number):
-    return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
+class Backend(object):
+    __metaclass__ = IterRegistry
+    _registry = []
+    backendName = ""
 
-# Testing max length for SMS (disabled)
-#598 -> OK
-# 640: le découpage fait par FREE - to test
-MESS = "a" * 599 + "b"
-# send.sendText(MESS, user1, {}, is_testing = False)
-#a = 1 + {} + "" + []
+    def __init__(self, is_private=False):
+        # this is for keeping all availabe backends together and for
+        # beeing able to iterating over all of them
+        self._registry.append(self)
+        self.name = self.backendName
+        self.is_private = is_private
 
-callHandle("meteo 75018", user1['number'])
-exit()
+    def __str__(self):
+        return("BackendName: " + self.backendName)
 
-logging.debug("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
-callHandle("Coucou", user1['number'])
-callHandle("wiki github", user1['number'])
-callHandle("trafic", user1['number'])
-callHandle("cine birdman 75000", user2['number'])
-callHandle("cine louxor", user2['number'])
-callHandle("velo marx dormoy", user1['number'])
-callHandle("meteo 75020", user1['number'])
-callHandle("retour", user1['number'])
+    def isRequested(self, request):
+        """ Is this backend the one requested by request? """
+        return (request.backend.strip().lower() == self.name)
 
-logging.info("\n" + "=" * 40 + "  TESTING database/  " + 40 * "=")
-import database.test
+    # Each sub-backend should implement its own 'answer' method
+    def answer(self, request, config):
+        """ Parse a request (instance of class Request) and produce the 
+        expected answer. """
+        raise NotImplementedError
 
-# TODO: focus on testing all backends
+    # Each sub-backend should implement its own 'help' method
+    def help(self):
+        """ Returns a help message explaining how to use this backend. """
+        raise NotImplementedError

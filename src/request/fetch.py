@@ -42,6 +42,7 @@ import json
 import wikipedia
 
 import backends.jcdecaux
+from backends import *
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
@@ -51,27 +52,6 @@ MESS_BUG = ("Désolé, nous avons rencontré une erreur. Il nous serait très "
             "contenant votre numéro, la requête que vous avez faite et l'heure "
             "et la date à laquelle vous avez reçu ce message).")
 
-def forecasts(options, zipcode):
-    """ Fetch forecasts in Zipcode."""
-    logging.info("Starting bankInfo")
-    bashCommandList = ("wetboobs forecasts %s" % zipcode)
-    logging.info("Before subprocess: %s" % bashCommandList)
-    try:
-        process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
-    except OSError as e:
-        logging.error("forecasts > Popen | Execution failed:" + str(e))
-        return(MESS_BUGG)
-    output = process.communicate()[0]
-    output_trunc = u""
-    listLines = output.splitlines()
-    for line in listLines:
-        if len(line) > 1:
-            output_trunc += line.decode('utf-8') + u" "
-            if line.decode("ascii", "ignore").find("UV") >= 1 or line.decode("ascii", "ignore").find("Indice") >= 1:
-                output_trunc += u"\n"
-    answer = ((u"J'ai compris que tu voulais la météo dans %s:\n" % zipcode) +
-              output_trunc[0:800]) # TODO: better handling of very long mess
-    return(answer)
 
 def wikiSummary(options, query,language="fr"):
     """Fetch the summary of Wikipadia's articles. """

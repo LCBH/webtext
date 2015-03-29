@@ -24,54 +24,21 @@
 #                                                                         #
 ###########################################################################
 
-""" Backend for JCdecaux's API. """
-
-from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
-
-import os
-import sys
-import wget                     # wget command (for api free)
-import subprocess               # for launching bash programs
-import urllib                  # used to transform text into url
-import urllib2                  # used to transform text into url
 import logging
-import json
-from os.path import expanduser
-
-import pprint
+from mainClass import *
+from static import *
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
-REQUEST_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../"
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
-BACK_DATA_DIR = PROJECT_DIR + "data/backends/jcdecaux/"
+class BackendJcdecaux(Backend):
+    backendName = BIKES # defined in static.py
 
-execfile(expanduser(PROJECT_DIR+'config_backends.py'))
-
-# for debugging Only
-pp = pprint.PrettyPrinter(indent=4)
-
-def loadJson(city):
-    folder = BACK_DATA_DIR
-    if city == 'Paris':
-        json_data = open(folder + "Paris.json")
-    elif city == 'Lyon':
-        json_data = open(folder + "Lyon.json")
-    elif city == 'Marseill':
-        json_data = open(folder + "Marseille.json")
-    else:
-        logging.error("There is no static file City.json in data/backends/jcdecaux/.\n")
-        return(None)
-    data = json.load(json_data)
-    return(data, json_data)
+    def answer(self, request, config):
+        # parse:
+            # where = request.argsList[0]
+            # return(fetch.velibParisS(optionsDict, where, config_backends))
+        return("OK")
 
 
-def searchVelib(where):
-    """ Fetch available stations and bikes around a given location."""
-    logging.info("Starting searchVelib")
-    (dataStatic, toClose) = loadJson("Paris")
-    pp.pprint(dataStatic[0:4])
 
-
-# searchVelib("Chapelle")

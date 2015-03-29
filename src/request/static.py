@@ -24,57 +24,41 @@
 #                                                                         #
 ###########################################################################
 
-""" Tests all the scripts."""
+""" Static data. """
 
-import os
-import sys
-from os.path import expanduser
-import logging
-import handleSMS
-import database
-import send
+########### REQUESTS ############
+# Navigation
+NEXT="plus"                     # command for one more store message
+ALL="tout"                      # command for all stored messages
+CLEAR="reset"                   # command for erasing all stored messages
+# Syntax
+SEP_REQ = "||"                  # separation between different requests
+SEP_OPTION = "|"                # separations between arguments and options
+# Options
+FORWARD = "transfert"
+COPY = "copie"
+# Backends names
+BANK="banque"
+BIKES="velo"
+WIKI="wiki"
+MOVIES="cine"
+FORECASTS="meteo"
+TRAFIC="trafic"
+HELP = "aide"
+# Help messages
+HELPMESS = (
+    "Voici comment écrire vos requêtes:"
+    "'" + BIKES + " [lieux]' pour les velibs autour de [lieux]; "
+    "'" + TRAFIC + " pour récup. les perturbations RATP; "
+    "'" + WIKI + " [requete] pour la page wikipedia contenant'requete', renvoie un résumé (argument optio. pour la langue:fr ou en); "
+    "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
+    "'" + MOVIES + " [nom] ; [code postal]' pour les séances de ciné des films "
+    "contenant [nom] dans [code postal]; "
+    "'" + BANK + " pour le montant de mes comptes. "
+    " Pour l'aide complète d'un type de requête, envoyer 'aide [requete]'"
+    )
 
-# -- Static data (install). --
-REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
-# -- User Data --
-# if os.path.isfile(PROJECT_DIR+'config_backends.py'):
-execfile(expanduser(PROJECT_DIR+'config_backends.py'))
-
-logging.basicConfig(stream = sys.stdout,
-# If you want to only display errors and warnings;
-#                   level=logging.WARNING,
-                    level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
-                    datefmt='%H:%M:%S')
-
-user1 = [ u for u in CONF['users'] if u['login'] == 'luccaH'][0]
-user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
-
-def callHandle(content,number):
-    return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
-
-# Testing max length for SMS (disabled)
-#598 -> OK
-# 640: le découpage fait par FREE - to test
-MESS = "a" * 599 + "b"
-# send.sendText(MESS, user1, {}, is_testing = False)
-#a = 1 + {} + "" + []
-
-callHandle("meteo 75018", user1['number'])
-exit()
-
-logging.debug("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
-callHandle("Coucou", user1['number'])
-callHandle("wiki github", user1['number'])
-callHandle("trafic", user1['number'])
-callHandle("cine birdman 75000", user2['number'])
-callHandle("cine louxor", user2['number'])
-callHandle("velo marx dormoy", user1['number'])
-callHandle("meteo 75020", user1['number'])
-callHandle("retour", user1['number'])
-
-logging.info("\n" + "=" * 40 + "  TESTING database/  " + 40 * "=")
-import database.test
-
-# TODO: focus on testing all backends
+############## OTHER STUFF ##############
+# 611 the the greatest nb. of car. that a multiple SMS can contain
+MAX_CH = 611
+adminEmail = "lucca.hirschi@gmail.com"

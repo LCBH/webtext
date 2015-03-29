@@ -97,7 +97,12 @@ def main(is_testing, is_local, content, number, password=""):
         # extract config of banckends
         config_backends = CONF['config_backends']
         try:
-            answers, optionsDict = parse.produceAnswers(content, user, config_backends, is_local=is_local, is_testing=is_testing)
+            outputParse = parse.produceAnswers(content, user, config_backends, is_local=is_local, is_testing=is_testing)
+            if outputParse != None and len(outputParse) == 2:
+                answers, optionsDict = outputParse
+            else:
+                logging.info("parse.produceAnswers returned 'None'...")
+                return None
         except IOError as e:
             logging.error("produceAnswers has failed: I/O error({0}): {1}".format(e.errno, e.strerror))
             exit(0)
