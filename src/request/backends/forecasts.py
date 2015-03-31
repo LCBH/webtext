@@ -55,6 +55,9 @@ def forecasts(zipcode, config):
               output_trunc[0:800]) # TODO: better handling of very long mess
     return(answer)
 
+def likelyCorrect(answer):
+    return("Vent" in answer)
+
 class BackendForecasts(Backend):
     backendName = FORECASTS # defined in static.py
 
@@ -67,12 +70,9 @@ class BackendForecasts(Backend):
         r2 = Request(user, "meteo", ["84000"], [], "")
         logging.info("Checking a request [%s]" % r1)
         a1 = self.answer(r1, {})
-        if not("humidity" in a1):
+        if not(likelyCorrect(a1)):
             return False
         else:
             logging.info("Checking a request [%s]" % r2)
             a2 = self.answer(r2, {})
-            if not("humidity" in a2):
-                return False
-            else:
-                return True
+            return(likelyCorrect(a2))
