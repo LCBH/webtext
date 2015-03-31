@@ -46,4 +46,5 @@ class BackendTrafic(Backend):
         return("OK")
 
 
-
+    def test(self):
+        return False

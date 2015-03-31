@@ -35,10 +35,10 @@ class Request:
         self.optionsList = optionsList  # List of UTF8 strings
         self.raw = requestCore  # UTF8 string
 
-    def __string__(self):
-        return(("Request made by %s. -- " % user["login"]) +
-               "BackendName: " + self.backend + " / " +
-               "ArgsLst: " + string(self.argsList) + " / " +
-               "OptionList: " + string(self.optionsList) + " / " +
+    def __str__(self):
+        return(("User: %s: / " % self.user["login"]) +
+               "BackendName: %s / " % self.backend +
+               "ArgsLst: %s / " % str(self.argsList) +
+               "OptionList: %s." % str(self.optionsList) +
                "\n")
 

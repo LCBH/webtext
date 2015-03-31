@@ -33,6 +33,7 @@ import logging
 import handleSMS
 import database
 import send
+from backends.main import Backend
 
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -54,27 +55,37 @@ user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
 def callHandle(content,number):
     return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
 
+logging.info("\n" + "=" * 40 + "  TESTING the whole system on serveral requests  " + 40 * "=")
+# This is important to check the parsing of plain text requests, shortcuts handling etc.
+# TODO: check the output of those commands
+callHandle("Coucou", user1['number'])
+callHandle("trafic", user1['number'])
+callHandle("cine louxor", user2['number'])
+callHandle("meteo 75020", user1['number'])
+# callHandle("retour", user1['number'])
+# callHandle("wiki github", user1['number'])
+# callHandle("velo marx dormoy", user1['number'])
+# callHandle("cine birdman 75000", user2['number'])    
+
+logging.info("\n\nn" + "=" * 40 + "  TESTING database/  " + 40 * "=")
+import database.test
+
+logging.info("\n\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
+# We iterate over all existing backeds and check if backendName matches
+for backend in Backend:
+    logging.info("\n." + "-" * 5 + (" testing backend '%s' " % backend.name) + "-" * 5)
+    notBroken = backend.test(user1)
+    if notBroken:
+        logging.info("Backend passes all tests.")
+    else:
+        logging.info("="*5 + "> BROKEN BACKEND <" +"="*5 + "\n")
+
+
+
+# ------OLD STUFF--------
 # Testing max length for SMS (disabled)
 #598 -> OK
 # 640: le découpage fait par FREE - to test
 MESS = "a" * 599 + "b"
 # send.sendText(MESS, user1, {}, is_testing = False)
 #a = 1 + {} + "" + []
-
-callHandle("meteo 75018", user1['number'])
-exit()
-
-logging.debug("\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
-callHandle("Coucou", user1['number'])
-callHandle("wiki github", user1['number'])
-callHandle("trafic", user1['number'])
-callHandle("cine birdman 75000", user2['number'])
-callHandle("cine louxor", user2['number'])
-callHandle("velo marx dormoy", user1['number'])
-callHandle("meteo 75020", user1['number'])
-callHandle("retour", user1['number'])
-
-logging.info("\n" + "=" * 40 + "  TESTING database/  " + 40 * "=")
-import database.test
-
-# TODO: focus on testing all backends

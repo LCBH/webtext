@@ -26,12 +26,19 @@
 
 """ Generic classes and methods for backends. """
 
-import logging
+import os
+from os.path import expanduser
 
 from request import *
 
-# -- Setup Logging --
-# logging = logging.getLogger(__name__)
+# -- Static data (install). --
+REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
+# -- User Data --
+# if os.path.isfile(PROJECT_DIR+'config_backends.py'):
+execfile(expanduser(PROJECT_DIR+'config_backends.py'))
+user1 = [ u for u in CONF['users'] if u['login'] == 'luccaH'][0]
+user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
 
 class IterRegistry(type):
     def __iter__(cls):
@@ -59,10 +66,18 @@ class Backend(object):
     # Each sub-backend should implement its own 'answer' method
     def answer(self, request, config):
         """ Parse a request (instance of class Request) and produce the 
-        expected answer. """
+        expected answer (in Unicode). """
         raise NotImplementedError
 
     # Each sub-backend should implement its own 'help' method
     def help(self):
-        """ Returns a help message explaining how to use this backend. """
+        """ Returns a help message explaining how to use this backend 
+        (in Unicode). """
+        raise NotImplementedError
+
+    # Each sub-backend should implement its own 'test' method
+    def test(self,user):
+        """ Test the backend by inputting different requests and check
+        the produced answer. Log everything and returns a boolean denoting
+        whether the backend is broken or not (False when broken)."""
         raise NotImplementedError
