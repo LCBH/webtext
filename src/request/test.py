@@ -45,6 +45,7 @@ execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 logging.basicConfig(stream = sys.stdout,
 # If you want to only display errors and warnings;
 #                   level=logging.WARNING,
+#                    level=logging.DEBUG,
                     level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
                     datefmt='%H:%M:%S')
@@ -55,30 +56,45 @@ user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
 def callHandle(content,number):
     return(handleSMS.main(is_testing=True,is_local=True, content=content, number=number))
 
-logging.info("\n" + "=" * 40 + "  TESTING the whole system on serveral requests  " + 40 * "=")
-# This is important to check the parsing of plain text requests, shortcuts handling etc.
-# TODO: check the output of those commands
-callHandle("Coucou", user1['number'])
-callHandle("trafic", user1['number'])
-callHandle("cine louxor", user2['number'])
-callHandle("meteo 75020", user1['number'])
-# callHandle("retour", user1['number'])
-# callHandle("wiki github", user1['number'])
-# callHandle("velo marx dormoy", user1['number'])
-# callHandle("cine birdman 75000", user2['number'])    
 
-logging.info("\n\nn" + "=" * 40 + "  TESTING database/  " + 40 * "=")
-import database.test
+testSystem = True
+testDatabase = True
+testBackend = True
 
-logging.info("\n\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
-# We iterate over all existing backeds and check if backendName matches
-for backend in Backend:
-    logging.info("\n." + "-" * 5 + (" testing backend '%s' " % backend.name) + "-" * 5)
-    notBroken = backend.test(user1)
-    if notBroken:
-        logging.info("Backend passes all tests.")
-    else:
-        logging.info("="*5 + "> BROKEN BACKEND <" +"="*5 + "\n")
+if len(sys.argv) > 1:
+    if sys.argv[1] == "backend":
+        testSystem = False
+        testDatabase = False
+
+if testSystem:
+    logging.info("\n" + "=" * 40 + "  TESTING the whole system on serveral requests  " + 40 * "=")
+    # This is important to check the parsing of plain text requests, shortcuts handling etc.
+    # TODO: check the output of those commands
+    callHandle("Coucou", user1['number'])
+    callHandle("trafic", user1['number'])
+    callHandle("cine louxor", user2['number'])
+    callHandle("meteo 75020", user1['number'])
+    # callHandle("retour", user1['number'])
+    # callHandle("wiki github", user1['number'])
+    # callHandle("velo marx dormoy", user1['number'])
+    # callHandle("cine birdman 75000", user2['number'])        
+
+if testDatabase:    
+    logging.info("\n\nn" + "=" * 40 + "  TESTING database/  " + 40 * "=")
+    import database.test
+
+if testBackend:
+    logging.info("\n\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
+    logging.info("There are %d backends." % sum(1 for _ in Backend))
+
+    # We iterate over all existing backeds and check if backendName matches
+    for backend in Backend:
+        logging.info("\n." + "-" * 5 + (" testing backend '%s' " % backend.name) + "-" * 5)
+        notBroken = backend.test(user1)
+        if notBroken:
+            logging.info("Backend passes all tests.")
+        else:
+            logging.info("="*5 + "> BROKEN BACKEND <" +"="*5 + "\n")
 
 
 

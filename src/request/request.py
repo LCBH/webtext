@@ -39,6 +39,5 @@ class Request:
         return(("User: %s: / " % self.user["login"]) +
                "BackendName: %s / " % self.backend +
                "ArgsLst: %s / " % str(self.argsList) +
-               "OptionList: %s." % str(self.optionsList) +
-               "\n")
+               "OptionList: %s." % str(self.optionsList))
 

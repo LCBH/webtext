@@ -62,3 +62,8 @@ HELPMESS = (
 # 611 the the greatest nb. of car. that a multiple SMS can contain
 MAX_CH = 611
 adminEmail = "lucca.hirschi@gmail.com"
+MESS_BUG = ("Désolé, nous avons rencontré une erreur. Il nous serait très "
+            "utile de nous prévenir de ce bug (il suffit d'envoyer un mail à '%s'"
+            "contenant votre numéro, la requête que vous avez faite et l'heure "
+            "et la date à laquelle vous avez reçu ce message)." % adminEmail)
+

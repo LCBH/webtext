@@ -32,7 +32,7 @@ from static import *
 logging = logging.getLogger(__name__)
 
 class BackendTrafic(Backend):
-    backendName = FORECASTS # defined in static.py
+    backendName = TRAFIC # defined in static.py
     
     def answer(self, request, config):
         # parse:
@@ -45,6 +45,6 @@ class BackendTrafic(Backend):
         return("OK")
     
     
-    def test(self):
+    def test(self, user):
         return False
     

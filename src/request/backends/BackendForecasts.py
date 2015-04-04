@@ -80,7 +80,7 @@ class BackendForecasts(Backend):
     def help(self):
         return(
             "Il suffit de donner une code postal (français) en argument. "
-            "Par exemple: 'meteo 75020' ou 'meteo 84000'. "
+            "Par exemple: 'meteo; 75020' ou 'meteo; 84000'. "
             "Vous recevrez alors les prévisions pour les prochains jours par texto. "
             "Si tout ne tient pas en un texto, n'oubliez pas qu'il suffit d'envoyer "
             " 'plus' ou 'tout' pour le reste de la réponse."
