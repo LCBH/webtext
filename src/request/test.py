@@ -30,6 +30,8 @@ import os
 import sys
 from os.path import expanduser
 import logging
+import pprint
+
 import handleSMS
 import database
 import send
@@ -45,10 +47,12 @@ execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 logging.basicConfig(stream = sys.stdout,
 # If you want to only display errors and warnings;
 #                   level=logging.WARNING,
-#                    level=logging.DEBUG,
-                    level=logging.INFO,
+                    level=logging.DEBUG,
+#                    level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
                     datefmt='%H:%M:%S')
+
+pp = pprint.PrettyPrinter(indent=4)
 
 user1 = [ u for u in CONF['users'] if u['login'] == 'luccaH'][0]
 user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
@@ -89,6 +93,7 @@ if testDatabase:
     import database.test
 
 if testBackend:
+    resultsTests = {}
     logging.info("\n\n" + "=" * 40 + "  TESTING backends  " + 40 * "=")
     logging.info("There are %d backends." % sum(1 for _ in Backend))
 
@@ -98,9 +103,11 @@ if testBackend:
         notBroken = backend.test(user1)
         if notBroken:
             logging.info("Backend passes all tests.")
+            resultsTests[backend.name] = True
         else:
             logging.info("="*5 + "> BROKEN BACKEND <" +"="*5 + "\n")
-
+            resultsTests[str(backend.name)] = False
+    pp.pprint(resultsTests)
 
 
 # ------OLD STUFF--------
