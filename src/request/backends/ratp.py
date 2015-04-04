@@ -47,7 +47,7 @@ PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
 # -- User Data --
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 pathData = expanduser(PROJECT_DIR+'data/backends/RATP/static/ratp_arret_graphique_01.csv')
-navitiaKey = CONF['config_backends']['ratp']['navitiaKey']
+navitiaKey = CONF['config_backends']['navitia']['API_key']
 prefixQuery ="http://api.navitia.io/v1/journeys"
 
 def coords(row):
