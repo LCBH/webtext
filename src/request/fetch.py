@@ -113,51 +113,6 @@ def velibParisS(options, where, config_backends):
               " Voici ces infos:\n" + output_trunc)
     return(answer)
 
-def trafic_ratp(options, metro=True, rer=True):
-    """Fetch trafic information of RATP network (for metro or/and RER) using API made by
-    Paul Grimaud."""
-    API_url = "http://api-ratp.pierre-grimaud.fr/"
-    API_trafic = API_url + "data/trafic/"
-    K_trafic = "trafic"
-    K_pertu_metro = "perburbations"
-    K_pertu_rer = "perburbations"
-    answ = u"J'ai compris que tu voulais connaitre l'état du trafic RATP. "
-    if rer:
-        url = API_trafic + "rer"
-        try:
-            resp = urllib2.urlopen(url)
-        except IOError as e:
-            logging.error("trafic_ratp > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
-            return(MESS_BUG)
-        data = json.load(resp)
-        if data[K_trafic] == "normal":
-            answ += u"[RER] Aucune perturbation.\n"
-        else:
-            answ += u"[RER] Perturbations: "
-            for ligne,status in data[K_pertu_rer].iteritems():
-                if ligne == "":
-                    answ = (u"Le bulletin contient une remarque générale. Voici une résumé: "
-                            + status[0:80] + u"[...]")
-                else:
-                    answ += u"{" + ligne + u"}" + u": " + status
-        answ += u"\n"
-    if metro:
-        url = API_trafic + "metro"
-        try:
-            resp = urllib2.urlopen(url)
-        except IOError as e:
-            logging.error("trafic_ratp > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
-            return(MESS_BUG)
-        data = json.load(resp)
-        if data[K_trafic] == "normal":
-            answ += u"[METRO] Aucune perturbation.\n"
-        else:
-            answ += u"[METRO] Perturbations: "
-            for ligne,status in data[K_pertu_metro].iteritems():
-                answ += u"{" + ligne + u"}" + u": " + status
-        answ += u"\n"
-    return(answ)
-
 def showtimes_zip(movie, zipcode):
     logging.info("Starting allocine (zip)")
     bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/backends/allocine_showtimes_zip.php "
