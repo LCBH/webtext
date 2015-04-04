@@ -39,7 +39,6 @@ import logging
 from os.path import expanduser
 import datetime
 import json
-import wikipedia
 
 import backends.jcdecaux
 from backends import *
@@ -47,35 +46,7 @@ from backends import *
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
-MESS_BUG = ("Désolé, nous avons rencontré une erreur. Il nous serait très "
-            "utile de nous prévenir de ce bug (il suffit d'envoyer un mail "
-            "contenant votre numéro, la requête que vous avez faite et l'heure "
-            "et la date à laquelle vous avez reçu ce message).")
 
-
-def wikiSummary(options, query,language="fr"):
-    """Fetch the summary of Wikipadia's articles. """
-    # language: "en" pour l'anglais et "fr" pour le français
-    wikipedia.set_lang(language)
-    nb_results = 3
-    try:
-        results = wikipedia.search(query, results=3)
-    except IOError as e:
-        logging.error("wikiSummary > wikipedia.search | I/O error({0}): {1}".format(e.errno, e.strerror))
-        return(MESS_BUG)
-    answ = u"[WIKIPEDIA] "
-    if len(results) == 0:
-        answ += u"Aucun article ne correspond à votre requête. Essayez avec une requête plus petite."
-        return(answ)
-    if len(results) > 1:
-        answ += (u"Plusieurs articles répondent à votre requête. J'ai choisi le premier. Voici la liste: "
-                 + str(results) + u"\n")
-    title = results[0]
-    logging.info(title)
-    summary = wikipedia.summary(title)
-    logging.info(summary)
-    answ += (u"Voici le résumé: " + summary)
-    return(answ[0:800]) # TODO: better handling of very long mess
 
 def bankInfo(options, details=False):
     """ Fetch the amounts of bank accounts."""

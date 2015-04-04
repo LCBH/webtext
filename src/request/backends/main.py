@@ -45,6 +45,8 @@ logging = logging.getLogger(__name__)
 bForecasts = BackendForecasts()
 bBank = BackendBank()
 bJcdecaux = BackendJcdecaux()
+bTrafic = BackendTrafic()
+bWiki = BackendWiki()
 
 # print(bForecasts.answer(None, None))
 # for b in Backend:
