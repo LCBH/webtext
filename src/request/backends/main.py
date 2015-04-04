@@ -36,18 +36,16 @@ from BackendBank import BackendBank
 from BackendJcdecaux import BackendJcdecaux
 from BackendTrafic import BackendTrafic
 from BackendWiki import BackendWiki
-# from cine import BackendCine  OUPS
+from BackendMovie import BackendMovie
+#from BackendRatp import BackendRatp
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
-# DOC and EXAMPLES
 bForecasts = BackendForecasts()
 bBank = BackendBank()
 bJcdecaux = BackendJcdecaux()
 bTrafic = BackendTrafic()
 bWiki = BackendWiki()
-
-# print(bForecasts.answer(None, None))
-# for b in Backend:
-#     print(b)
+bMovie = BackendMovie()
+# bRatp = BackendRatp (currently broken)
