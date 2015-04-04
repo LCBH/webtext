@@ -77,3 +77,6 @@ class BackendBank(Backend):
         else:
             logging.info("I cannot answer because I am executed on the request server but the data needed are private.")
             return None
+
+    def test(self, user):
+        return False

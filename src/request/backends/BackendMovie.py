@@ -41,5 +41,5 @@ class BackendMovie(Backend):
         return("OK")
 
 
-    def test(self):
+    def test(self, user):
         return False
