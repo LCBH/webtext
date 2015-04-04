@@ -26,6 +26,8 @@
 
 """ Static data. """
 
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+
 ########### REQUESTS ############
 # Navigation
 NEXT="plus"                     # command for one more store message
@@ -47,15 +49,18 @@ TRAFIC="trafic"
 HELP = "aide"
 # Help messages
 HELPMESS = (
-    "Voici comment écrire vos requêtes:"
-    "'" + BIKES + " [lieux]' pour les velibs autour de [lieux]; "
-    "'" + TRAFIC + " pour récup. les perturbations RATP; "
-    "'" + WIKI + " [requete] pour la page wikipedia contenant'requete', renvoie un résumé (argument optio. pour la langue:fr ou en); "
-    "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
-    "'" + MOVIES + " [nom] ; [code postal]' pour les séances de ciné des films "
-    "contenant [nom] dans [code postal]; "
-    "'" + BANK + " pour le montant de mes comptes. "
-    " Pour l'aide complète d'un type de requête, envoyer 'aide [requete]'"
+    "Voici comment écrire vos requêtes: 'nomService; argument1; argument2; ...' où nomService est "
+    "le nom d'un des services existant (velo, trafic, ratp, cine, meteo, wiki), et argument1, argument2, etc. sont "
+    "les arguments de votre requête. "
+    "Pour connare tous les détails d'un service, envoyer 'aide; nomService'. "
+    "Voici maintenant quelques exemples de requêtes: "
+    "'" + BIKES + "; [lieux]', "      # pour les velibs autour de [lieux]; "
+    "'" + TRAFIC + ", "               # pour récup. les perturbations RATP; "
+    "'" + WIKI + "; [recherche]', "   # pour la page wikipedia contenant'requete', renvoie un résumé (argument optio. pour la langue:fr ou en); "
+    "'" + FORECASTS + "; [code postal]', " # pour la météo dans [code postal]; "
+    "'" + MOVIES + " [nom] ; [code postal]'." # pour les séances de ciné des films "
+                                               # "contenant [nom] dans [code postal]; "
+#    "'" + BANK + " pour le montant de mes comptes. "
     )
 
 ############## OTHER STUFF ##############

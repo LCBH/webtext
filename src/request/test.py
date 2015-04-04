@@ -65,13 +65,16 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "backend":
         testSystem = False
         testDatabase = False
+    if sys.argv[1] == "system":
+        testBackend = False
+        testDatabase = False
 
 if testSystem:
     logging.info("\n" + "=" * 40 + "  TESTING the whole system on serveral requests  " + 40 * "=")
     # This is important to check the parsing of plain text requests, shortcuts handling etc.
     # TODO: check the output of those commands
     callHandle("Coucou", user1['number'])
-    callHandle("aide; velo", user1['number'])
+    callHandle("aide; ratp", user1['number'])
     callHandle("aide; wiki", user1['number'])
     callHandle("trafic", user1['number'])
     callHandle("cine louxor", user2['number'])
