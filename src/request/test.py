@@ -71,6 +71,8 @@ if testSystem:
     # This is important to check the parsing of plain text requests, shortcuts handling etc.
     # TODO: check the output of those commands
     callHandle("Coucou", user1['number'])
+    callHandle("aide; velo", user1['number'])
+    callHandle("aide; wiki", user1['number'])
     callHandle("trafic", user1['number'])
     callHandle("cine louxor", user2['number'])
     callHandle("meteo 75020", user1['number'])
