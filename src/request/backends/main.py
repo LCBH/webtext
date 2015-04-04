@@ -31,11 +31,11 @@ import logging
 from static import *
 
 from mainClass import *
-from forecasts import BackendForecasts
-from bank import BackendBank
-from jcdecaux import BackendJcdecaux
-from trafic import BackendTrafic
-from wiki import BackendWiki
+from BackendForecasts import BackendForecasts
+from BackendBank import BackendBank
+from BackendJcdecaux import BackendJcdecaux
+from BackendTrafic import BackendTrafic
+from BackendWiki import BackendWiki
 # from cine import BackendCine  OUPS
 
 # -- Setup Logging --

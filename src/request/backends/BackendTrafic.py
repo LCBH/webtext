@@ -32,19 +32,19 @@ from static import *
 logging = logging.getLogger(__name__)
 
 class BackendTrafic(Backend):
-    backendName = TRAFIC # defined in static.py
-
+    backendName = FORECASTS # defined in static.py
+    
     def answer(self, request, config):
         # parse:
-            # is_metro = ("metro" in request.argsListStrip)
-            # is_rer = ("rer" in request.argsListStrip)
-            # if len(request.argsList) == 0:
-            #     is_metro = True
-            #     is_rer = True
-            # return(fetch.trafic_ratp(optionsDict, metro=is_metro, rer=is_rer))
-
+        is_metro = ("metro" in request.argsListStrip)
+        is_rer = ("rer" in request.argsListStrip)
+        if len(request.argsList) == 0:
+            is_metro = True
+            is_rer = True
+            return(fetch.trafic_ratp(optionsDict, metro=is_metro, rer=is_rer))
         return("OK")
-
-
+    
+    
     def test(self):
         return False
+    
