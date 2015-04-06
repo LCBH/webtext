@@ -40,14 +40,14 @@ import pprint
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
-
+navitiaKey= '8f27fa71-4470-435e-b207-1cf5dd1aed85'
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
 # -- User Data --
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 pathData = expanduser(PROJECT_DIR+'data/backends/RATP/static/ratp_arret_graphique_01.csv')
-navitiaKey = CONF['config_backends']['navitia']['API_key']
+#navitiaKey = CONF['config_backends']['navitia']['API_key']
 prefixQuery ="http://api.navitia.io/v1/journeys"
 
 def coords(row):
@@ -66,6 +66,9 @@ def findCoordsStation(name):
                 if -1 != row[3].strip().lower().find(name.strip().lower()):
                     matched.append(row)
                     break
+        else:
+            print "Did not find any."
+            return []
         if len(matched) > 1:
             for row in matched:
                 if (row[-1] in ["metro", "rer"]):
@@ -73,9 +76,15 @@ def findCoordsStation(name):
         return(coords(matched[0]))
         
 #TODO: ajouter la possibilité de tester en local (sans internet) avec un json en dump file
-def makeRequest(fromCoords, toCoords, departure=None, arrival=None, isTesting=False):
+def makeRequest(fromCoords, toCoords, departure=None, arrival=None, isTesting=None):
     """ Given departure and arrival GPS coordinates, and at most one datetime among (departure, arrival),
     returns the best journey satisfying all constraints (if no datetetime is given, we look for the first one)."""
+    if isTesting != None:
+        f = open(isTesting, "r")
+        raw = f.read()
+        data = json.dump(raw, encoding='utf-8')
+        # data = json.load(raw, encoding='utf-8')
+        return data
     if departure:
         dateR = departure.strftime("%y%m%dT%H%M")
         dateRepresents = "departure"
@@ -119,33 +128,81 @@ def makeRequest(fromCoords, toCoords, departure=None, arrival=None, isTesting=Fa
     return(data)
 
       
-def journey(fromName, toName, departure=None, arrival=None):
+def journey(fromName, toName, departure=None, arrival=None, isTesting=None):
     """ Todo."""
     logging.info("Starting ratp")
-    # Todo
+    fromCoords = findCoordsStation(fromName)
+    toCoords = findCoordsStation(toName)
+    if toCoords == []:
+        return "Nous n'avons pas trouvé d'arrêt correspondat à "+toCoords
+    if fromCoords == []:
+        return "Nous n'avons pas trouvé d'arrêt correspondat à "+fromCoords
+    data = makeRequest(fromCoords, toCoords, departure, arrival, isTesting=isTesting)
+    arrivalTime = decode_time(data["journeys"][0]["arrival_date_time"].encode("utf8"))
+    for edge in data["journeys"][0]["sections"]:
+        if edge["type"] == "public_transport":
+            break
+    departureTime = decode_time(edge['departure_date_time'].encode("utf8"))
+    firstStop = edge["from"]["name"].encode("utf8")
+    network = "RER"
+    if edge["display_informations"]["network"] == "RATP":
+        network = "métro"
+
+    line = network + " "+edge["display_informations"]["code"].encode("utf8")
+
+
+    
+    ret = "J'ai compris que tu souhaitais un itinéraire de %s à %s\nIl faut prendre la ligne %s à %s à %s. Arrivée prévu à %s." %(fromName,
+                                                                                                                                   toName,
+                                                                                                                                   line,
+                                                                                                                                   firstStop,
+                                                                                                                                   departureTime,
+                                                                                                                                   arrivalTime)
+    return ret
+
+def decode_time(time):
+    yearmonthday = time.split("T")[0]
+    hoursminsec  = time.split("T")[1]
+    year = yearmonthday[0:4]
+    month = yearmonthday[4:6]
+    day = yearmonthday[6:8]
+    hours = hoursminsec[0:2]
+    minutes = hoursminsec[2:4]
+    secs  = hoursminsec[4:6]
+    return (":".join([hours, minutes, secs]))+ " le " + ("/".join([day, month, year]))
 
 # for debugging Only
-pp = pprint.PrettyPrinter(indent=4)
-coords1 = findCoordsStation("Chapelle")
-coords2 = findCoordsStation("bagneux")
-print(";".join(coords1))
-print(coords2)
-pp.pprint(makeRequest(coords1, coords2, departure = datetime.datetime.now()))
+# pp = pprint.PrettyPrinter(indent=4)
+# coords1 = findCoordsStation(fromName)
+# coords2 = findCoordsStation(toName)
+# print(";".join(coords1))
+# print(coords2)
+# data = makeRequest(coords1, coords2, departure = datetime.datetime.now(), arrival=None, isTesting = None)
+# pp.pprint(data.keys())
+# print "-----------------------------------------------"
+# # pp.pprint(data["journeys"][0])
+# # pp.pprint(len(data["journeys"]))
+# arrivalTime = decode_time(data["journeys"][0]["arrival_date_time"].encode("utf8"))
+# print "-----------------------------------------------"
+# for edge in data["journeys"][0]["sections"]:
+#     if edge["type"] == "public_transport":
+#         pp.pprint(edge)
+#         break
+# departureTime = decode_time(edge['departure_date_time'].encode("utf8"))
+# firstStop = edge["from"]["name"].encode("utf8")
+# network = "RER"
+# if edge["display_informations"]["network"] == "RATP":
+#     network = "métro"
 
-# Uncomment and fill in to add the backend:
-# def likelyCorrect(answer):
-#     return("Vent" in answer)
+# line = network + " "+edge["display_informations"]["code"].encode("utf8")
 
-# class BackendForecasts(Backend):
-#     backendName = FORECASTS # defined in static.py
 
-#     def answer(self, request, config):
-#         where = request.argsList[0]
-#         return(forecasts(where, config))
+# #departureTime.encode('utf-8') 
+# #firstStop.encode('utf-8')
+# # line.encode('utf-8')
 
-#     def test(self, user):
-#         return("TODO")
 
-#     def help(self):
-#         return("TODO")
-  
+fromName = "Porte d'orléans"
+toName = "nation"
+
+print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
