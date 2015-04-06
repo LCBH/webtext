@@ -25,7 +25,7 @@
 ###########################################################################
 
 import logging
-from backendClass import *
+from mainClass import *
 from static import *
 
 # -- Setup Logging --
