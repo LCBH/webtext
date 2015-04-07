@@ -29,6 +29,7 @@ from __future__ import unicode_literals # implicitly declaring all strings as un
 import logging
 import urllib2                  # used to transform text into url
 import json
+import unicodedata
 
 from mainClass import *
 from static import *
@@ -41,7 +42,10 @@ API_trafic = API_url + "data/trafic/"
 K_trafic = "trafic"
 K_pertu_metro = "perburbations"
 K_pertu_rer = "perburbations"
-    
+
+METRO = "metro"
+RER = "rer"
+
 def trafic_ratp(metro=True, rer=True):
     """Fetch trafic information of RATP network (for metro or/and RER) using API made by
     Paul Grimaud."""
@@ -55,13 +59,16 @@ def trafic_ratp(metro=True, rer=True):
             return(MESS_BUG)
         data = json.load(resp)
         if data[K_trafic] == "normal":
-            answ += u"[RER] Aucune perturbation.\n"
+            answ += u"[RER] Aucune perturbation."
         else:
             answ += u"[RER] Perturbations: "
             for ligne,status in data[K_pertu_rer].iteritems():
                 if ligne == "":
-                    answ = (u"Le bulletin contient une remarque générale. Voici une résumé: "
-                            + status[0:80] + u"[...]")
+                        answ = (u"Le bulletin contient une remarque générale. Voici une résumé: ")
+                        if len(stats) > 80:
+                            answ +=  status[0:80] + u"[...]"
+                        else:
+                            answ += status
                 else:
                     answ += u"{" + ligne + u"}" + u": " + status
         answ += u"\n"
@@ -74,28 +81,48 @@ def trafic_ratp(metro=True, rer=True):
             return(MESS_BUG)
         data = json.load(resp)
         if data[K_trafic] == "normal":
-            answ += u"[METRO] Aucune perturbation.\n"
+            answ += u"[METRO] Aucune perturbation."
         else:
             answ += u"[METRO] Perturbations: "
             for ligne,status in data[K_pertu_metro].iteritems():
                 answ += u"{" + ligne + u"}" + u": " + status
-        answ += u"\n"
     return(answ)
+
+def simplifyText(s):
+    """Remove extra blanks, replace uppercase letters by lowercase letters and remove all accents from 's'."""
+    s1 = unicode(str(s.strip().lower()), 'utf-8')
+    s2 = unicodedata.normalize('NFD', s1).encode('ascii', 'ignore')     
+    return(s2)
+
+def likelyCorrect(a):
+    return("Perturbations" in a or "Aucune" in a)
 
 class BackendTrafic(Backend):
     backendName = TRAFIC # defined in static.py
     
     def answer(self, request, config):
-        # parse:
-        is_metro = ("metro" in request.argsListStrip)
-        is_rer = ("rer" in request.argsListStrip)
-        if len(request.argsList) == 0:
+        argsListFormat = map(lambda s: simplifyText(s), request.argsList)
+        is_metro = ("metro" in argsListFormat)
+        is_rer = ("rer" in  argsListFormat)
+        if len(argsListFormat) == 0:
             is_metro = True
             is_rer = True
-            return(trafic_ratp(metro=is_metro, rer=is_rer))
-        return("OK")
-    
+        return(trafic_ratp(metro=is_metro, rer=is_rer))
     
     def test(self, user):
-        return False
+        r1 = Request(user, "trafic", [], [], "")
+        r2 = Request(user, "trafic", ["rer"], [], "")
+        r3 = Request(user, "trafic", ["metro"], [], "")
+        r4 = Request(user, "trafic", ["metro", "rer"], [], "")
+        for r in [r1,r2,r3,r4]:
+            logging.info("Checking a request [%s]" % r)
+            a = self.answer(r, {})
+            logging.info(a + "\n")
+            if not(likelyCorrect(a)):
+                return False
+        return True
+
+    def help(self):
+        return("Tapez 'trafic' pour recevoir l'état du trafic RATP (métro et RER)."
+               "Vous pouvez limiter la réponse au RER: 'trafic; rer' ou au metro: 'trafic; metro'.")
     
