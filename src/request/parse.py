@@ -30,6 +30,7 @@ We thus define here the conventions of requests."""
 from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 import logging
+import unicodedata
 
 import fetch
 import database.db
@@ -63,6 +64,12 @@ logging = logging.getLogger(__name__)
 # Global dictionnary containing options (if there is more than 1 request, options of later requests override previous ones)
 optionsDict = {}
 
+def simplifyText(s):
+    """Remove extra blanks, replace uppercase letters by lowercase letters and remove all accents from 's'."""
+    s1 = unicode(s.strip().lower(), 'utf-8')
+    s2 = unicodedata.normalize('NFD', s1).encode('ascii', 'ignore')     
+    return(s2)
+
 def parseRequest(request, user, is_local, is_testing, config_backends):
     """ Parse a request (i.e., instance of class Request) and returns the expected answer. """
     request.argsListStrip = map(lambda s : s.strip(), request.argsList)
@@ -85,7 +92,7 @@ def parseRequest(request, user, is_local, is_testing, config_backends):
     # If no backend handled the request and we are not in local, maybe we should print some help message
     if not(is_local) or is_testing:
         print(request.backend)
-        if request.backend.strip().lower() == HELP and len(request.argsList) > 0:
+        if request.backend == HELP and len(request.argsList) > 0:
             for backend in Backend:
                 if backend.backendName == request.argsList[0].lower().strip():
                     logging.info("Help message of Backend '%s' is requested." % backend.name)
@@ -142,16 +149,17 @@ def parseContent(SMScontent, user, config_backends, is_local, is_testing):
         # list of arguments
         argumentsList = requestCore.split(";")
         if len(argumentsList[0].split()) > 0:  # Ex. cine mommy; 75020
-            # backendName
-            backendName = argumentsList[0].split()[0].lower().strip()
+            # backendNameRaw
+            backendNameRaw = argumentsList[0].split()[0].lower().strip()
             # list of arguments
             argumentsList = ([(" ".join(argumentsList[0].split()[1:]))] +
                              argumentsList[1:]) # X[1:] empty if X contains 1 el.
         else:                                  # Ex. cine; mommy; 75020
-            # backendName
-            backendName = argumentsList[0].lower().strip()
+            # backendNameRaw
+            backendNameRaw = argumentsList[0].lower().strip()
             # list of arguments
             argumentsList = argumentsList[1:]    # X[1:] empty if X contains 1 el.
+        backendName = simplifyText(str(backendNameRaw))
         argumentsList = [el.strip() for el in argumentsList if el.strip() != ""] 
         # Parsing of options (need to change global values of optionsDict)
         optionsDict['all'] = (ALL in optionsList)
