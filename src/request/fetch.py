@@ -74,45 +74,6 @@ def bankInfo(options, details=False):
               str(output))
     return(answer)
 
-def velibParis(options, where, config_backends):
-    """ Fetch available stations and bikes around a given location."""
-    logging.info("Starting velibParis")
-    # for now, we delegate the job to the dedicated backend.
-    # -> todo: better architecure
-    return(backends.jcdecaux.searchVelib(where))
-
-def velibParisS(options, where, config_backends):
-    """ Fetch available stations and bikes around a given location."""
-    logging.info("Starting velibParis")
-    bashPrefix = "boobsize search "
-    # bashPrefix2 = "boobsize last_sensor_measure "
-    # prefixBikes = "available_bikes"
-    # prefixFree = "available_bike_stands"
-    # stationChap = ".18040.Paris.jcvelaux"
-    # stationDep = "18110.Paris.jcvelaux"
-    # stationRiqet = ".18010.Paris.jcvelaux"
-    # stationRiquetP = ".18109.Paris.jcvelaux"
-    bashC = bashPrefix + where
-    logging.info("Before subprocess: %s." % bashC)
-    try:
-        process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE)
-    except OSError as e:
-        logging.error("velibParis > Popen | Execution failed:" + str(e))
-        return(MESS_BUG)
-    output = process.communicate()[0]
-    # PB: only table formatter shows all required info but not adapted for SMS
-    # SOL: truncatated 47 first caracters of all lines
-    TRUNC = 51
-    output_trunc = ""
-    listLines = output.splitlines()[2:] # drop the menu
-    for line in listLines:
-        if len(line) > 1:
-            line = line[TRUNC:]
-            output_trunc += line + "\n"
-    answer = ("J'ai compris que tu voulais avoir les dispos des vélos à "+where+"."
-              " Voici ces infos:\n" + output_trunc)
-    return(answer)
-
 def showtimes_zip(movie, zipcode):
     logging.info("Starting allocine (zip)")
     bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/backends/allocine_showtimes_zip.php "
