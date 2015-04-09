@@ -50,9 +50,9 @@ HELP = "aide"
 # Help messages
 HELPMESS = (
     "Voici comment écrire vos requêtes: 'nomService; argument1; argument2; ...' où nomService est "
-    "le nom d'un des services existant (velo, trafic, ratp, cine, meteo, wiki), et argument1, argument2, etc. sont "
+    "le nom d'un des services existant (velo, yelp, trafic, ratp, cine, meteo, wiki), et argument1, argument2, etc. sont "
     "les arguments de votre requête. "
-    "Pour connare tous les détails d'un service, envoyer 'aide; nomService'. "
+    "Pour connaître tous les détails d'un service, envoyer 'aide; nomService'. "
     "Voici maintenant quelques exemples de requêtes: "
     "'" + BIKES + "; [lieux]', "      # pour les velibs autour de [lieux]; "
     "'" + TRAFIC + ", "               # pour récup. les perturbations RATP; "

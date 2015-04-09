@@ -31,6 +31,7 @@ import sys
 from os.path import expanduser
 import logging
 import pprint
+from sys import stdin
 
 import handleSMS
 import database
@@ -64,6 +65,7 @@ def callHandle(content,number):
 testSystem = True
 testDatabase = True
 testBackend = True
+testInteractive = False
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "backend":
@@ -72,6 +74,17 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "system":
         testBackend = False
         testDatabase = False
+    if sys.argv[1] == "i":
+        testInteractive = True
+
+if testInteractive:
+    userinput = None
+    while (userinput != "q"):
+        print("Type a request...\n")
+        userinput = stdin.readline()
+        print("We are going to process the following request: %s." % userinput)
+        callHandle(str(userinput), user1['number'])
+        print("Done. (type 'q' to quit)")
 
 if testSystem:
     logging.info("\n" + "=" * 40 + "  TESTING the whole system on serveral requests  " + 40 * "=")
@@ -101,7 +114,8 @@ if testBackend:
     for backend in Backend:
         logging.info("\n." + "-" * 5 + (" testing backend '%s' " % backend.name) + "-" * 5)
         notBroken = backend.test(user1)
-        if notBroken:
+        notBrokenHelp = backend.help()
+        if notBroken and notBrokenHelp != None:
             logging.info("Backend passes all tests.")
             resultsTests[backend.name] = True
         else:
