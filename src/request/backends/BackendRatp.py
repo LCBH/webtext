@@ -40,14 +40,13 @@ import pprint
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
-navitiaKey= '8f27fa71-4470-435e-b207-1cf5dd1aed85'
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
 # -- User Data --
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 pathData = expanduser(PROJECT_DIR+'data/backends/RATP/static/ratp_arret_graphique_01.csv')
-#navitiaKey = CONF['config_backends']['navitia']['API_key']
+navitiaKey = CONF['config_backends']['navitia']['API_key']
 prefixQuery ="http://api.navitia.io/v1/journeys"
 
 def coords(row):
