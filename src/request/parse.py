@@ -92,11 +92,14 @@ def parseRequest(request, user, is_local, is_testing, config_backends):
     # If no backend handled the request and we are not in local, maybe we should print some help message
     if not(is_local) or is_testing:
         print(request.backend)
-        if request.backend == HELP and len(request.argsList) > 0:
-            for backend in Backend:
-                if backend.backendName == request.argsList[0].lower().strip():
-                    logging.info("Help message of Backend '%s' is requested." % backend.name)
-                    return(backend.help())
+        if request.backend == HELP:
+            if len(request.argsList) > 0:
+                for backend in Backend:
+                    if backend.backendName == request.argsList[0].lower().strip():
+                        logging.info("Help message of Backend '%s' is requested." % backend.name)
+                        return(backend.help())
+            else:
+                return(HELPMESS)
         # If the request if not of the form: "HELP; backend" then we can print some error message
         extract = ("L'utilisateur %s m'a envoyé le texte %s" % (user['name'], request.raw))
         answer = (extract + 
