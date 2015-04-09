@@ -64,7 +64,7 @@ def trafic_ratp(metro=True, rer=True):
             answ += u"[RER] Perturbations: "
             for ligne,status in data[K_pertu_rer].iteritems():
                 if ligne == "":
-                        answ = (u"Le bulletin contient une remarque générale. Voici une résumé: ")
+                        answ = (u"Le bulletin contient une remarque générale. Voici un résumé: ")
                         if len(status) > 80:
                             answ +=  status[0:80] + u"[...]"
                         else:
@@ -95,7 +95,7 @@ def simplifyText(s):
     return(s2)
 
 def likelyCorrect(a):
-    return("Perturbations" in a or "Aucune" in a)
+    return("Aucune" in a or "Voici un" in a or "{" in a)
 
 class BackendTrafic(Backend):
     backendName = TRAFIC # defined in static.py
