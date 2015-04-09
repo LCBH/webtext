@@ -28,7 +28,7 @@ from __future__ import unicode_literals # implicitly declaring all strings as un
 
 import logging
 import subprocess               # for launching bash programs
-
+import datetime
 
 from mainClass import *
 from static import *
@@ -105,6 +105,8 @@ def showtimes_theater(theater):
               "ce que j'ai trouvé:\n%s" % (str(theater), answer))
     return(answer)
 
+def likelyCorrect(a):
+    return("séance" in a.lower() or "séance" in a.lower()) # fix this
 
 class BackendMovie(Backend):
     backendName = MOVIES # defined in static.py
