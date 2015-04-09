@@ -24,7 +24,11 @@
 #                                                                         #
 ###########################################################################
 
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+
 import logging
+import subprocess               # for launching bash programs
+
 from mainClass import *
 from static import *
 
@@ -45,7 +49,7 @@ def bankInfo(details=False):
         logging.error("bankInfo > Popen | Execution failed:" + str(e))
         return(MESS_BUG)
     output = process.communicate()[0]
-    answer += str(output)
+    answer += output
     if details:
         logging.info("More details needed, before subprocess: %s" % bashCommandHistory)
         try:
@@ -54,9 +58,12 @@ def bankInfo(details=False):
             logging.error("bankInfo > Popen | Execution failed:" + str(e))
             return(MESS_BUG)
         outputHistory = process.communicate()[0]
-        answer += " | Les détails:\n" + str(outputHistory)
+        answer += " | Les détails:\n" + outputHistory
     return(answer)
     
+
+def likelyCorrect(a):
+    return("Livret" in a)
 
 class BackendBank(Backend):
     backendName = BANK # defined in static.py
@@ -66,11 +73,11 @@ class BackendBank(Backend):
         
     def answer(self, request, config):
         if config['is_local']:
-            if user['login'] == "luccaH":
-                if len(request.argsList) > 0 and request.argsList.lower() == "details":
-                    return(fetch.bankInfo(details=True))
+            if request.user['login'] == "luccaH":
+                if len(request.argsList) > 0 and request.argsList[0].lower().strip() == "details":
+                    return(bankInfo(details=True))
                 else:
-                    return(fetch.bankInfo())
+                    return(bankInfo())
             else:
                 return(("Pas de backend banque configuré pour l'utilisateur %s." % user['login'])
                        + " Si ça vous intéresse contacter l'administrateur %s pour lui demander de vous configurer un compte." % adminEmail)
@@ -79,4 +86,20 @@ class BackendBank(Backend):
             return None
 
     def test(self, user):
-        return False
+        config = {}
+        config['is_local'] = True
+        r1 = Request(user, "banque", [], [], "")
+        r2 = Request(user, "banque", ["details"], [], "")
+        for r in [r1,r2]:
+            logging.info("Checking a request [%s]" % r)
+            a = self.answer(r, config)
+            logging.info(a + "\n")
+            if not(likelyCorrect(a)):
+                return False
+        return True
+
+    def help(self):
+        return("Attention: ce service n'est disponible que si vous renseignez vos informations de connections. "
+               "Contactez l'administrateur (email: %s) pour plus de détails. "
+               "Tapez 'banque' pour recevoir le montant actuel sur vos différents comptes. "
+               "Tapez 'banque; details' pour recevoir en plus des montants, les dernières transactions." % adminEmail)
