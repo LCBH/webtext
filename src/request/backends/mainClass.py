@@ -24,54 +24,60 @@
 #                                                                         #
 ###########################################################################
 
-""" Backend for JCdecaux's API. """
-
-from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+""" Generic classes and methods for backends. """
 
 import os
-import sys
-import wget                     # wget command (for api free)
-import subprocess               # for launching bash programs
-import urllib                  # used to transform text into url
-import urllib2                  # used to transform text into url
-import logging
-import json
 from os.path import expanduser
 
-import pprint
+from request import *
 
-# -- Setup Logging --
-logging = logging.getLogger(__name__)
-
-REQUEST_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../"
+# -- Static data (install). --
+REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
-BACK_DATA_DIR = PROJECT_DIR + "data/backends/jcdecaux/"
-
+# -- User Data --
+# if os.path.isfile(PROJECT_DIR+'config_backends.py'):
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
+user1 = [ u for u in CONF['users'] if u['login'] == 'luccaH'][0]
+user2 = [ u for u in CONF['users'] if u['login'] == 'vincentCA'][0]
 
-# for debugging Only
-pp = pprint.PrettyPrinter(indent=4)
+class IterRegistry(type):
+    def __iter__(cls):
+        return iter(cls._registry)
 
-def loadJson(city):
-    folder = BACK_DATA_DIR
-    if city == 'Paris':
-        json_data = open(folder + "Paris.json")
-    elif city == 'Lyon':
-        json_data = open(folder + "Lyon.json")
-    elif city == 'Marseill':
-        json_data = open(folder + "Marseille.json")
-    else:
-        logging.error("There is no static file City.json in data/backends/jcdecaux/.\n")
-        return(None)
-    data = json.load(json_data)
-    return(data, json_data)
+class Backend(object):
+    __metaclass__ = IterRegistry
+    _registry = []
+    backendName = ""
 
+    def __init__(self, is_private=False):
+        # this is for keeping all availabe backends together and for
+        # beeing able to iterating over all of them
+        self._registry.append(self)
+        self.name = self.backendName
+        self.is_private = is_private
 
-def searchVelib(where):
-    """ Fetch available stations and bikes around a given location."""
-    logging.info("Starting searchVelib")
-    (dataStatic, toClose) = loadJson("Paris")
-    pp.pprint(dataStatic[0:4])
+    def __str__(self):
+        return("BackendName: " + self.backendName)
 
+    def isRequested(self, request):
+        """ Is this backend the one requested by request? """
+        return (request.backend.strip().lower() == self.name)
 
-# searchVelib("Chapelle")
+    # Each sub-backend should implement its own 'answer' method
+    def answer(self, request, config):
+        """ Parse a request (instance of class Request) and produce the 
+        expected answer (in Unicode). """
+        raise NotImplementedError
+
+    # Each sub-backend should implement its own 'help' method
+    def help(self):
+        """ Returns a help message explaining how to use this backend 
+        (in Unicode). """
+        raise NotImplementedError
+
+    # Each sub-backend should implement its own 'test' method
+    def test(self,user):
+        """ Test the backend by inputting different requests and check
+        the produced answer. Log everything and returns a boolean denoting
+        whether the backend is broken or not (False when broken)."""
+        raise NotImplementedError

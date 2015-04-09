@@ -85,7 +85,9 @@ def listOfChoices(address, max_nb):
     return(lChoices, lChoicesGeo)
 
 # For debugging only
-# dicoOfChoices("Chapelle")
+for e in dicoOfChoices("Dormoy") :
+# for e in listOfChoices("Chapelle",4) :
+    print "--------------------", e
 # (l1,l2) = listOfChoices("Chapelle", 4)
 # pp.pprint(l1)
 # pp.pprint(l2)
