@@ -65,7 +65,7 @@ def trafic_ratp(metro=True, rer=True):
             for ligne,status in data[K_pertu_rer].iteritems():
                 if ligne == "":
                         answ = (u"Le bulletin contient une remarque générale. Voici une résumé: ")
-                        if len(stats) > 80:
+                        if len(status) > 80:
                             answ +=  status[0:80] + u"[...]"
                         else:
                             answ += status
