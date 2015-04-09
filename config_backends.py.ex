@@ -7,6 +7,9 @@ CONF = {
     'config_backends' :  {
         'jcdecaux' : {
             'API_key' : 'yourJcDecauxKey',
+            },
+	'navitia' : {
+	    'API_key' : 'yourNavitiaKey',
             }
         },  
     'config_api' : {
