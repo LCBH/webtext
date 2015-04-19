@@ -40,9 +40,6 @@ from os.path import expanduser
 import datetime
 import json
 
-import backends.jcdecaux
-from backends import *
-
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 

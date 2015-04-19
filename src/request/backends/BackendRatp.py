@@ -205,3 +205,5 @@ fromName = "Porte d'orléans"
 toName = "nation"
 
 print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
+
+# bRatp = BackendRatp()

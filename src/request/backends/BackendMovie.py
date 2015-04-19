@@ -137,3 +137,5 @@ class BackendMovie(Backend):
         return("Usage pour cine: 'cine; [titre] ; [zip] pour obtenir les séances du filme [titre] "
                "autour de [zip]. Autre usage: 'cine; [nom de cinema]' pour obtenir toutes les séances "
                "de la journée dans [nom de cinema].")
+
+bMovie = BackendMovie()

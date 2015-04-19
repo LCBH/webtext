@@ -85,3 +85,5 @@ class BackendForecasts(Backend):
             "Si tout ne tient pas en un texto, n'oubliez pas qu'il suffit d'envoyer "
             " 'plus' ou 'tout' pour le reste de la réponse."
             )
+
+bForecasts = BackendForecasts()

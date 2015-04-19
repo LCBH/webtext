@@ -93,3 +93,5 @@ class BackendJcdecaux(Backend):
     def help(self):
         return("Tapez 'velo; lieux' pour rechercher les stations Velib les plus proche de 'lieux' et obtenir les disponibilités "
                "en vélos et en bornes libres.")
+
+bJcdecaux = BackendJcdecaux()

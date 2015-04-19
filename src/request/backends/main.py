@@ -31,21 +31,22 @@ import logging
 from static import *
 
 from mainClass import *
-from BackendForecasts import BackendForecasts
-from BackendBank import BackendBank
-from BackendJcdecaux import BackendJcdecaux
-from BackendTrafic import BackendTrafic
-from BackendWiki import BackendWiki
-from BackendMovie import BackendMovie
-#from BackendRatp import BackendRatp
+# For each backend, import the corresponding instance here:
+from BackendForecasts import bForecasts
+from BackendBank import bBank
+from BackendJcdecaux import bJcdecaux
+from BackendTrafic import bTrafic
+from BackendWiki import bWiki
+from BackendMovie import bMovie
+#from BackendRatp import bRatp
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
-bForecasts = BackendForecasts()
-bBank = BackendBank()
-bJcdecaux = BackendJcdecaux()
-bTrafic = BackendTrafic()
-bWiki = BackendWiki()
-bMovie = BackendMovie()
-#bRatp = BackendRatp (currently broken)
+backendsList = []
+for backend in Backend:
+    backendsList.append(backend)
+
+logging.info("Loaded %d backends: %s." %
+             (len(backendsList), 
+              map(lambda b:b.backendName, backendsList)))
