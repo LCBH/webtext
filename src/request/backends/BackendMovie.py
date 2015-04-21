@@ -38,7 +38,7 @@ logging = logging.getLogger(__name__)
 
 def showtimes_zip(movie, zipcode):
     logging.info("Starting allocine (zip)")
-    bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/../backends/allocine/allocine_showtimes_zip.php "
+    bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/allocine/allocine_showtimes_zip.php "
     bashC = bashPrefix+str(movie)+" "+str(zipcode)
     logging.info("Before subprocess: %s." % bashC)
     try:
@@ -73,7 +73,7 @@ def showtimes_zip(movie, zipcode):
 
 def showtimes_theater(theater):
     logging.info("Starting allocine (theater)")
-    bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/../allocine/allocine_showtimes_theater.php "
+    bashPrefix = "php "+os.path.dirname(os.path.abspath(__file__))+"/allocine/allocine_showtimes_theater.php "
     bashC = bashPrefix+str(theater)
     logging.info("Before subprocess: %s." % bashC)
     try:
