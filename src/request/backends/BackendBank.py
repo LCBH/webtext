@@ -103,3 +103,5 @@ class BackendBank(Backend):
                "Contactez l'administrateur (email: %s) pour plus de détails. "
                "Tapez 'banque' pour recevoir le montant actuel sur vos différents comptes. "
                "Tapez 'banque; details' pour recevoir en plus des montants, les dernières transactions." % adminEmail)
+
+bBank = BackendBank()

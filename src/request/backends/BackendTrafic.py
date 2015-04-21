@@ -126,3 +126,5 @@ class BackendTrafic(Backend):
         return("Tapez 'trafic' pour recevoir l'état du trafic RATP (métro et RER)."
                "Vous pouvez limiter la réponse au RER: 'trafic; rer' ou au metro: 'trafic; metro'.")
     
+
+bTrafic = BackendTrafic()

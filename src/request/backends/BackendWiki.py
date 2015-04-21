@@ -181,3 +181,5 @@ class BackendWiki(Backend):
                    "Finalement, vous pouvez recherchez tous les titres d'articles se rapprochant de votre texte avec l'option "
                    "'recherche': ex. 'wiki; Napoleon; recherche'.")
 
+
+bWiki = BackendWiki()

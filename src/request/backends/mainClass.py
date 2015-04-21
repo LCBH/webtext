@@ -63,6 +63,13 @@ class Backend(object):
         """ Is this backend the one requested by request? """
         return (request.backend.strip().lower() == self.name)
 
+    def answerCommon(self, request, config):
+        """ Basically call 'answer' after performing uniform checks."""
+        if config['is_local'] and not(self.is_private) and not(config['is_testing']):
+            logging.info("I won't process this request as the request's server does so.")
+        else:
+            return(self.answer(request, config))
+
     # Each sub-backend should implement its own 'answer' method
     def answer(self, request, config):
         """ Parse a request (instance of class Request) and produce the 

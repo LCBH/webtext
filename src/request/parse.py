@@ -87,7 +87,7 @@ def parseRequest(request, user, is_local, is_testing, config_backends):
     for backend in Backend:
         if backend.isRequested(request):
             logging.info("Backend '%s' handles the request." % backend.name)
-            return(backend.answer(request, config))
+            return(backend.answerCommon(request, config))
 
     # If no backend handled the request and we are not in local, maybe we should print some help message
     if not(is_local) or is_testing:
