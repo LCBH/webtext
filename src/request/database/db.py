@@ -42,13 +42,18 @@ import utils
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
+def dateToInt(date):
+    """ We need to convert date into integer because dataset does not handle correctly datetime.datetime objects using SQLite. """
+    return(int(10*(date - datetime.datetime(1970,1,1)).total_seconds()))
+
+# ----- MULTIPLE MESSAGES
 
 def pushMessage(user, messages):
     """ Push a message to the user's queue. """
     hashAnswer = hash(messages[0])
     # We store date as Int because dataset does not handle correctly datetime.datetime objects using SQLite
     date = datetime.datetime.now()
-    dateInt = int(10*(date - datetime.datetime(1970,1,1)).total_seconds())
+    dateInt = dateToInt(date)
     dB = utils.connect()
     table = dB['store']
     for nb in range(len(messages)):
@@ -69,7 +74,7 @@ def popMessage(user, number=1):
     allStore = table.find(user=user['login'], order_by='dateInt')
     allStoreList = list(allStore)
     lastStore = allStoreList[-1]
-    # We extract teh date and the hash of all stored messages related
+    # We extract the date and the hash of all stored messages related
     # to the last answer
     dateLast = lastStore['dateInt']
     hashLast = lastStore['hashAnswers']
