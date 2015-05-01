@@ -129,7 +129,7 @@ def storeYelpIDs(user, listBusinesses):
             'user' : user['login'],
             'dateInt' : dateInt,
             'hashAnswers' : hashAnswer,
-            'yelpID' : listBusinesses[nb]['yelpID'],
+            'id' : listBusinesses[nb]['id'],
             'name' : listBusinesses[nb]['name'],
             'nb' : nb,          # is used to order the list
             }
