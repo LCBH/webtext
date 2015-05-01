@@ -30,7 +30,6 @@ We thus define here the conventions of requests."""
 from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 import logging
-import unicodedata
 
 import fetch
 import database.db

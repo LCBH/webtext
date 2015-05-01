@@ -27,6 +27,9 @@
 """ Helping functions. """
 
 from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+import unicodedata
+
+
 BLANK = " "
 
 def simplifyText(s):

@@ -27,6 +27,7 @@
 """ Static data. """
 
 from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+from random import random
 
 ########### REQUESTS ############
 # Navigation
@@ -71,6 +72,10 @@ MAX_CH = 611
 adminEmail = "lucca.hirschi@gmail.com"
 MESS_BUG = ("Désolé, nous avons rencontré une erreur. Il nous serait très "
             "utile de nous prévenir de ce bug (il suffit d'envoyer un mail à '%s'"
-            "contenant votre numéro, la requête que vous avez faite et l'heure "
-            "et la date à laquelle vous avez reçu ce message)." % adminEmail)
+            "contenant votre numéro de téléphonne ainsi que le code suivant:"
+            % adminEmail)
+MAX_RANDOM = 1000
 
+def produceMessBug():
+    rand = int(MAX_RANDOM*random())
+    return(MESS_BUG + "%d." % rand)
