@@ -12,10 +12,10 @@ CONF = {
 	    'API_key' : 'yourNavitiaKey',
             },
         'yelp' : {
-            'consumer_key' = 'XXXX',
-            'consumer_secret' = 'XXX',
-            'token' = 'XXX',
-            'token_secret' = 'XXX',
+            'consumer_key' : 'XXXX',
+            'consumer_secret' : 'XXX',
+            'token' : 'XXX',
+            'token_secret' : 'XXX',
             },
         },  
     'config_api' : {
