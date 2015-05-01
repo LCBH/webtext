@@ -104,12 +104,13 @@ def readConfig():
     ## Backends
     table = db['backends']
     for backend in CONF['config_backends']:
-        backendDB = {
-            'backend' : backend,
-            'API_key' : CONF['config_backends'][backend]['API_key']
-            }
-        if not(table.update(backendDB, ['backend'])):
-            table.insert(backendDB)
+        if not(backend in ["yelp"]):
+            backendDB = {
+                'backend' : backend,
+                'API_key' : CONF['config_backends'][backend]['API_key']
+                }
+            if not(table.update(backendDB, ['backend'])):
+                table.insert(backendDB)
     
 
 def printInfo():

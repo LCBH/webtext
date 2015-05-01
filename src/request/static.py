@@ -46,6 +46,7 @@ WIKI="wiki"
 MOVIES="cine"
 FORECASTS="meteo"
 TRAFIC="trafic"
+YELP="yelp"
 HELP = "aide"
 # Help messages
 HELPMESS = (
