@@ -137,7 +137,11 @@ def printInfo():
     logging.info("## Table Store, size: " + str(len(db['store'])))
     logging.info("# Columns: " + str(db['store'].columns))
     for mess in db['store']:
-        logging.info(mess['user'] + ", nb: " + str(mess['nb']) + ", message: " + mess['message'])
+        logging.info(mess['user'] + ", nb: " + str(mess['nb']) + ", message: " + str(mess['message']))
+    logging.info("## Table yelpIDs, size: " + str(len(db['yelpIDs'])))
+    logging.info("# Columns: " + str(db['yelpIDs'].columns))
+    for busi in db['yelpIDs']:
+        logging.info(busi['user'] + ", nb: " + str(busi['nb']) + ", name: " + busi['name'])
        
 
 def exportJson(tableName='users', filename=str('toRemove.json')):

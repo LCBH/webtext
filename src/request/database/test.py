@@ -65,11 +65,13 @@ def testUtils():
     utils.printInfo()
     
     logging.info("\n## Test db.py: ")
-    # WARNING:
-    dB = utils.connect()
-    table = dB['store']
-    table.delete()
+    # # WARNING:
+    # dB = utils.connect()
+    # table = dB['store']
+    # table.delete()
 
+
+    logging.info("\n" + "#"*20 + " MULTIPLE MESSAGES " + 20*"#")
     logging.info("CLEAR...")
     dat.clearQueue({'login' : 'lutcheti'})
     logging.info("PUSH...")
@@ -78,7 +80,18 @@ def testUtils():
     logging.info("POP: ")
     logging.info(dat.popMessage({'login' : 'lutcheti'}))
 
-    logging.info("\n## Exporting Json and print ##")
+
+    logging.info("\n" + "#"*20 + " YELP IDs businesses " + 20*"#")
+    # logging.info("CLEAR...")
+    # dat.clearYelpIDs({'login' : 'lutcheti'})
+    logging.info("STORE...")
+    dat.storeYelpIDs({'login' : 'lutcheti'},
+                    [{'yelpID' : "l'olive12", "name": "L'olive"},
+                     {'yelpID' : "en-vrac3", "name": "En Vrac"}])
+    logging.info("GET...")
+    logging.info(str(dat.getYelpIDs({'login' : 'lutcheti'}, number=3)))
+
+    logging.info("\n" + "#"*20 + " Exporting Json and print " + 20*"#")
     logging.info(" Users:")
     logging.info(utils.exportJson(tableName='users'))
     logging.info(" SendSMS:")
@@ -89,6 +102,8 @@ def testUtils():
     logging.info(utils.exportJson(tableName='backends'))
     logging.info(" Store:")
     logging.info(utils.exportJson(tableName='store'))
+    logging.info(" YelpIDs:")
+    logging.info(utils.exportJson(tableName='yelpIDs'))
 
 testUtils()
 
