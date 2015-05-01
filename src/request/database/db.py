@@ -127,11 +127,12 @@ def storeYelpIDs(user, listBusinesses):
     for nb in range(len(listBusinesses)):
         toStore = {
             'user' : user['login'],
-            'dateInt' : dateInt,
-            'hashAnswers' : hashAnswer,
+            'nb' : nb,          # is used to order the list
             'id' : listBusinesses[nb]['id'],
             'name' : listBusinesses[nb]['name'],
-            'nb' : nb,          # is used to order the list
+            'location_display' : listBusinesses[nb]['location']['display_address'],
+            'dateInt' : dateInt,
+            'hashAnswers' : hashAnswer,
             }
         table.insert(toStore)
 

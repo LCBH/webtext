@@ -86,8 +86,11 @@ def testUtils():
     # dat.clearYelpIDs({'login' : 'lutcheti'})
     logging.info("STORE...")
     dat.storeYelpIDs({'login' : 'lutcheti'},
-                    [{'yelpID' : "l'olive12", "name": "L'olive"},
-                     {'yelpID' : "en-vrac3", "name": "En Vrac"}])
+                    [{'id' : "lolive12", "name": "L'olive",
+                      'rating' : 4, 'location' : {'display_address': "12, rue Riquet, Paris"}},
+                     {'id' : "en-vrac3", "name": "En Vrac",
+                      'rating' : 5, 'location' : {'display_address': "2, rue Riquet, Paris"}}
+                     ])
     logging.info("GET...")
     logging.info(str(dat.getYelpIDs({'login' : 'lutcheti'}, number=3)))
 
