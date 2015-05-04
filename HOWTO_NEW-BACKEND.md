@@ -27,7 +27,7 @@ See './config_backends.py.ex' to see an example of such a dictionnary.
 The most important part is the label 'argsList' containing the list of
 arguments of the request.
 For instance, the text 'yelp; arg1; arg2' produces the request whose
-'backend' is 'yelp' and 'argsList' is '["arg1"; "arg2"].
+'backend' is 'yelp' and 'argsList' is '["arg1", "arg2"].
 
 
 ### Backends
