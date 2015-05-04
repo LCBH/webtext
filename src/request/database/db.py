@@ -95,6 +95,7 @@ def clearQueue(user):
     
 # ----- YELP
 labelYelp = "yelpIDs"
+SEP = ";;;"                 # used to split lists of unicode into unicode
 
 def getYelpIDs(user, number=None):
     """ Get list of businesses from previous Yelp request. """
@@ -107,7 +108,9 @@ def getYelpIDs(user, number=None):
             if number 
             else len(lastStoredList))
     for i in range(size):
-        business= lastStoredList[i]
+        business = lastStoredList[i]
+        business['id'] = lastStoredList[i]['idL']
+        business['location_display'] = lastStoredList[i]['location_display'].split(SEP)
         listBusinesses.append(business)
 #        table.delete(id = business['id'])
     return(listBusinesses)
@@ -128,9 +131,9 @@ def storeYelpIDs(user, listBusinesses):
         toStore = {
             'user' : user['login'],
             'nb' : nb,          # is used to order the list
-            'id' : listBusinesses[nb]['id'],
+            'idL' : listBusinesses[nb]['id'],
             'name' : listBusinesses[nb]['name'],
-            'location_display' : listBusinesses[nb]['location']['display_address'],
+            'location_display' : (SEP).join(listBusinesses[nb]['location']['display_address']),
             'dateInt' : dateInt,
             'hashAnswers' : hashAnswer,
             }

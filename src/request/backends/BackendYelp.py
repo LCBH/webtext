@@ -24,6 +24,8 @@
 #                                                                         #
 ###########################################################################
 
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+
 from yelpapi import YelpAPI
 
 import logging
@@ -56,13 +58,6 @@ token_secret = yelpConf['token_secret']
 # Yelp requests including credentials
 yelp_api = YelpAPI(consumer_key, consumer_secret, token, token_secret)
 
-
-# Two types of requests:
-#   - 1: 'yelp; type; lieux' avec [type] pour le type de commerce et [lieux] une adresse, ville, métro, etc.
-#   - 2: 'yelp; details i' pour avoir le détail du commerce numéro [i] de la dernière requête de type 1 ou 2
-#  ----> demande de gérer la DB avec des lignes de types::
-#   User - id de requête ou requête RAW - commerce ID - nom du commerce (affichée dans la requête de type 1 ou 2)
-# EXAMPLE OF USES:
         # yelp_api.search_query(term='ice cream', location='Paris, France', sort=2, limit=5)
         # yelp_api.search_query(term='ice cream', location='austin, tx', sort=2, limit=5)
         # yelp_api.search_query(category_filter='bikerentals', bounds='37.678799,-123.125740|37.832371,-122.356979', limit=5)
@@ -70,22 +65,27 @@ yelp_api = YelpAPI(consumer_key, consumer_secret, token, token_secret)
 
 DETAILS = "details"
 NO_LIMIT_CHAR = "tout"
-NB_BUSI = 10
-MAX_CHAR_REVIEW = 100
+NB_BUSI = 10                    # number of businesses displayed for each search
+MAX_CHAR_REVIEW = 80            # maximum characater displayed for each review
 
 def listBusinesses(request, typeB, location):
     """ Produce the list of businesses of 'typeB' in 'location' (request of type 1). """
-    try:
-        dicoBusinesses =  yelp_api.search_query(term=typeB, location=location, sort=2, limit=NB_BUSI)
+    try:                        # Yelp Error
+        try:                    # IO error
+            dicoBusinesses =  yelp_api.search_query(term=typeB, location=location, sort=2, limit=NB_BUSI)
+        except IOError as e:
+            logging.error("BackendYelp > Access to the Yelp's API | I/O error({0}): {1}".format(e.errno, e.strerror))
+            return(MESS_BUG)
     except YelpAPI.YelpAPIError as e:
         loging.critical("Erreur YELP grave: " + e)
         return(produceMessBug())
-    database.db.storeYelpIDs(request.user, dicoBusinesses)
-    if len(dicoBusinesses) == 0:
+    listBusinesses = dicoBusinesses['businesses']
+    database.db.storeYelpIDs(request.user, listBusinesses)
+    if len(listBusinesses) == 0:
         return("Yelp n'a pas trouvé de réponses à votre rquête.")
     answ = "Liste: "
     i = 1
-    for busi in dicoBusinesses:
+    for busi in listBusinesses:
         # TODO; check les champs qui pourraient êtres affichées
         answ += ("(%d) %s : %d (%d reviews), %s.\n"
                  % (i,
@@ -97,9 +97,13 @@ def listBusinesses(request, typeB, location):
     return(answ)
 
 def detailsBusiness(request, idBusiness, no_limit_char_review=False):
-    """ Give detailed information (review, TODO, etc.) about one answer of a specific business. """
-    try:
-        reqBusiness = yelp_api.business_query(id=idBusiness)
+    """ Give detailed information (review, TODO, etc.) about one answer of a specific business (request of type 2). """
+    try:                        # Yelp error
+        try:                    # IO error
+            reqBusiness = yelp_api.business_query(id=idBusiness)
+        except IOError as e:
+            logging.error("BackendYelp > Access to the Yelp's API | I/O error({0}): {1}".format(e.errno, e.strerror))
+            return(MESS_BUG)
     except YelpAPI.YelpAPIError as e:
         loging.critical("Erreur YELP grave: " + e)
         return(produceMessBug())
@@ -121,28 +125,28 @@ def detailsBusiness(request, idBusiness, no_limit_char_review=False):
 
 
 def likelyCorrect(answer):
-    return(False)               # TODO
+    return(answer and ("(1)" in answer or "Note" in answer))
 
 class BackendYelp(Backend):
-    backendName = YELP # defined in static.py
+    backendName = YELP
     
     def answer(self, request, config):
         # Identify type of Yelp requests
         args = request.argsList
         fstWord = args[0].split()[0]
-        if simplifyText(fstWord) == DETAILS:
+        if simplifyText(str(fstWord)) == str(DETAILS):
             # request of type 2
             if len(args[0].split()) != 2:
                 print("Requête mal formée. Rappel: " + self.help())
             else:
                 number = int(args[0].split()[1])-1
                 dicoBusinesses = database.db.getYelpIDs(request.user, number=NB_BUSI)
-                if not(number in range(number)):
-                    print("Votre dernière requête ne comportait pas %d réponses. Rappel: " % i + self.help())
+                if not(number in range(len(dicoBusinesses))):
+                    print("Votre dernière requête comportait moins de %d réponses. Rappel: " % (number + 1) + self.help())
                 else:
-                    business = dicoBusinesses[i]
+                    business = dicoBusinesses[number]
                     idBusiness = business["id"]
-                    if NO_LIMIT_CHAR in map(lambda s:simplifyText(s), args):
+                    if NO_LIMIT_CHAR in map(lambda s:simplifyText(str(s)), args):
                         return(detailsBusiness(request, idBusiness, no_limit_char_review=True))
                     else:
                         return(detailsBusiness(request, idBusiness))
@@ -155,15 +159,16 @@ class BackendYelp(Backend):
 
     def test(self, user):
         reqs = []
-        reqs += Request(user, "yelp", ["glacier", "75, rue Riquet, Paris"], [], "")
-        reqs += Request(user, "yelp", ["indien", "Métro Nation, Paris"], [], "")
-        reqs += Request(user, "yelp", [DETAILS + "2"], [], "")
-        reqs += Request(user, "yelp", [DETAILS + "1"], [], "")
-        reqs += Request(user, "yelp", [DETAILS + "1", NO_LIMIT_CHAR], [], "")
+        reqs.append(Request(user, "yelp", ["glacier", "75, rue Riquet, Paris"], [], ""))
+        reqs.append(Request(user, "yelp", ["indien", "Métro Nation, Paris"], [], ""))
+        reqs.append(Request(user, "yelp", [DETAILS + " 2"], [], ""))
+        reqs.append(Request(user, "yelp", [DETAILS + " 1"], [], ""))
+        reqs.append(Request(user, "yelp", [DETAILS + " 1", NO_LIMIT_CHAR], [], ""))
         for r in reqs:
             logging.info("Checking a request [%s]" % r)
             a = self.answer(r, {})
-            logging.info(a + "\n")
+            if a:
+                logging.info(a + "\n")
             if not(likelyCorrect(a)):
                 return False
         return True
