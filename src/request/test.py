@@ -117,8 +117,8 @@ if testBackend:
 
     # We iterate over all existing backeds and check if backendName matches
     for backend in Backend:
-        logging.info("\n." + "-" * 5 + (" testing backend '%s' " % backend.name) + "-" * 5)
         if not(theBackend) or backend.backendName == str(theBackend):
+            logging.info("\n." + "-" * 5 + (" testing backend '%s' " % backend.name) + "-" * 5)
             notBroken = backend.test(user1)
             notBrokenHelp = backend.help()
             if notBroken and notBrokenHelp != None:
