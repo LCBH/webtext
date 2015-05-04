@@ -52,7 +52,7 @@ def velibParisS(where):
         process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE)
     except OSError as e:
         logging.error("velibParis > Popen | Execution failed:" + str(e))
-        return(MESS_BUG)
+        return(MESS_BUG())
     output = process.communicate()[0]
     # PB: only table formatter shows all required info but not adapted for SMS
     # SOL: truncatated 47 first caracters of all lines
