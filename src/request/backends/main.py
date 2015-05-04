@@ -38,7 +38,10 @@ from BackendJcdecaux import bJcdecaux
 from BackendTrafic import bTrafic
 from BackendWiki import bWiki
 from BackendMovie import bMovie
+from BackendYelp import bYelp
+from BackendAdmin import bAdmin
 #from BackendRatp import bRatp
+from BackendAdd import bAdd
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
