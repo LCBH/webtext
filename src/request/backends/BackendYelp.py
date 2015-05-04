@@ -67,26 +67,27 @@ DETAILS = "details"
 NO_LIMIT_CHAR = "tout"
 NB_BUSI = 10                    # number of businesses displayed for each search
 MAX_CHAR_REVIEW = 80            # maximum characater displayed for each review
+SORT_MODE = 2                   # 0: best matches, 1:distance, 2:ratings (see [1])
 
 def listBusinesses(request, typeB, location):
     """ Produce the list of businesses of 'typeB' in 'location' (request of type 1). """
     try:                        # Yelp Error
         try:                    # IO error
-            dicoBusinesses =  yelp_api.search_query(term=typeB, location=location, sort=2, limit=NB_BUSI)
+            dicoBusinesses =  yelp_api.search_query(cc="FR", lang="fr", term=typeB, location=location, sort=SORT_MODE, limit=NB_BUSI)
         except IOError as e:
             logging.error("BackendYelp > Access to the Yelp's API | I/O error({0}): {1}".format(e.errno, e.strerror))
-            return(MESS_BUG)
+            return(MESS_BUG())
     except YelpAPI.YelpAPIError as e:
         loging.critical("Erreur YELP grave: " + e)
         return(produceMessBug())
     listBusinesses = dicoBusinesses['businesses']
     database.db.storeYelpIDs(request.user, listBusinesses)
     if len(listBusinesses) == 0:
-        return("Yelp n'a pas trouvé de réponses à votre rquête.")
+        return("Yelp n'a pas trouvé de réponses à votre requête.")
     answ = "Liste: "
     i = 1
     for busi in listBusinesses:
-        # TODO; check les champs qui pourraient êtres affichées
+        # TODO: check que is_closed est toujours faux (filtre?)
         answ += ("(%d) %s : %d (%d reviews), %s.\n"
                  % (i,
                     busi['name'],
@@ -97,18 +98,20 @@ def listBusinesses(request, typeB, location):
     return(answ)
 
 def detailsBusiness(request, idBusiness, no_limit_char_review=False):
-    """ Give detailed information (review, TODO, etc.) about one answer of a specific business (request of type 2). """
+    """ Give detailed information (reviews, phone nb., etc.) about one answer of a specific business (request of type 2). """
     try:                        # Yelp error
         try:                    # IO error
-            reqBusiness = yelp_api.business_query(id=idBusiness)
+            reqBusiness = yelp_api.business_query(cc="FR", lang="fr", id=idBusiness)
         except IOError as e:
             logging.error("BackendYelp > Access to the Yelp's API | I/O error({0}): {1}".format(e.errno, e.strerror))
-            return(MESS_BUG)
+            return(MESS_BUG())
     except YelpAPI.YelpAPIError as e:
         loging.critical("Erreur YELP grave: " + e)
         return(produceMessBug())
-    # TODO; check les champs qui pourraient êtres affichées
-    answ = ("Détailles du lieux %s. Reviews: " % reqBusiness['name'])
+    answ = ("Détailles du lieux %s. (%s)"
+            % (reqBusiness['name'],
+               reqBusiness['display_phone']))
+    answ += ("%d reviews: " % reqBusiness['review_count']) 
     for review in reqBusiness['reviews']:
         if no_limit_char_review:
             textReview = review['excerpt']
@@ -187,3 +190,5 @@ bYelp = BackendYelp()
 # 7932
 # 1830 fichiers 
 # 29.6 GO
+
+# Sort mode: 0=Best matched (default), 1=Distance, 2=Highest Rated. If the mode is 1 or 2 a search may retrieve an additional 20 businesses past the initial limit of the first 20 results. This is done by specifying an offset and limit of 20. Sort by distance is only supported for a location or geographic search. The rating sort is not strictly sorted by the rating value, but by an adjusted rating value that takes into account the number of ratings, similar to a bayesian average. This is so a business with 1 rating of 5 stars doesn’t immediately jump to the top.
