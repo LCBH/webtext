@@ -66,11 +66,16 @@ testSystem = True
 testDatabase = True
 testBackend = True
 testInteractive = False
+theBackend = None
 
 if len(sys.argv) > 1:
+    if sys.argv[1] == "backends":
+        testSystem = False
+        testDatabase = False
     if sys.argv[1] == "backend":
         testSystem = False
         testDatabase = False
+        theBackend = sys.argv[2]
     if sys.argv[1] == "system":
         testBackend = False
         testDatabase = False
@@ -113,17 +118,15 @@ if testBackend:
     # We iterate over all existing backeds and check if backendName matches
     for backend in Backend:
         logging.info("\n." + "-" * 5 + (" testing backend '%s' " % backend.name) + "-" * 5)
-        if backend.backendName == "yelp":
+        if not(theBackend) or backend.backendName == str(theBackend):
             notBroken = backend.test(user1)
-        else:
-            notBroken = True
-        notBrokenHelp = backend.help()
-        if notBroken and notBrokenHelp != None:
-            logging.info("Backend passes all tests.")
-            resultsTests[backend.name] = True
-        else:
-            logging.info("="*5 + "> BROKEN BACKEND <" +"="*5 + "\n")
-            resultsTests[str(backend.name)] = False
+            notBrokenHelp = backend.help()
+            if notBroken and notBrokenHelp != None:
+                logging.info("Backend passes all tests.")
+                resultsTests[backend.name] = True
+            else:
+                logging.info("="*5 + "> BROKEN BACKEND <" +"="*5 + "\n")
+                resultsTests[str(backend.name)] = False
     pp.pprint(resultsTests)
 
 
