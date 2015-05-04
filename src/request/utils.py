@@ -34,7 +34,7 @@ BLANK = " "
 
 def simplifyText(s):
     """Remove extra blanks (outside), replace uppercase letters by lowercase letters and remove all accents from 's'."""
-    s1 = unicode(s.strip().lower(), 'utf-8')
+    s1 = unicode(str(s).strip().lower(), 'utf-8')
     s2 = unicodedata.normalize('NFD', s1).encode('ascii', 'ignore')     
     return(s2)
 
