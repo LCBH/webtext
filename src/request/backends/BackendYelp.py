@@ -182,6 +182,9 @@ class BackendYelp(Backend):
         reqs.append(Request(user, "yelp", [DETAILS + " 2"], [], ""))
         reqs.append(Request(user, "yelp", [DETAILS + " 1"], [], ""))
         reqs.append(Request(user, "yelp", [DETAILS + " 1", NO_LIMIT_CHAR], [], ""))
+        reqs.append(Request(user, "yelp", ["pizzeria", "Rue des Teinturiers, Avignon"], [], ""))
+        reqs.append(Request(user, "yelp", ["boucherie", "Suzette, Vaucluse"], [], ""))
+        reqs.append(Request(user, "yelp", [DETAILS + " 1", NO_LIMIT_CHAR], [], ""))
         for r in reqs:
             logging.info("Checking a request [%s]" % r)
             a = self.answer(r, {})
