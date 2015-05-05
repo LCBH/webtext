@@ -30,11 +30,12 @@ We thus define here the conventions of requests."""
 from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 import logging
-import unicodedata
 
 import fetch
 import database.db
+
 from static import *
+from utils import *
 from backends.main import Backend
 from request import Request
 
@@ -63,12 +64,6 @@ logging = logging.getLogger(__name__)
 
 # Global dictionnary containing options (if there is more than 1 request, options of later requests override previous ones)
 optionsDict = {}
-
-def simplifyText(s):
-    """Remove extra blanks, replace uppercase letters by lowercase letters and remove all accents from 's'."""
-    s1 = unicode(s.strip().lower(), 'utf-8')
-    s2 = unicodedata.normalize('NFD', s1).encode('ascii', 'ignore')     
-    return(s2)
 
 def parseRequest(request, user, is_local, is_testing, config_backends):
     """ Parse a request (i.e., instance of class Request) and returns the expected answer. """

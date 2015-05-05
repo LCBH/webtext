@@ -104,12 +104,13 @@ def readConfig():
     ## Backends
     table = db['backends']
     for backend in CONF['config_backends']:
-        backendDB = {
-            'backend' : backend,
-            'API_key' : CONF['config_backends'][backend]['API_key']
-            }
-        if not(table.update(backendDB, ['backend'])):
-            table.insert(backendDB)
+        if not(backend in ["yelp"]):
+            backendDB = {
+                'backend' : backend,
+                'API_key' : CONF['config_backends'][backend]['API_key']
+                }
+            if not(table.update(backendDB, ['backend'])):
+                table.insert(backendDB)
     
 
 def printInfo():
@@ -136,15 +137,19 @@ def printInfo():
     logging.info("## Table Store, size: " + str(len(db['store'])))
     logging.info("# Columns: " + str(db['store'].columns))
     for mess in db['store']:
-        logging.info(mess['user'] + ", nb: " + str(mess['nb']) + ", message: " + mess['message'])
+        logging.info(mess['user'] + ", nb: " + str(mess['nb']) + ", message: " + str(mess['message']))
+    logging.info("## Table yelpIDs, size: " + str(len(db['yelpIDs'])))
+    logging.info("# Columns: " + str(db['yelpIDs'].columns))
+    for busi in db['yelpIDs']:
+        logging.info(busi['user'] + ", nb: " + str(busi['nb']) + ", name: " + busi['name'])
        
 
-def exportJson(tableName='users', filename='toRemove.json'):
+def exportJson(tableName='users', filename=str('toRemove.json')):
     """ Given a tableName (filename is truly optional), it exports
     the whole corresponding table as a json data."""
     db = connect()
     table = db[tableName]
-    dataset.freeze(table, format='json', filename=filename)        
+    dataset.freeze(table, format='json', filename=filename)   
     json_data = open(filename)
     data = json.load(json_data)
     json_data.close()

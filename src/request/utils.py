@@ -24,32 +24,23 @@
 #                                                                         #
 ###########################################################################
 
-""" Gather all implemented backends and crate corresponding instances. """
+""" Helping functions. """
 
-import logging
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+import unicodedata
 
-from static import *
 
-from mainClass import *
-# For each backend, import the corresponding instance here:
-from BackendForecasts import bForecasts
-from BackendBank import bBank
-from BackendJcdecaux import bJcdecaux
-from BackendTrafic import bTrafic
-from BackendWiki import bWiki
-from BackendMovie import bMovie
-from BackendYelp import bYelp
-from BackendAdmin import bAdmin
-#from BackendRatp import bRatp
-from BackendAdd import bAdd
+BLANK = " "
 
-# -- Setup Logging --
-logging = logging.getLogger(__name__)
+def simplifyText(s):
+    """Remove extra blanks (outside), replace uppercase letters by lowercase letters and remove all accents from 's'."""
+    s1 = unicode(str(s).strip().lower(), 'utf-8')
+    s2 = unicodedata.normalize('NFD', s1).encode('ascii', 'ignore')     
+    return(s2)
 
-backendsList = []
-for backend in Backend:
-    backendsList.append(backend)
-
-logging.info("Loaded %d backends: %s." %
-             (len(backendsList), 
-              map(lambda b:b.backendName, backendsList)))
+def compactText(s):
+    """ Remove extra blanks (at most one blank). """
+    while (BLANK + BLANK) in s:
+        print(s)
+        s = s.replace(BLANK + BLANK, BLANK)
+    return(s)

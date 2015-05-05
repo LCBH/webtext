@@ -42,13 +42,18 @@ import utils
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
+def dateToInt(date):
+    """ We need to convert date into integer because dataset does not handle correctly datetime.datetime objects using SQLite. """
+    return(int(10*(date - datetime.datetime(1970,1,1)).total_seconds()))
+
+# ----- MULTIPLE MESSAGES
 
 def pushMessage(user, messages):
     """ Push a message to the user's queue. """
     hashAnswer = hash(messages[0])
     # We store date as Int because dataset does not handle correctly datetime.datetime objects using SQLite
     date = datetime.datetime.now()
-    dateInt = int(10*(date - datetime.datetime(1970,1,1)).total_seconds())
+    dateInt = dateToInt(date)
     dB = utils.connect()
     table = dB['store']
     for nb in range(len(messages)):
@@ -69,7 +74,7 @@ def popMessage(user, number=1):
     allStore = table.find(user=user['login'], order_by='dateInt')
     allStoreList = list(allStore)
     lastStore = allStoreList[-1]
-    # We extract teh date and the hash of all stored messages related
+    # We extract the date and the hash of all stored messages related
     # to the last answer
     dateLast = lastStore['dateInt']
     hashLast = lastStore['hashAnswers']
@@ -88,6 +93,57 @@ def clearQueue(user):
     table = dB['store']
     table.delete(user=user['login'])
     
+# ----- YELP
+labelYelp = "yelpIDs"
+SEP = ";;;"                 # used to split lists of unicode into unicode
+
+def getYelpIDs(user, number=None):
+    """ Get list of businesses from previous Yelp request. """
+    dB = utils.connect()
+    table = dB[labelYelp]
+    lastStored = table.find(user=user['login'])
+    lastStoredList = list(lastStored)
+    listBusinesses = []
+    size = (min(len(lastStoredList), number)
+            if number 
+            else len(lastStoredList))
+    for i in range(size):
+        business = lastStoredList[i]
+        business['id'] = lastStoredList[i]['idL']
+        business['location_display'] = lastStoredList[i]['location_display'].split(SEP)
+        listBusinesses.append(business)
+#        table.delete(id = business['id'])
+    return(listBusinesses)
+
+def storeYelpIDs(user, listBusinesses):
+    """ Store list of businesses of previous request. """
+    dB = utils.connect()
+    # We first delete previous entries for the user
+    table = dB[labelYelp]
+    table.delete(user=user['login'])
+    # We store the new request
+    hashAnswer = hash(str(listBusinesses))
+    # We store date as Int because dataset does not handle correctly datetime.datetime objects using SQLite
+    date = datetime.datetime.now()
+    dateInt = dateToInt(date)
+    table = dB[labelYelp]
+    for nb in range(len(listBusinesses)):
+        toStore = {
+            'user' : user['login'],
+            'nb' : nb,          # is used to order the list
+            'idL' : listBusinesses[nb]['id'],
+            'name' : listBusinesses[nb]['name'],
+            'location_display' : (SEP).join(listBusinesses[nb]['location']['display_address']),
+            'dateInt' : dateInt,
+            'hashAnswers' : hashAnswer,
+            }
+        table.insert(toStore)
+
+def clearYelpIDs(user):
+    """ Clear the user's yelp IDs. """
+    dB = utils.connect()
+    table = dB[labelYelp]
+    table.delete(user=user['login'])
 
 # TODO:
 # - use this databse to store very long answers that would need many SMS to send

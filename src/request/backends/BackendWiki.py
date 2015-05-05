@@ -102,7 +102,7 @@ def wikiSummary(request):
 #            results = wikipedia.search(searchtext, results=max_nb_results)
     except IOError as e:
         logging.error("wikiSummary > wikipedia.search | I/O error({0}): {1}".format(e.errno, e.strerror))
-        return(MESS_BUG)
+        return(MESS_BUG())
 
     # -- ANSWER --
     # Fail to resolve ambiguity

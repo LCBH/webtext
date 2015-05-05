@@ -66,15 +66,25 @@ testSystem = True
 testDatabase = True
 testBackend = True
 testInteractive = False
+theBackend = None
+notAdmin = False
 
 if len(sys.argv) > 1:
-    if sys.argv[1] == "backend":
+    if sys.argv[1] == "backends": # test all backends
         testSystem = False
         testDatabase = False
-    if sys.argv[1] == "system":
+    if sys.argv[1] == "backend": # test only the backend [argv[2]]
+        testSystem = False
+        testDatabase = False
+        theBackend = sys.argv[2]
+    if sys.argv[1] == "backendsNotAdmin": # test all backends except admin
+        testSystem = False
+        testDatabase = False
+        notAdmin = True
+    if sys.argv[1] == "system": # test only the core system
         testBackend = False
         testDatabase = False
-    if sys.argv[1] == "i":
+    if sys.argv[1] == "i":      # interative mode
         testInteractive = True
 
 if testInteractive:
@@ -112,15 +122,17 @@ if testBackend:
 
     # We iterate over all existing backeds and check if backendName matches
     for backend in Backend:
-        logging.info("\n." + "-" * 5 + (" testing backend '%s' " % backend.name) + "-" * 5)
-        notBroken = backend.test(user1)
-        notBrokenHelp = backend.help()
-        if notBroken and notBrokenHelp != None:
-            logging.info("Backend passes all tests.")
-            resultsTests[backend.name] = True
-        else:
-            logging.info("="*5 + "> BROKEN BACKEND <" +"="*5 + "\n")
-            resultsTests[str(backend.name)] = False
+        if ((not(theBackend) or backend.backendName == str(theBackend)) and
+            (not(notAdmin) or backend.backendName != "admin")):
+            logging.info("\n." + "-" * 5 + (" testing backend '%s' " % backend.name) + "-" * 5)
+            notBroken = backend.test(user1)
+            notBrokenHelp = backend.help()
+            if notBroken and notBrokenHelp != None:
+                logging.info("Backend passes all tests.")
+                resultsTests[backend.name] = True
+            else:
+                logging.info("="*5 + "> BROKEN BACKEND <" +"="*5 + "\n")
+                resultsTests[str(backend.name)] = False
     pp.pprint(resultsTests)
 
 

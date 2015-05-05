@@ -42,7 +42,7 @@ def forecasts(zipcode, config):
         process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
     except OSError as e:
         logging.error("forecasts > Popen | Execution failed:" + str(e))
-        return(MESS_BUGG)
+        return(MESS_BUG())
     output = process.communicate()[0]
     output_trunc = u""
     listLines = output.splitlines()
