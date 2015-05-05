@@ -3,6 +3,9 @@ webtext
 
 *Web for old phones through a Raspberry Pi*
 
+## How to Contribute
+You can write yout own service as a backend quite easily. Look at the tutorial [HOWTO](https://github.com/lutcheti/webtext/blob/deploy/HOWTO_NEW-BACKEND.md).
+
 ## Goals
 **Task1**: I text to my Raspberry some question,
 I receive its answer within a minute.
