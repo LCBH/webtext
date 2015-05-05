@@ -66,8 +66,18 @@ yelp_api = YelpAPI(consumer_key, consumer_secret, token, token_secret)
 DETAILS = "details"
 NO_LIMIT_CHAR = "tout"
 NB_BUSI = 10                    # number of businesses displayed for each search
-MAX_CHAR_REVIEW = 80            # maximum characater displayed for each review
-SORT_MODE = 2                   # 0: best matches, 1:distance, 2:ratings (see [1])
+MAX_CHAR_REVIEW = 200           # maximum characater displayed for each review
+SORT_MODE = 0                   # 0: best matches, 1:distance, 2:ratings (see [1])
+
+def printLocation(location):
+    """ Pretty print location given by Yelp. """
+    if "France" in location[-1]:
+        location = location[0:-1]
+    if "Paris" in location[-1]:
+        location[-1] = location[-1].split()[0]
+    if len(location) > 2 and "ème" in location[-2]:
+        location = location[0:-1]
+    return(", ".join(location))
 
 def listBusinesses(request, typeB, location):
     """ Produce the list of businesses of 'typeB' in 'location' (request of type 1). """
@@ -84,16 +94,17 @@ def listBusinesses(request, typeB, location):
     database.db.storeYelpIDs(request.user, listBusinesses)
     if len(listBusinesses) == 0:
         return("Yelp n'a pas trouvé de réponses à votre requête.")
-    answ = "Liste: "
+    answ = ""
     i = 1
     for busi in listBusinesses:
         # TODO: check que is_closed est toujours faux (filtre?)
-        answ += ("(%d) %s : %d (%d reviews), %s.\n"
+        answ += ("(%d) %s : [%d/5] (%d %s), %s.\n"
                  % (i,
                     busi['name'],
                     busi['rating'],
                     busi['review_count'],
-                    busi['location']['display_address']))
+                    "reviews" if busi['review_count'] > 1 else "review",
+                    printLocation(busi['location']['display_address'])))
         i += 1
     return(answ)
 
@@ -108,10 +119,14 @@ def detailsBusiness(request, idBusiness, no_limit_char_review=False):
     except YelpAPI.YelpAPIError as e:
         loging.critical("Erreur YELP grave: " + e)
         return(produceMessBug())
-    answ = ("Détailles du lieux %s. (%s)"
+    answ = ("Détailles du lieux %s: [%d/5] (%d %s) (%s, %s).\n"
             % (reqBusiness['name'],
-               reqBusiness['display_phone']))
-    answ += ("%d reviews: " % reqBusiness['review_count']) 
+               reqBusiness['rating'],
+               reqBusiness['review_count'],
+               "reviews" if reqBusiness['review_count'] > 1 else "review",
+               reqBusiness['display_phone'] if 'display_phone' in reqBusiness else "(pas de tel.)",
+               printLocation(reqBusiness['location']['display_address'])))
+    # Problem: Yelp's API only provide reviews snippet
     for review in reqBusiness['reviews']:
         if no_limit_char_review:
             textReview = review['excerpt']
