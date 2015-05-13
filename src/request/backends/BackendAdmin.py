@@ -34,6 +34,10 @@ from mainClass import *
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
+PATH_HERE = os.path.dirname(os.path.abspath(__file__))
+PATH_LOG = PATH_HERE + "/../../../data/log/handleSMS.log"
+PATH_TESTPY = PATH_HERE + "/../test.py"
+
 def likelyCorrect(a):
     return(a and len(a) > 10)
 
@@ -49,7 +53,7 @@ class BackendAdmin(Backend):
                 maxi = int(arg2)
             else:
                 maxi = 5
-            bashCommandList = ("tail -n %d ./../../data/log/handleSMS.log" % maxi)
+            bashCommandList = ("tail -n %d %s" % (maxi, PATH_LOG))
             logging.info("Before subprocess: %s" % bashCommandList)
             try:
                 process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
@@ -63,7 +67,7 @@ class BackendAdmin(Backend):
             return(answ)
         if simplifyText(arg1) == "test":
             answ = str("Test: ")
-            bashCommandList = ("python test.py backendsNotAdmin")
+            bashCommandList = ("python %s backendsNotAdmin" % PATH_TESTPY)
             logging.info("Before subprocess: %s" % bashCommandList)
             try:
                 process = subprocess.Popen(bashCommandList.split(),
@@ -81,7 +85,7 @@ class BackendAdmin(Backend):
         reqs = []
         reqs.append(Request(user, "admin", ["log", "size 20"], [], ""))
         reqs.append(Request(user, "admin", ["log"], [], ""))
-        # reqs.append(Request(user, "admin", ["test"], [], ""))
+        reqs.append(Request(user, "admin", ["test"], [], ""))
         for r in reqs:
             logging.info("Checking a request [%s]" % r)
             a = self.answer(r, {})
