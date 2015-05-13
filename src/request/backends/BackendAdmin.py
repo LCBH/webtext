@@ -23,7 +23,7 @@
 #    along with OwnShare.  If not, see <http://www.gnu.org/licenses/>.    #
 #                                                                         #
 ###########################################################################
-
+# DO NOT import unice_litterals because we only deal with strings here
 import logging
 import subprocess
 
@@ -44,7 +44,7 @@ class BackendAdmin(Backend):
         arg1 = request.argsList[0]
         arg2 = None if len(request.argsList) < 2 else request.argsList[1].split()[1]
         if simplifyText(arg1) == "log":
-            answ = "Log: "
+            answ = str("Log: ")
             if arg2:
                 maxi = int(arg2)
             else:
@@ -59,10 +59,10 @@ class BackendAdmin(Backend):
             output = process.communicate()[0]
             listLines = output.splitlines()
             listLines.reverse()
-            answ += "\n".join(listLines[0:maxi])
+            answ += (str("\n")).join(listLines[0:maxi])
             return(answ)
         if simplifyText(arg1) == "test":
-            answ = "Test: "
+            answ = str("Test: ")
             bashCommandList = ("python test.py backendsNotAdmin")
             logging.info("Before subprocess: %s" % bashCommandList)
             try:
@@ -73,15 +73,15 @@ class BackendAdmin(Backend):
                 return(MESS_BUG())
             output = process.communicate()[0]
             listLines = output.splitlines()
-            res = "\n".join(listLines)
-            answ += str(res.split("Backend passes all tests.\n")[1])
+            res = (str("\n")).join(listLines)
+            answ += res.split(str("Summary of tests:"))[1]
             return(answ)
 
     def test(self, user):
         reqs = []
-        reqs.append(Request(user, "admin", ["log", "size 100"], [], ""))
+        reqs.append(Request(user, "admin", ["log", "size 20"], [], ""))
         reqs.append(Request(user, "admin", ["log"], [], ""))
-        reqs.append(Request(user, "admin", ["test"], [], ""))
+        # reqs.append(Request(user, "admin", ["test"], [], ""))
         for r in reqs:
             logging.info("Checking a request [%s]" % r)
             a = self.answer(r, {})
