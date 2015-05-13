@@ -35,8 +35,8 @@ import urllib2                  # used to transform text into url
 import json
 import pprint
 
-# from static import *
-# from mainClass import *
+from static import *
+from mainClass import *
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
@@ -205,3 +205,5 @@ fromName = "Porte d'orléans"
 toName = "nation"
 
 print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
+
+# bRatp = BackendRatp()

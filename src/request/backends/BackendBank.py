@@ -47,7 +47,7 @@ def bankInfo(details=False):
         process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
     except OSError as e:
         logging.error("bankInfo > Popen | Execution failed:" + str(e))
-        return(MESS_BUG)
+        return(MESS_BUG())
     output = process.communicate()[0]
     answer += output
     if details:
@@ -56,7 +56,7 @@ def bankInfo(details=False):
             process = subprocess.Popen(bashCommandHistory.split(), stdout=subprocess.PIPE)
         except OSError as e:
             logging.error("bankInfo > Popen | Execution failed:" + str(e))
-            return(MESS_BUG)
+            return(MESS_BUG())
         outputHistory = process.communicate()[0]
         answer += " | Les détails:\n" + outputHistory
     return(answer)
@@ -103,3 +103,5 @@ class BackendBank(Backend):
                "Contactez l'administrateur (email: %s) pour plus de détails. "
                "Tapez 'banque' pour recevoir le montant actuel sur vos différents comptes. "
                "Tapez 'banque; details' pour recevoir en plus des montants, les dernières transactions." % adminEmail)
+
+bBank = BackendBank()

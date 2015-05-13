@@ -45,11 +45,11 @@ def showtimes_zip(movie, zipcode):
         process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except OSError as e:
         logging.error("showtimes_zip > Popen | Execution failed:" + str(e))
-        return(MESS_BUG)
+        return(MESS_BUG())
     output = unicode(process.communicate()[0], "utf-8")
     if "error" in output.lower() or len(output) == 0: # TODO: if error occurs in a cinema/movie ?
         logging.info("PHP failed: %s." % output)
-        return(MESS_BUG)
+        return(MESS_BUG())
     cine = output.split("THEATER")
     day = int(str(datetime.date.today()).split('-')[2])
     answer = ""    
@@ -80,7 +80,7 @@ def showtimes_theater(theater):
         process = subprocess.Popen(bashC.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except OSError as e:
         logging.error("showtimes_theater > Popen | Execution failed:" + str(e))
-        return(MESS_BUG)
+        return(MESS_BUG())
     output = unicode(process.communicate()[0], "utf-8")
     if "error" in output.lower() or len(output) == 0: # TODO: if error occurs in a cinema/movie ?
         logging.info("PHP failed: %s." % output)
@@ -137,3 +137,5 @@ class BackendMovie(Backend):
         return("Usage pour cine: 'cine; [titre] ; [zip] pour obtenir les séances du filme [titre] "
                "autour de [zip]. Autre usage: 'cine; [nom de cinema]' pour obtenir toutes les séances "
                "de la journée dans [nom de cinema].")
+
+bMovie = BackendMovie()

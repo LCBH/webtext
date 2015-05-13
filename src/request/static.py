@@ -27,6 +27,7 @@
 """ Static data. """
 
 from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+from random import random
 
 ########### REQUESTS ############
 # Navigation
@@ -46,6 +47,7 @@ WIKI="wiki"
 MOVIES="cine"
 FORECASTS="meteo"
 TRAFIC="trafic"
+YELP="yelp"
 HELP = "aide"
 # Help messages
 HELPMESS = (
@@ -53,12 +55,13 @@ HELPMESS = (
     "le nom d'un des services existant (velo, yelp, trafic, ratp, cine, meteo, wiki), et argument1, argument2, etc. sont "
     "les arguments de votre requête. "
     "Pour connaître tous les détails d'un service, envoyer 'aide; nomService'. "
+    "Si la réponse que vous recevez est trop longue, vous pouvez demander la suite avec 'plus' ou tout le reste avec 'tout'. "
     "Voici maintenant quelques exemples de requêtes: "
     "'" + BIKES + "; [lieux]', "      # pour les velibs autour de [lieux]; "
     "'" + TRAFIC + ", "               # pour récup. les perturbations RATP; "
     "'" + WIKI + "; [recherche]', "   # pour la page wikipedia contenant'requete', renvoie un résumé (argument optio. pour la langue:fr ou en); "
     "'" + FORECASTS + "; [code postal]', " # pour la météo dans [code postal]; "
-    "'" + MOVIES + " [nom] ; [code postal]'." # pour les séances de ciné des films "
+#    "'" + MOVIES + " [nom] ; [code postal]'." # pour les séances de ciné des films "
                                                # "contenant [nom] dans [code postal]; "
 #    "'" + BANK + " pour le montant de mes comptes. "
     )
@@ -67,8 +70,12 @@ HELPMESS = (
 # 611 the the greatest nb. of car. that a multiple SMS can contain
 MAX_CH = 611
 adminEmail = "lucca.hirschi@gmail.com"
-MESS_BUG = ("Désolé, nous avons rencontré une erreur. Il nous serait très "
+MESS_BUG_ = ("Désolé, nous avons rencontré une erreur. Il nous serait très "
             "utile de nous prévenir de ce bug (il suffit d'envoyer un mail à '%s'"
-            "contenant votre numéro, la requête que vous avez faite et l'heure "
-            "et la date à laquelle vous avez reçu ce message)." % adminEmail)
+            "contenant votre numéro de téléphonne ainsi que le code suivant:"
+            % adminEmail)
+MAX_RANDOM = 1000
 
+def MESS_BUG():
+    rand = int(MAX_RANDOM*random())
+    return(MESS_BUG_ + "%d." % rand)

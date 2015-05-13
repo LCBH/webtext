@@ -56,7 +56,7 @@ def trafic_ratp(metro=True, rer=True):
             resp = urllib2.urlopen(url)
         except IOError as e:
             logging.error("trafic_ratp > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
-            return(MESS_BUG)
+            return(MESS_BUG())
         data = json.load(resp)
         if data[K_trafic] == "normal":
             answ += u"[RER] Aucune perturbation."
@@ -78,7 +78,7 @@ def trafic_ratp(metro=True, rer=True):
             resp = urllib2.urlopen(url)
         except IOError as e:
             logging.error("trafic_ratp > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
-            return(MESS_BUG)
+            return(MESS_BUG())
         data = json.load(resp)
         if data[K_trafic] == "normal":
             answ += u"[METRO] Aucune perturbation."
@@ -126,3 +126,5 @@ class BackendTrafic(Backend):
         return("Tapez 'trafic' pour recevoir l'état du trafic RATP (métro et RER)."
                "Vous pouvez limiter la réponse au RER: 'trafic; rer' ou au metro: 'trafic; metro'.")
     
+
+bTrafic = BackendTrafic()
