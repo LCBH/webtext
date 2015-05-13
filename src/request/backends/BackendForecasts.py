@@ -63,6 +63,9 @@ def likelyCorrect(answer):
 class BackendForecasts(Backend):
     backendName = FORECASTS # defined in static.py
 
+    def __init__(self):         # I switch to private only because wetboobs is broken on verlaine :/
+        Backend.__init__(self, is_private = True)
+
     def answer(self, request, config):
         where = request.argsList[0]
         return(forecasts(where, config))
