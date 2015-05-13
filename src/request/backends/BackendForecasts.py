@@ -38,10 +38,11 @@ logging = logging.getLogger(__name__)
 def forecasts(zipcode, config):
     """ Fetch forecasts in Zipcode."""
     logging.info("Starting bankInfo")
-    bashCommandList = ("wetboobs forecasts %s" % zipcode)
+   # (dirty) launch_wetboobs.sh is because wetboob is broken
+    bashCommandList = (os.path.dirname(os.path.abspath(__file__))+ "/launch_wetboobs.sh %s" % (zipcode))
     logging.info("Before subprocess: %s" % bashCommandList)
     try:
-        process = subprocess.Popen(bashCommandList.split(), stdout=subprocess.PIPE)
+        process = subprocess.Popen(['sh'] + bashCommandList.split(), stdout=subprocess.PIPE)
     except OSError as e:
         logging.error("forecasts > Popen | Execution failed:" + str(e))
         return(MESS_BUG())
@@ -62,9 +63,6 @@ def likelyCorrect(answer):
 
 class BackendForecasts(Backend):
     backendName = FORECASTS # defined in static.py
-
-    def __init__(self):         # I switch to private only because wetboobs is broken on verlaine :/
-        Backend.__init__(self, is_private = True)
 
     def answer(self, request, config):
         where = request.argsList[0]

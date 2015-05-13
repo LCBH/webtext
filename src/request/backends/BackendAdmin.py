@@ -37,10 +37,14 @@ logging = logging.getLogger(__name__)
 PATH_HERE = os.path.dirname(os.path.abspath(__file__))
 PATH_LOG = PATH_HERE + "/../../../data/log/handleSMS.log"
 PATH_TESTPY = PATH_HERE + "/../test.py"
+nb_my_log = 6      # this is the number of lines that the current request has produced
+   # this is dirty way to remove them (has to be tweaked any time we add/rm logging info)
 
 def likelyCorrect(a):
     return(a and len(a) > 10)
 
+# Still a problem (to reproduce: meteo request and then log request) + problem in handleSMS (decode uniode
+#cf. file BUG
 class BackendAdmin(Backend):
     backendName = "admin"
 
@@ -50,9 +54,9 @@ class BackendAdmin(Backend):
         if simplifyText(arg1) == "log":
             answ = str("Log: ")
             if arg2:
-                maxi = int(arg2)
+                maxi = int(arg2) + nb_my_log
             else:
-                maxi = 5
+                maxi = 5 + nb_my_log
             bashCommandList = ("tail -n %d %s" % (maxi, PATH_LOG))
             logging.info("Before subprocess: %s" % bashCommandList)
             try:
@@ -63,7 +67,7 @@ class BackendAdmin(Backend):
             output = process.communicate()[0]
             listLines = output.splitlines()
             listLines.reverse()
-            answ += (str("\n")).join(listLines[0:maxi])
+            answ += (str("\n")).join(listLines[nb_my_log:maxi])
             return(answ)
         if simplifyText(arg1) == "test":
             answ = str("Test: ")
@@ -81,6 +85,7 @@ class BackendAdmin(Backend):
             answ += res.split(str("Summary of tests:"))[1]
             return(answ)
 
+    # Warning: 'log' requests cannot be tested easily because when testing, log information is redirected
     def test(self, user):
         reqs = []
         reqs.append(Request(user, "admin", ["log", "size 20"], [], ""))
