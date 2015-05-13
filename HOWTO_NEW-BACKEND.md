@@ -1,5 +1,5 @@
-HOWTO addig a new backend (service)
-===================================
+HOWTO adding a new backend (service)
+====================================
 
 The main working folder is src/request/.
 
@@ -35,7 +35,7 @@ A backend should be defined as a sub-class of the main class 'backend'
 (defined in ./src/request.backends/mainClass.py). Only 3 methods should
 be (re)defined: 'answer', 'help' and 'test'.
 The (main) method 'answer' takes a request and produce an answer.
-The method 'help' will is called returned when one requests 'help; [BackendName]'.
+The method 'help' is called when one requests 'help; [BackendName]'.
 The method 'test' should test all kinds of requests on the backend.
 
 For instance, the backend providing a service 'addition' can be defined like this
@@ -71,7 +71,7 @@ class BackendAdd(Backend):
 (see the file './src/request/backends/BackendAdd.py' for an example).
 Use the following nomenclature 'Backend[BackendName].py' (e.g., 'BackendYelp.py').
 This file must also create an object of this sub-class.
-Use the following nomenclature: 'b[BackendName] (e.g., 'bYelp = BackendYelp()');
+Use the following nomenclature: 'b[BackendName]' (e.g., 'bYelp = BackendYelp()');
 - this module must be imported in backends/main.py by adding the following line:
 ````python
 from Backend[BackendName] import b[BackendName]
@@ -80,9 +80,10 @@ from Backend[BackendName] import b[BackendName]
 
 
 ## Testing
-Type 'python test.py' to launch all tests of all backends (incuding
-the new one you just added). You can also type 'python test.py i' to launch a prompt
-that allows you to interact with webtext (you can type a request and then the answer is displayed).
+- Type 'python test.py' to launch all tests of all backends (incuding
+the new one you just added);
+- Type 'python test.py backend [backendName]' to launch all tests of [backendName];
+- You can also type 'python test.py i' to launch a prompt that allows you to interact with webtext (you can type a request and then the answer is displayed).
 
 
 ## Advanced usages
