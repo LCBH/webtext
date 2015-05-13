@@ -133,6 +133,7 @@ if testBackend:
             else:
                 logging.info("="*5 + "> BROKEN BACKEND <" +"="*5 + "\n")
                 resultsTests[str(backend.name)] = False
+    pp.pprint("Summary of tests:\n")               
     pp.pprint(resultsTests)
 
 

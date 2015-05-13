@@ -24,6 +24,8 @@
 #                                                                         #
 ###########################################################################
 
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+
 import logging
 import subprocess
 
