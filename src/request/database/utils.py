@@ -135,9 +135,9 @@ def printInfo():
     for backend in db['backends']:
         logging.info(backend['backend'] + ", API_key: " + backend['API_key'])
     logging.info("## Table Store, size: " + str(len(db['store'])))
-    logging.info("# Columns: " + str(db['store'].columns))
+    logging.info("# Columns: " + ",".join(db['store'].columns))
     for mess in db['store']:
-        logging.info(mess['user'] + ", nb: " + str(mess['nb']) + ", message: " + str(mess['message']))
+        logging.info(mess['user'] + ", nb: " + str(mess['nb']) + ", message: " + mess['message'])
     logging.info("## Table yelpIDs, size: " + str(len(db['yelpIDs'])))
     logging.info("# Columns: " + str(db['yelpIDs'].columns))
     for busi in db['yelpIDs']:
