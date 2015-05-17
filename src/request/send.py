@@ -66,8 +66,8 @@ def sendTextFree(text, login, password, is_testing=False):
         logging.info("I do not send any SMS (we are testing now!).")
 
 
-def sendTextRasp(text, isçtesting=False):
-    """ Send the mesage [text] through the Raspberry's SIM. """
+def sendTextRasp(text, number, is_testing=False):
+    """ Send the mesage [text] to [number] (of the form +XXYY...) through the Raspberry's SIM. """
     logging.info("Sending using Raspberry's SIM.")
     if type(text) == type(u'unicodesd'):
         text_enc = text.encode('utf8')
@@ -75,7 +75,8 @@ def sendTextRasp(text, isçtesting=False):
         text_enc = text
     encodedText = urllib.quote_plus(text_enc) # url-ize the message's content
     IP_RASP = CONF['config_api']['ip_raspberry']
-    url = ("https://" + IP_RASP + "/sendmsg?msg=%s" % encodedText)
+    url = ("https://" + IP_RASP + "/webtext/api/sendSMS.php?content=%s&number=%s"
+           % (encodedText, str()))
     filename = "./tmp/torm.tmp"
     if not(is_testing):
         try:
@@ -97,7 +98,8 @@ def sendText(texts, user, optionsDict, is_testing=False):
         for text in texts:
             sendTextFree(text, userSend['login'], userSend['password'], is_testing=is_testing)
     elif method == "RASP":
-        sendTextRasp(text, is_testing=is_testing)
+        method = userSend['number']  # string
+        sendTextRasp(text, number, is_testing=is_testing)
     else:
         logging.info("Sending capabiility is not defined for user %s." % (user['login']))
         
