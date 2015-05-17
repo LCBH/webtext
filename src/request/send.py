@@ -38,7 +38,7 @@ from os.path import expanduser
 logging = logging.getLogger(__name__)
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 # -- User Data --
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 
@@ -75,8 +75,9 @@ def sendTextRasp(text, number, is_testing=False):
         text_enc = text
     encodedText = urllib.quote_plus(text_enc) # url-ize the message's content
     IP_RASP = CONF['config_api']['ip_raspberry']
-    url = ("https://" + IP_RASP + "/webtext/api/sendSMS.php?content=%s&number=%s"
-           % (encodedText, str()))
+    api_key = CONF['config_api']['api_secret_key']
+    url = ("https://" + IP_RASP + "/webtext/api/sendSMS.php?content=%s&number=%s&pass=%s"
+           % (encodedText, number, api_key))
     filename = "./tmp/torm.tmp"
     if not(is_testing):
         try:
