@@ -78,11 +78,6 @@ def parseRequest(request, user, is_local, is_testing, config_backends):
     config['is_testing'] = is_testing
     config['config_backends'] = config_backends
 
-    # We make sure no shell injection is possible (actually, Popen prevents most of attacks)
-    request.argList = map(lambda s: s.replace("\n", "[NewLine]"), request.argsList)
-    request.argList = map(lambda s: s.replace(";", "[Semicolons]"), request.argsList)
-    request.argList = map(lambda s: s.replace("'", "[Quote]"), request.argsList)
-
     # We iterate over all existing backeds and check if backendName matches
     for backend in Backend:
         if backend.isRequested(request):
