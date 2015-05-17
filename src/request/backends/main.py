@@ -24,28 +24,32 @@
 #                                                                         #
 ###########################################################################
 
-""" Fetch different types of information using Weboob and some APIs and pretty
-format as a SMS' text."""
+""" Gather all implemented backends and crate corresponding instances. """
 
-from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
-
-import os
-import sys
-import wget                     # wget command (for api free)
-import subprocess               # for launching bash programs
-import urllib                   # used to transform text into url
-import urllib2                  # used to transform text into url
 import logging
-from os.path import expanduser
-import datetime
-import json
+
+from static import *
+
+from mainClass import *
+# For each backend, import the corresponding instance here:
+from BackendForecasts import bForecasts
+from BackendBank import bBank
+from BackendJcdecaux import bJcdecaux
+from BackendTrafic import bTrafic
+from BackendWiki import bWiki
+from BackendMovie import bMovie
+from BackendYelp import bYelp
+from BackendAdmin import bAdmin
+#from BackendRatp import bRatp
+from BackendAdd import bAdd
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
+backendsList = []
+for backend in Backend:
+    backendsList.append(backend)
 
-# API WIKIPEDIA:
-# https://wikipedia.readthedocs.org/en/latest/quickstart.html#quickstart
-
-# API paul grimaud (horaires-ratp-api et trafic):
-# https://github.com/pgrimaud/horaires-ratp-api
+logging.info("Loaded %d backends: %s." %
+             (len(backendsList), 
+              map(lambda b:b.backendName, backendsList)))

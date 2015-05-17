@@ -24,28 +24,3 @@
 #                                                                         #
 ###########################################################################
 
-""" Fetch different types of information using Weboob and some APIs and pretty
-format as a SMS' text."""
-
-from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
-
-import os
-import sys
-import wget                     # wget command (for api free)
-import subprocess               # for launching bash programs
-import urllib                   # used to transform text into url
-import urllib2                  # used to transform text into url
-import logging
-from os.path import expanduser
-import datetime
-import json
-
-# -- Setup Logging --
-logging = logging.getLogger(__name__)
-
-
-# API WIKIPEDIA:
-# https://wikipedia.readthedocs.org/en/latest/quickstart.html#quickstart
-
-# API paul grimaud (horaires-ratp-api et trafic):
-# https://github.com/pgrimaud/horaires-ratp-api

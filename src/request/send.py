@@ -36,25 +36,70 @@ from os.path import expanduser
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
+# -- Static data (install). --
+REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
+# -- User Data --
+execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 
-def sendTextFree(text, login, password):
+
+def sendTextFree(text, login, password, is_testing=False):
     """ Send the message [text] through the Free API
     (so only to the corresponding nb.)."""
     logging.info("Sending using FREE API....")
-    encodedText = urllib.quote_plus(text) # url-ize the message's content
+    if type(text) == type(u'unicodesd'):
+        text_enc = text.encode('utf8')
+    else:
+        text_enc = text
+    encodedText = urllib.quote_plus(text_enc) # url-ize the message's content
     url = ('https://smsapi.free-mobile.fr/sendmsg?user=%s&pass=%s&msg=%s'
            % (login, password, encodedText))
     filename = "./tmp/torm.tmp"
-    # TOOD: do not wget when testing (see tests.py)
-    out = wget.download(url,out=filename)
-    os.remove(filename)
+    if not(is_testing):
+        try:
+            out = wget.download(url,out=filename)
+            os.remove(filename)
+        except IOError as e:
+            logging.error("sendTextFree > wget | I/O error({0}): {1}".format(e.errno, e.strerror))
+            exit(0)
+    else:
+        logging.info("I do not send any SMS (we are testing now!).")
 
-def sendText(text, user):
+
+def sendTextRasp(text, number, is_testing=False):
+    """ Send the mesage [text] to [number] (of the form +XXYY...) through the Raspberry's SIM. """
+    logging.info("Sending using Raspberry's SIM.")
+    if type(text) == type(u'unicodesd'):
+        text_enc = text.encode('utf8')
+    else:
+        text_enc = text
+    encodedText = urllib.quote_plus(text_enc) # url-ize the message's content
+    IP_RASP = CONF['config_api']['ip_raspberry']
+    url = ("https://" + IP_RASP + "/webtext/api/sendSMS.php?content=%s&number=%s"
+           % (encodedText, str()))
+    filename = "./tmp/torm.tmp"
+    if not(is_testing):
+        try:
+            out = wget.download(url,out=filename)
+            os.remove(filename)
+        except IOError as e:
+            logging.error("sendTextRasp > wget | I/O error({0}): {1}".format(e.errno, e.strerror))
+            exit(0)
+    else:
+        logging.info("I do not send any SMS (we are testing now!).")
+    
+
+def sendText(texts, user, optionsDict, is_testing=False):
     """ Send the message [text] to [user]."""
     logging.info("Starting sendTextFREE.")
     userSend = user['sendSMS']
-    if userSend['method'] == "FREE_API":
-        sendTextFree(text, userSend['login'], userSend['password'])
+    method = userSend['method']
+    if method == "FREE_API":
+        for text in texts:
+            sendTextFree(text, userSend['login'], userSend['password'], is_testing=is_testing)
+    elif method == "RASP":
+        method = userSend['number']  # string
+        sendTextRasp(text, number, is_testing=is_testing)
     else:
         logging.info("Sending capabiility is not defined for user %s." % (user['login']))
         

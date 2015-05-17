@@ -27,87 +27,195 @@
 """ Parse a request and using Fetch, return the required answer.
 We thus define here the conventions of requests."""
 
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+
 import logging
+
 import fetch
+import database.db
+
+from static import *
+from utils import *
+from backends.main import Backend
+from request import Request
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
+          
+        
+# -- Requests --
+# Each received SMS is interpreted either as a (i) navigation command, as a (ii) request for a backend.
+# (ii) Requests are of the form:
+#         [backendName] [arg1] ; [arg2] ; [...] ; [argn] | [option1] [option2] [option3]
+#    It is also possible to make a bunch of requests at once using
+#         [request1] || [request2] || [..] || [requestn]
+#    - backendName is the type of request or a shorcut defined by the user. Currently we support the following backends:
+#      'banque', 'velo', 'wiki', 'cine' and 'trafic';
+#    - arguments can be strings (e.g., movie or location), numbers (e.g. zipcode or hour) etc. ;
+#    - options are optional and allow to precise how the answer will be delivered. We support this list of options:
+#        . 'all': if the answer is long and multiple SMSs are needed, we will receive them all;
+#        . 'transfer [number]' sends the answer to [number] instead of to you;
+#        . 'copy [number]' sends the answer both to you and to [number].
+# (i) Navigation commands can be used after sending a request.:
+#    - 'plus' will send you one more SMS containing the rest of the answer of the previous request you made;
+#    - 'plus [number]' will send you [number] more SMS containing the remaining of the answer of the previous request you made;
+#    - 'all' will send you [number] all remaining SMSs of the answer of the previous request you made.
+#    - 'reset' will reset the queue of remaining SMSs.
 
-# Requests
-BANK="banque"
-BIKES="velo"
-MOVIES="cine"
-FORECASTS="meteo"
-TRAFIC="trafic"
-HELP = "aide"
-HELPMESS = (
-    "Voici comment écrire vos requêtes:"
-    "'" + BIKES + " [lieux]' pour les velibs autour de [lieux]; "
-    "'" + TRAFIC + " pour connaitre toutes les perturbations du réseau RATP; "
-    "'" + MOVIES + " [nom] [code postal]' pour les séances de cinéma des films "
-    "contenant [nom] dans [code postal]; "
-    "'" + FORECASTS + " [code postal]' pour la météo dans [code postal]; "
-    "'" + BANK + " pour récupérer le montant de mes comptes. "
-    " Pour avoir l'aide complète d'un type de requête, envoyer 'aide [requete]' "
-    "(par exemple 'help cine').")
+# Global dictionnary containing options (if there is more than 1 request, options of later requests override previous ones)
+optionsDict = {}
+
+def parseRequest(request, user, is_local, is_testing, config_backends):
+    """ Parse a request (i.e., instance of class Request) and returns the expected answer. """
+    request.argsListStrip = map(lambda s : s.strip(), request.argsList)
+    # words of the first argument (needed for bikes for instance)
+    if len(request.argsList) > 0:
+        wordsFirstArgument = request.argsList[0].split()
+    else:
+        wordsFirstArgument = []
+    config = {}
+    config['is_local'] = is_local
+    config['is_testing'] = is_testing
+    config['config_backends'] = config_backends
+
+    # We iterate over all existing backeds and check if backendName matches
+    for backend in Backend:
+        if backend.isRequested(request):
+            logging.info("Backend '%s' handles the request." % backend.name)
+            return(backend.answerCommon(request, config))
+
+    # If no backend handled the request and we are not in local, maybe we should print some help message
+    if not(is_local) or is_testing:
+        if request.backend == HELP:
+            if len(request.argsList) > 0:
+                for backend in Backend:
+                    if backend.backendName == request.argsList[0].lower().strip():
+                        logging.info("Help message of Backend '%s' is requested." % backend.name)
+                        return(backend.help())
+            else:
+                return(HELPMESS)
+        # If the request if not of the form: "HELP; backend" then we can print some error message
+        extract = ("L'utilisateur %s m'a envoyé le texte %s" % (user['name'], request.raw))
+        answer = (extract + 
+                  ", malheureusement je n'ai pas compris sa requête. " +
+                  HELPMESS)
+        return(answer)
+    else:
+        return None
 
 # Parse the inputted text and output the corresponding answer
-def parseContent(SMScontent, user, is_local=False, is_testing=False):
-    # TODO: define a common structure for requests ["backend request args] ?
-    # extract word per word the request
-    # We start with the case: should be executed in local
-    # Search for a shortcut:
-    matches = [u for u in user['shortcuts'] if u[0] == SMScontent]
-    if len(matches) > 0:
-        for requ in matches[0][1]:
-            answer = parseContent(requ, user, is_local, is_testing) + "|| \n" 
-        return(answer)
-    words = SMScontent.split()
-    requestType = words[0].lower()
-    requestContent = words[1:]
-    if requestType == BANK:
-        if is_local:
-            if user['login'] == "luccaH":
-                if requestContent != [] and requestContent[0].lower() == "details":
-                    return(fetch.bankInfo(True))
-                else:
-                    return(fetch.bankInfo())
+def parseContent(SMScontent, user, config_backends, is_local, is_testing):
+    """ Parse the SMS and produce the list of required answers."""
+    # --- We extract the list of requests ---
+    listRequests = SMScontent.split(SEP_REQ)
+    answer = []
+    for request in listRequests:
+        requestStrip = request.strip()
+        requestStripLower = requestStrip.lower()
+        # --- We check whether the request is actually a shortcut ---
+        matches = [u for u in user['shortcuts'] if u[0] == requestStrip]
+        if len(matches) > 0:
+            logging.info("A request correspond to a shortcut...")
+            requestS = matches[0][1]
+            answ_req = parseContent(requestS, user, config_backends, is_local, is_testing)
+            if not(answ_req) == None:
+                answer += answ_req
+        # --- We check wheter the request is actually a navigation command ---
+        elif (NEXT == requestStripLower) or (ALL == requestStripLower) or (CLEAR == requestStripLower):
+            logging.info("A request correspond to a navigation command...")
+            if is_local:
+                logging.info("I won't process this kind of request in local ...")
+                return(None)
             else:
-                return("Pas de backend banque configuré pour l'utilisateur %s." % user['login'])
+                if NEXT == requestStripLower:
+                    return(NEXT.title() + ": " + ("".join(database.db.popMessage(user)))) # TODO
+                elif ALL == requestStripLower:
+                    return(ALL.title() + ": " + (" | ".join(database.db.popMessage(user, number=10000)))) # TODO
+                elif CLEAR == requestStripLower:
+                    database.db.clearQueue(user)
+                    return(CLEAR.title() + ": fait.")
+        # --- Otherwise, the request should be a truly request for a given backend ---
+        if SEP_OPTION in request:
+            options = request.split(SEP_OPTION)[1]
+            requestCore = request.split(SEP_OPTION)[0]
         else:
-            logging.info("Je ne vais pas répondre à la requête car je ne suis pas exécuté en local"
-                         "et les données demandées sont privées.")
-            return None
-    # Now, we deal with the case: should be executed in the request server and not in local:   
-    if is_local and not(is_testing):
-        logging.info("Je ne vais pas répondre à la requête car je suis éxécuté en local"
-                     "et les données demandées ne sont privées.")
-        return None
+            options = []
+            requestCore = request
+        # list of options
+        optionsList = map(lambda s : s.strip().lower(), options)
+        # list of arguments
+        argumentsList = requestCore.split(";")
+        if len(argumentsList[0].split()) > 0:  # Ex. cine mommy; 75020
+            # backendNameRaw
+            backendNameRaw = argumentsList[0].split()[0].lower().strip()
+            # list of arguments
+            argumentsList = ([(" ".join(argumentsList[0].split()[1:]))] +
+                             argumentsList[1:]) # X[1:] empty if X contains 1 el.
+        else:                                  # Ex. cine; mommy; 75020
+            # backendNameRaw
+            backendNameRaw = argumentsList[0].lower().strip()
+            # list of arguments
+            argumentsList = argumentsList[1:]    # X[1:] empty if X contains 1 el.
+        backendName = simplifyText(str(backendNameRaw))
+        argumentsList = [el.strip() for el in argumentsList if el.strip() != ""] 
+        # Parsing of options (need to change global values of optionsDict)
+        optionsDict['all'] = (ALL in optionsList)
+        optionsDict['forward'] = (FORWARD in optionsList)
+        optionsDict['copy'] = (COPY in optionsList)
+        request = Request(user, backendName, argumentsList, optionsList, requestCore)
+        logging.debug(str(request))
+        return(parseRequest(request, user, is_local, is_testing, config_backends))
+                          
+def countChar(mess):
+    """ Count the number of characters counting double for special ones."""
+# those car. count double: (|^€{}[]~) 
+    countDouble = ['(','|','^','€','{','}','[',']','~',')']
+    nbDouble = len(filter(lambda c: c in countDouble, mess))
+    return(nbDouble + len(mess))
+
+def splitSize(mess, maxSize):
+    """ Split a message into a list of messages not too long for one text."""
+    if countChar(mess) < maxSize:
+        return([mess])
     else:
-        if requestType == BIKES:
-            where = ' '.join(requestContent)
-            return(fetch.velibParis(where))
-        elif requestType == TRAFIC:
-            return(fetch.trafic_ratp(metro=True, rer=True))
-        elif requestType == FORECASTS:
-            where = requestContent[0]
-            return(fetch.forecasts(where))
-        elif requestType == MOVIES:
-            if len(requestContent) < 3:
-                return "Usage pour cine: 'cine [titre] [zip]'\n"
-            movie = " ".join(requestContent[0:-1])
-            zipcode = requestContent[-1:]
-            return(fetch.showtimes_zip(movie, zipcode))
-        elif requestType == HELP:
-            if len(requestContent) == 0:
-                return(HELPMESS)
-            else:
-                answer = ("Vous avez demandé de l'aide à propos de %s." % requestContent[0])
-                return(answer + " Désolé mais l'aide n'est pas encore complète.")
+        mod = countChar(mess) % maxSize
+        exact = countChar(mess) - mod
+        nbPartsExact = exact / maxSize
+        listSplit = []
+        pos = 0
+        pos2 = 0
+        for i in range(nbPartsExact):
+            while pos2+1 < len(mess) and countChar(mess[pos:pos2+1]) <= maxSize:
+                pos2 += 1
+            part = mess[pos:pos2]
+            listSplit.append(part)
+            pos = pos2
+        lastPart = mess[pos:]
+        if lastPart != "":
+            listSplit.append(lastPart)
+        return(listSplit)
+
+def produceAnswers(SMScontent, user, config_backends, is_local=False, is_testing=False):
+    """ Given a SMS content, it returns the expected answers maybe using multiple SMS. """
+    whole_answer = parseContent(SMScontent, user, config_backends, is_local, is_testing)
+    if whole_answer == None or whole_answer.strip() == "":
+        return None
+    if countChar(whole_answer) > MAX_CH:
+        splitMaxSize = MAX_CH - (4 + 4 + 1 +1) # pour '[XX/XX] '
+        listAnswers = splitSize(whole_answer, splitMaxSize)
+        logging.info("The answers requires multiple SMS: nb=%d." % len(listAnswers))
+        logging.info(str(listAnswers))
+        listAnswersFormat = []
+        for nb in range(len(listAnswers)):
+            answer = listAnswers[nb]
+            answerFormat = ("[" + str(nb+1) + "/" + str(len(listAnswers)) + "] ") + answer
+            listAnswersFormat.append(answerFormat)
+        if optionsDict['all']:
+            return(listAnswersFormat, optionsDict)
         else:
-            extract = ("L'utilisateur %s (numéro: %s) m'a envoyé le texte %s" % (user['name'], user['number'], SMScontent))
-            answer = ("Bonjour, je suis la Raspberry Pi et j'ai un problème. " +
-                      extract +
-                      ", malheureusement je n'ai pas compris sa requête. " + HELPMESS
-                      )
-            return(answer)
+            toSend = listAnswersFormat[0]
+            toStore = listAnswersFormat[1:]
+            database.db.pushMessage(user, toStore)
+            return([toSend], optionsDict)
+    else:
+        return([whole_answer], optionsDict)

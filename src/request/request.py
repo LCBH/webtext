@@ -24,28 +24,20 @@
 #                                                                         #
 ###########################################################################
 
-""" Fetch different types of information using Weboob and some APIs and pretty
-format as a SMS' text."""
+""" Generic classes and methods for requests. """
 
-from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
+class Request:
+    """Based class for requests."""
+    def __init__(self, user, backendName, argsList, optionsList, requestCore):
+        self.user = user                # dico (bad)
+        self.backend = backendName      # UTF8 string
+        self.argsList = argsList        # List of UTF8 strings
+        self.optionsList = optionsList  # List of UTF8 strings
+        self.raw = requestCore  # UTF8 string
 
-import os
-import sys
-import wget                     # wget command (for api free)
-import subprocess               # for launching bash programs
-import urllib                   # used to transform text into url
-import urllib2                  # used to transform text into url
-import logging
-from os.path import expanduser
-import datetime
-import json
+    def __str__(self):
+        return(("User: %s: / " % self.user["login"]) +
+               "BackendName: %s / " % self.backend +
+               "ArgsLst: %s / " % str(self.argsList) +
+               "OptionList: %s." % str(self.optionsList))
 
-# -- Setup Logging --
-logging = logging.getLogger(__name__)
-
-
-# API WIKIPEDIA:
-# https://wikipedia.readthedocs.org/en/latest/quickstart.html#quickstart
-
-# API paul grimaud (horaires-ratp-api et trafic):
-# https://github.com/pgrimaud/horaires-ratp-api
