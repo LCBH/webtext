@@ -20,6 +20,7 @@ CONF = {
         },  
     'config_api' : {
         'api_secret_key' : "XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        'ip_raspberry' : 'XXXXXXXXXXXX',
         },		 
     'users' : [
         {
@@ -28,9 +29,7 @@ CONF = {
             'number' : "06XXXXXXXX",
             'email' : "XXXX@XXXX.XXX",
             'sendSMS' : {
-                'method' : "FREE_API",
-                'login' : "XXXXXXXx",
-                'password' : "XXXXXXXXXXXXXXXX",
+                'method' : "RASP",    # either by using the rasp's SIM (RASP) or free's API (FREE_API)
                 },
             'shortcuts' :  [      # list of (received request, sequence of requests to perform)"
                 ("velo", ["velo marx dormoy", "velo riquet"]),

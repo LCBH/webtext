@@ -66,6 +66,7 @@ testSystem = True
 testDatabase = True
 testBackend = True
 testInteractive = False
+testSend = False
 theBackend = None
 notAdmin = False
 
@@ -86,6 +87,11 @@ if len(sys.argv) > 1:
         testDatabase = False
     if sys.argv[1] == "i":      # interative mode
         testInteractive = True
+    if sys.argv[1] == "send":
+        testSend = True
+        testBackend = False
+        testDatabase = False
+        testSystem = False
 
 if testInteractive:
     userinput = None
@@ -136,11 +142,10 @@ if testBackend:
     pp.pprint("Summary of tests:\n")               
     pp.pprint(resultsTests)
 
-
-# ------OLD STUFF--------
-# Testing max length for SMS (disabled)
-#598 -> OK
-# 640: le découpage fait par FREE - to test
-MESS = "a" * 599 + "b"
-# send.sendText(MESS, user1, {}, is_testing = False)
-#a = 1 + {} + "" + []
+if testSend:
+    # Testing max length for SMS (disabled)
+    #598 -> OK
+    # 640: le découpage fait par FREE - to test
+    NB = 999                    # API FREE's limit is at 999
+    MESS = [str(NB) + "a" * (NB-1-3) + "b"]
+    send.sendText(MESS, user1, {}, is_testing = False)
