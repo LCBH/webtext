@@ -13,10 +13,10 @@ mkdir data/database
 mkdir data/backends
 mkdir src/request/tmpsudo
 # for the webtext's API
-sudo chgrp www-data -R /var/www/webtext
 sudo mkdir /var/www/webtext
 sudo mkdir /var/www/webtext/api
-sudo cp sms.php /var/www/webtext/api
+sudo chgrp www-data -R /var/www/webtext
+sudo cp src/request/sms.php /var/www/webtext/api/
 sudo chmod u+x /var/www/webtext/api/sms.php
 
 
