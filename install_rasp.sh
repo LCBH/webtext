@@ -10,6 +10,8 @@ mkdir data/SMS/sent
 mkdir data/SMS/outbox
 chown gammu -R data
 #Set up sendSMS.php script
+sudo apt-get install apache2
+# -> enable SSL (should answer to HTTPS requests)
 sudo mkdir /var/www/webtext
 sudo mkdir /var/www/webtext/api
 sudo chgrp www-data -R /var/www/webtext
