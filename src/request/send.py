@@ -38,7 +38,7 @@ from os.path import expanduser
 logging = logging.getLogger(__name__)
 # -- Static data (install). --
 REQUEST_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
+PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../"
 # -- User Data --
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 
