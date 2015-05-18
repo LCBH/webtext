@@ -12,6 +12,8 @@ logformat = textalldate
 [smsd]
 service = files
 pin = 0000
+OutboxFormat = unicode
+TransmitFormat = unicode
 
 logfile = /home/lutcheti/webtext/data/log/smsd.log
 logformat = textalldate
