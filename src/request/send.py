@@ -70,15 +70,18 @@ def sendTextRasp(text, number, is_testing=False):
     """ Send the mesage [text] to [number] (of the form +XXYY...) through the Raspberry's SIM. """
     logging.info("Sending using Raspberry's SIM.")
     if type(text) == type(u'unicodesd'):
+        logging.info("Text is unicodesd, we go to UTF8.")
         text_enc = text.encode('utf8')
     else:
         text_enc = text
     encodedText = urllib.quote_plus(text_enc) # url-ize the message's content
     IP_RASP = CONF['config_api']['ip_raspberry']
     api_key = CONF['config_api']['api_secret_key']
+    number = urllib.quote_plus(number)
     url = ("https://" + IP_RASP + "/webtext/api/sendSMS.php?content=%s&number=%s&pass=%s"
            % (encodedText, number, api_key))
     filename = "./tmp/torm.tmp"
+    logging.info(url)
     if not(is_testing):
         try:
             out = wget.download(url,out=filename)

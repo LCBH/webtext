@@ -143,9 +143,9 @@ if testBackend:
     pp.pprint(resultsTests)
 
 if testSend:
-    # Testing max length for SMS (disabled)
-    #598 -> OK
-    # 640: le découpage fait par FREE - to test
     NB = 999                    # API FREE's limit is at 999
-    MESS = [str(NB) + "a" * (NB-1-3) + "b"]
+    NB = 160                    # limit one SMS by Gammu
+    NB = 2001                   # limit multiple SMSs by Gammu (can be bigger)
+    NB = 1750                   # limit multiple SMSs by Gammu - UR'size (max 2000)
+    MESS = [str(NB) + "a" * (NB-1-3-1) + "b"]
     send.sendText(MESS, user1, {}, is_testing = False)

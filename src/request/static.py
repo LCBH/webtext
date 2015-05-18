@@ -67,8 +67,12 @@ HELPMESS = (
     )
 
 ############## OTHER STUFF ##############
-# 611 the the greatest nb. of car. that a multiple SMS can contain
-MAX_CH = 611
+# Maximum characters in a single SMS
+MAX_CH = 999  # Note:
+    # NB = 999                    # API FREE's limit is at 999
+    # NB = 160                    # limit one SMS by Gammu
+    # NB = 2001                   # limit multiple SMSs by Gammu (can be bigger)
+    # NB = 1750                   # limit multiple SMSs by Gammu - UR'size (max 2000)
 adminEmail = "lucca.hirschi@gmail.com"
 MESS_BUG_ = ("Désolé, nous avons rencontré une erreur. Il nous serait très "
             "utile de nous prévenir de ce bug (il suffit d'envoyer un mail à '%s'"
