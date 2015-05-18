@@ -92,15 +92,16 @@ def sendTextRasp(text, number, is_testing=False):
 
 def sendText(texts, user, optionsDict, is_testing=False):
     """ Send the message [text] to [user]."""
-    logging.info("Starting sendTextFREE.")
+    logging.info("Starting sendText.")
     userSend = user['sendSMS']
     method = userSend['method']
     if method == "FREE_API":
         for text in texts:
             sendTextFree(text, userSend['login'], userSend['password'], is_testing=is_testing)
     elif method == "RASP":
-        method = userSend['number']  # string
-        sendTextRasp(text, number, is_testing=is_testing)
+        number = user['number']  # string
+        for text in texts:
+            sendTextRasp(text, number, is_testing=is_testing)
     else:
         logging.info("Sending capabiility is not defined for user %s." % (user['login']))
         
