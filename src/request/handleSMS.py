@@ -127,6 +127,13 @@ if __name__ == "__main__":
     if not(ofb(IS_LOCAL)):
         # in tha that case the api's secret key a password is required
         PASSWORD = sys.argv[5]
+        if len(sys.argv) > 6 and sys.argv[6] == "stdout":
+            # Remove all handlers associated with the root logger object.
+            for handler in logging.root.handlers[:]:
+                logging.root.removeHandler(handler)
+            logging.basicConfig(level=logging.DEBUG,
+                                format='%(asctime)s %(levelname)s %(name)s:  %(message)s',
+                                datefmt='%H:%M:%S')
         main(is_testing=ofb(IS_TESTING), is_local=False, content=SMScontent, number=SMSnumber, password=PASSWORD)
     else:
         main(is_testing=ofb(IS_TESTING), is_local=True, content=SMScontent, number=SMSnumber)
