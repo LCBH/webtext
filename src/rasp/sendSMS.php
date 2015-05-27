@@ -13,17 +13,16 @@
 // mb_internal_encoding('UTF-8');
 
 $PROGRAM="/home/lutcheti/webtext/src/rasp/sendSMS.sh";
-$CONTENT = $_GET['content'];
-$NUMBER = $_GET['number'];
-$API_SECRET_KEY = $_GET['pass'];
+$CONTENT = escapeshellarg($_GET['content']);
+$NUMBER = escapeshellarg($_GET['number']);
+$API_SECRET_KEY = escapeshellarg($_GET['pass']);
 
 // echo mb_detect_encoding($CONTENT);
 
 
 echo "<pre>Before</pre>";
 echo "<pre>Input: content: '$CONTENT', number: '$NUMBER', api_secret_key: '$API_SECRET_KEY'.</pre>";
-$output = shell_exec('sudo /home/lutcheti/webtext/src/rasp/sendSMS.sh "'.$NUMBER.'" "'.$API_SECRET_KEY.'" "'.$CONTENT.'" ');
-// $output2 = shell_exec('echo "'.$NUMBER.'" "'.$API_SECRET_KEY.'" "'.$CONTENT.'" ');
+$output = shell_exec('sudo /home/lutcheti/webtext/src/rasp/sendSMS.sh ' . ' ' . $NUMBER . ' ' . $API_SECRET_KEY . ' ' . $CONTENT);
 echo "<pre>Output: $output.</pre>";
 echo "<pre>After</pre>";
 ?>
