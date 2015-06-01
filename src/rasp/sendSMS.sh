@@ -4,6 +4,8 @@
 source /home/lutcheti/webtext/config_rasp.cfg
 if [ "$2" = "$API_SECRET_KEY" ]
 then
+  echo "OK"
   cd /home/lutcheti/webtext/data/SMS/outbox
   sudo gammu-smsd-inject -c /etc/gammu-smsdrc TEXT $1 -len 2001 -textutf8 "$3"
 fi
+echo "Done"
