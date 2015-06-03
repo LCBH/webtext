@@ -142,6 +142,10 @@ def printInfo():
     logging.info("# Columns: " + str(db['yelpIDs'].columns))
     for busi in db['yelpIDs']:
         logging.info(busi['user'] + ", nb: " + str(busi['nb']) + ", name: " + busi['name'])
+    logging.info("## Table anonym, size: " + str(len(db['anonym'])))
+    logging.info("# Columns: " + str(db['anonym'].columns))
+    for user in db['anonym']:
+        logging.info(str(user['phoneNumber']) + ", dateAdded: " + str(user['dateAdded']) + ", nbRequests: " + str(user['nbRequests']))
        
 
 def exportJson(tableName='users', filename=str('toRemove.json')):

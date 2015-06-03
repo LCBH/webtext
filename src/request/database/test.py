@@ -79,6 +79,24 @@ def testUtils():
     dat.pushMessage({'login' : 'lutcheti'}, ["[1/2] AHAH", "[2/2] REAHAHAH"])
     logging.info("POP: ")
     logging.info(dat.popMessage({'login' : 'lutcheti'}))
+    
+    nT = "0632368092"
+    logging.info("\n" + "#"*20 + " ANONYMS " + 20*"#")
+    logging.info("Clear Table..")
+    dat.clearAno()
+    logging.info("Add Anonyms %s" % (str(nT)))
+    dat.addAno(nT)
+    logging.info("A 3 requests...")
+    dat.addRequest(nT)
+    dat.addRequest(nT)
+    dat.addRequest(nT)
+    logging.info("hasReached?: ")
+    logging.info(dat.hasReachedLimit(nT))
+    logging.info("Add 20 more requests.")
+    for i in range(20):
+        dat.addRequest(nT)
+    logging.info("hasReached?: ")
+    logging.info(dat.hasReachedLimit(nT))
 
 
     logging.info("\n" + "#"*20 + " YELP IDs businesses " + 20*"#")
@@ -107,6 +125,8 @@ def testUtils():
     logging.info(utils.exportJson(tableName='store'))
     logging.info(" YelpIDs:")
     logging.info(utils.exportJson(tableName='yelpIDs'))
+    logging.info(" Anonym:")
+    logging.info(utils.exportJson(tableName='anonym'))
 
 testUtils()
 

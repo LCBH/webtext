@@ -35,6 +35,7 @@ import datetime
 import json
 import logging
 import datetime
+from datetime import timedelta
 import dataset
 
 import utils
@@ -45,6 +46,14 @@ logging = logging.getLogger(__name__)
 def dateToInt(date):
     """ We need to convert date into integer because dataset does not handle correctly datetime.datetime objects using SQLite. """
     return(int(10*(date - datetime.datetime(1970,1,1)).total_seconds()))
+
+def intToDate(number):
+    """ Convert from integer to date. """
+    number = int(number)
+    dateN = datetime.datetime.now()
+    numberNow = int(10*(dateN - datetime.datetime(1970,1,1)).total_seconds())
+    diffSec = (numberNow - number)/10
+    return(dateN +  timedelta(seconds=diffSec))
 
 # ----- MULTIPLE MESSAGES
 
@@ -93,9 +102,81 @@ def clearQueue(user):
     table = dB['store']
     table.delete(user=user['login'])
     
+# ----- ANONYMS
+labelAno = "anonym"
+SEP = ";;;a&;;"            # used to split lists of unicode into unicode
+maxRequestsDate = 40     # max requests stored in DB
+elapseMinutes = 30
+maxInElapse = 20
+
+# COL: phone number, date added, nbRequests, list of 40 last request dates
+def clearAno():
+    dB = utils.connect()
+    table = dB[labelAno]
+    table.delete()
+    
+def addAno(number):
+    """ Add a new anonymous user to the db. """
+    dB = utils.connect()
+    table = dB[labelAno]
+    date = datetime.datetime.now()
+    dateInt = dateToInt(date)
+    toStore = {
+        'phoneNumber' : number,
+        'dateAdded' : dateInt,
+        'nbRequests' : 0,
+        'lastRequests' : (SEP).join([]),
+        }
+    table.insert(toStore)
+
+def addRequest(number):
+    """ Add a new request to an existing anonymous user's entry. """
+    dB = utils.connect()
+    table = dB[labelAno]
+    lastStored = table.find(phoneNumber=number)
+    lastStoredList = list(lastStored)
+    if len(lastStoredList) != 1:
+        logging.error("getAnoConsumption > Not exactly one entry found.")
+        return(None)
+    else:
+        data = lastStoredList[0]
+        oldRequestsDate = data['lastRequests'].split(SEP)
+        date = datetime.datetime.now()
+        dateInt = dateToInt(date)
+        requestsDate = [str(dateInt)] + oldRequestsDate
+        requestsDate = requestsDate[0:maxRequestsDate]
+        toStore = {
+            'phoneNumber' : number,
+            'nbRequests' : data['nbRequests'] + 1,
+            'lastRequests' : (SEP).join(requestsDate),
+            }
+        table.update(toStore, ['phoneNumber'])
+
+def hasReachedLimit(number):
+    """ Does 'number' has reached the limit. """
+    dB = utils.connect()
+    table = dB[labelAno]
+    lastStored = table.find(phoneNumber=number)
+    lastStoredList = list(lastStored)
+    if len(lastStoredList) != 1:
+        logging.error("getAnoConsumption > Not exactly one entry found.")
+        return(None)
+    else:
+        data = lastStoredList[0]
+        lastRequests = data['lastRequests'].split(SEP)
+        dateN = datetime.datetime.now()
+        count = 0
+        for dateInt in lastRequests:
+            if dateInt != "":
+                date = intToDate(dateInt)
+                if date > dateN - timedelta(minutes=elapseMinutes):
+                    count = count + 1
+                else:
+                    break
+        return(count > maxInElapse)
+    
 # ----- YELP
 labelYelp = "yelpIDs"
-SEP = ";;;"                 # used to split lists of unicode into unicode
 
 def getYelpIDs(user, number=None):
     """ Get list of businesses from previous Yelp request. """
@@ -146,7 +227,6 @@ def clearYelpIDs(user):
     table.delete(user=user['login'])
 
 # TODO:
-# - use this databse to store very long answers that would need many SMS to send
 # -> requires a kind of state (for each user)
 # - use it to sore 'reminders'
 
