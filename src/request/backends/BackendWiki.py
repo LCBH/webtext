@@ -39,6 +39,13 @@ logging = logging.getLogger(__name__)
 CHOSENNUMBER = "numero"
 LIST = "liste"
 RECHERCHE = "recherche"
+FR = "fr"
+EN = "en"
+FOUND = "Voici tous les titres d'articles que l'on a trouvé: "
+NOT_FOUND_LIST = "Nous n'avons pas réussi à trouver l'article le plus pertinent parmis cette liste: "
+NOT_FOUND_LIST_CHOOSE = "Vous pouvez maintenant affiner votre recherche."
+NOT_FOUND = "Aucun article ne correspond à votre requête. Essayez avec une requête plus petite."
+FOUND_LIST_DESCR = "%d articles répondent à votre requête. Voici la liste des %d premiers: "
 
 def wikiSummary(request):
     """Fetch the summary of Wikipadia's articles. """
@@ -54,15 +61,15 @@ def wikiSummary(request):
         detailsList = True
     # 'CHOSENNUMBER i' (ask for the i-nth article of the matched articles)
     if CHOSENNUMBER in map(lambda s: s.strip().lower().split()[0], request.argsList[1:]):
-        chosenNumber = int(filter(lambda s: s.strip().lower().split()[0] == "numero", request.argsList[1:])[0].split()[1])
+        chosenNumber = int(filter(lambda s: s.strip().lower().split()[0] == CHOSENNUMBER, request.argsList[1:])[0].split()[1])
     #'RECHERCHE' (make a research instead of looking for the summary)
     if RECHERCHE in map(lambda s: s.strip().lower(), request.argsList[1:]):
         onlyResearch = True
     # languages: "fr" or "en" for the moment
-    if "en" in map(lambda s: s.strip().lower(), request.argsList[1:]):
-        wikipedia.set_lang("en")
-    if "fr" in map(lambda s: s.strip().lower(), request.argsList[1:]):
-        wikipedia.set_lang("fr")
+    if EN in map(lambda s: s.strip().lower(), request.argsList[1:]):
+        wikipedia.set_lang(EN)
+    if FR in map(lambda s: s.strip().lower(), request.argsList[1:]):
+        wikipedia.set_lang(FR)
 
     # -- FECTHING -- 
     max_nb_results = 10
@@ -73,7 +80,7 @@ def wikiSummary(request):
 
     if onlyResearch:
         searchs = wikipedia.search(searchText, results = max_nb_searchs)
-        answ += ("Voici tous les titres d'articles que l'on a trouvé: [" +
+        answ += (FOUND + "[" +
                  ",".join(searchs) + "].")
         return(answ)
     # safe access to the Wiki'API
@@ -107,18 +114,18 @@ def wikiSummary(request):
     # -- ANSWER --
     # Fail to resolve ambiguity
     if failSuggest:
-        answ += ("Nous n'avons pas réussi à trouver l'article le plus pertinent parmis cette liste: " +
+        answ += (NOT_FOUND_LIST +
                  "["  + ", ".join(options) + "]. " +
-                 "Vous pouvez maintenant affiner votre recherche.")
+                 NOT_FOUND_LIST_CHOOSE)
         return(answ)
     # No articles matched the request
     if options and (len(options) == 0 or not(len(options) > number - 1)):
-        answ += "Aucun article ne correspond à votre requête. Essayez avec une requête plus petite."
+        answ += NOT_FOUND
         return(answ)
     # Strictly more than 1 article matches the request
     if options and len(options) > 1:
         if detailsList:
-            answ += (("%d articles répondent à votre requête. Voici la liste des %d premiers: " % (nbOptions, max_nb_results))
+            answ += ((FOUND_LIST_DESCR % (nbOptions, max_nb_results))
                      + "[" + ", ".join(options) + "]. ")
             if chosenNumber:
                 answ += ("Voici le %d-ème: " % chosenNumber)
