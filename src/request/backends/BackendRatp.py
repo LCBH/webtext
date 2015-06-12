@@ -226,17 +226,17 @@ def decode_time(time):
 # # line.encode('utf-8')
 
 
-fromName = "Tolbiac"
-toName = "Marx-Dormoy"
-print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
+# fromName = "Tolbiac"
+# toName = "Marx-Dormoy"
+# print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
 
-fromName = "Porte d'orléans"
-toName = "nation"
-print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
+# fromName = "Porte d'orléans"
+# toName = "nation"
+# print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
 
-fromName = "Bagneux"
-toName = "Chapelle"
-print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
+# fromName = "Bagneux"
+# toName = "Chapelle"
+# print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
 
 class BackendRatp(Backend):
     backendName = "ratp"
