@@ -40,6 +40,7 @@ import pprint
 from geoOfAddress import listOfChoices
 
 from static import *
+from utils import *
 from mainClass import *
 
 # -- Setup Logging --
@@ -88,7 +89,7 @@ def findCoordsStation(name):
 def findPlace(name):
     """ Find a place using MapQuest matching 'name'."""
     listPlaces = listOfChoices(name, 20)
-    if len(listPlaces) == 0:
+    if listPlaces == None or len(listPlaces) == 0:
         logging.debug("No places found.")
         return None
     # Paris in priority
@@ -98,6 +99,7 @@ def findPlace(name):
     return(listPlaces[0])
 
 def findCoords(name):
+    """ Find a place using RATP CVS or MapQuest matching 'name'."""
     coords = findCoordsStation(name)
     if coords == []:
         logging.info("[findCoords] No station found, we will try with MapQuest.")
@@ -107,7 +109,7 @@ def findCoords(name):
             res = (coords, place['address'])
         else:
             logging.warning("[findCoords] No station found, No place found. Sorry.")
-            return "Nous n'avons pas trouvé d'arrêt correspondat à "+toName
+            raise Exception("Nous n'avons pas trouvé d'arrêt correspondat à "+ name)
     else:
         res = (coords, "Station %s " % name)
     logging.debug("Place found %s." % (str(res)))
@@ -140,16 +142,21 @@ def makeRequest(fromCoords, toCoords, departure=None, arrival=None):
 #                 'forbidden_uris[]' : #If you want to avoid lines, modes, networks, etc.
                  # 'first_section_mode[]' : "walking", "bss"
                  # 'last_section_mode[]' : "bss",
-                 'max_duration_to_pt' : 20*60, # max time (in sec.) to reach public transport by bike or walk
-                 'walking_speed' : 4.5*ratio, #(4.5km/h)         # default: 1.12 m/s (4 km/h)
-                 'bike_speed' : 18*ratio, # (18 km/h)           # default: 4.1 m/s (14.7 km/h)
-                 'bss_speed' : 18*ratio, # (18 km/h)   bike haring        # default: 4.1 m/s (14.7 km/h)
 #                 'min_nb_journeys' : Minimum number of different suggested trips More in multiple_journeys
 #                 'min_nb_journeys' : Maximum number of different suggested trips More in multiple_journeys
 #                 'count' : Fixed number of different journeys More in multiple_journeys
 #                 'max_nb_transfers' : 7,     # default: 10
                  'disruption_active' : True, # take disruptions into account
                  }
+    paramDicoSpeed = {
+#        'max_duration_to_pt' : 20*60, # max time (in sec.) to reach public transport by bike or walk
+        'walking_speed' : 4.5*ratio, #(4.5km/h) (default: 1.12 m/s (4 km/h))
+        'bike_speed' : 18*ratio, # (18 km/h) (default: 4.1 m/s (14.7 km/h))
+        'bss_speed' : 18*ratio, # (18 km/h)  bike haring (default: same)
+        }
+    if True:                    # TODO
+#        paramDico = paramDico + paramDicoSpeed # TODO
+        pass
     payload = {
         'op': 'login-main',
         'user': navitiaKey,
@@ -195,19 +202,72 @@ def parseDate(dateStr):
     date = datetime.datetime(*structDate[:6])
     return(date)
 
-def journey(fromName, toName, departure=None, arrival=None):
+def summaryJourneys(journey):
+    """Give a quick overview of all returned journeys (e.g., """
+    nb = len(journeys)
+    i = 0
+    res = ""
+    for journey in journeys:
+        i += 1
+        dateDeparture = parseDate(journey["departure_date_time"])
+        dateArrival = parseDate(journey["arrival_date_time"])
+        duration = journey["duration"]
+        nbTransfers = journey["nb_transfers"]
+        typeJ = journey["type"]     # best, rapid, no_train, comfort, fastest, etc.
+        logging.debug("Journey: type: %s, duration: %s, nb. transfers: %s." % (typeJ, printDuration(duration), nbTransfers))
+        
+        # Parsing the response
+#        res += ("Départ à %s, arrivé à %s. " % (printDate(dateDeparture), printDate(dateArrival)))
+
+        for section in journey["sections"]:
+            summaryS = []
+            typeS = section["type"]
+            durationS = section["duration"]
+            # For some types we just stay at the same place
+            if typeS == "bss_rent":     # take a velib 
+                summaryS.append("velib")
+            # Other types (there exist 'from' and 'to')
+            else:
+                modeS = section["mode"] if "mode" in section.keys() else ""
+                fromS, toS = section["from"], section["to"]
+                fromNameS, toNameS = fromS["name"], toS["name"]
+                displayInfoS = (section["display_informations"]
+                                if "display_informations" in section.keys()
+                                else "")
+                transferTypeS = (section["transfer_type"]
+                                 if "transfer_type" in section.keys()
+                                 else "")
+                depDateS, arDateS = section["departure_date_time"], section["arrival_date_time"]
+                if typeS == "public_transport":
+                    typeTransport = displayInfoS['commercial_mode'].replace("RER","RER").replace("métro","M") # TODO
+                    lineTransport = displayInfoS['code']
+                    directionTransport = displayInfoS['direction']
+                    summaryS.append("%s %s" % (typeTransport, lineTransport))
+        res += str(i) + ": " + (" - ".join(summaryS)) + "(" + printDuration + ")\n"
+    return(res)
+
+def journey(fromName, toName, departure=None, arrival=None, summary=False):
     """ Given departure and arrival text descriptions, and at most one datetime among (departure, arrival),
     returns the best journey satisfying all constraints (if no datetetime is given, we look for the first one)."""
     logging.info("Starting ratp")
     # Set up the request
-    (fromCoords,fromPrint) = findCoords(fromName)
-    (toCoords,toPrint) = findCoords(toName)
+    try:
+        (fromCoords,fromPrint) = findCoords(fromName)
+        (toCoords,toPrint) = findCoords(toName)
+    except Exception as inst:
+        return(str(inst.args))
     try:
         data = makeRequest(fromCoords, toCoords, departure, arrival)
     except Exception as inst:
         return(str(inst.args))
     # we never use 'links' part of data:
     data = data["journeys"]
+    summaryJ = summaryJourney(data)
+    if summary:
+        return(summaryJ)
+
+    logging.debug("Some journeys found:\n %s\n." % summaryJ)
+
     # by default we take the first returned journey
     journey = data[0]
 #    pprint.pprint(journey)
@@ -276,28 +336,8 @@ def journey(fromName, toName, departure=None, arrival=None):
         print(textS)            # DEBUG
     return res
 
-
-# For debugging only
-# If this is executed as a script, we parse argv
-if __name__ == "__main__":
-    # fromName = "Tolbiac"
-    # toName = "Marx-Dormoy"
-    # print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
-    fromName = "Tolbiac"
-    toName = "Marx-Dormoy"
-    print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
-    fromName = "75 rue Riquet"
-    toName = "Porte de Vincennes"
-    print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
-    fromName = "50 Rue de la Verrerie, 75004 Paris"
-    toName = "Bagneux"
-    print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
-    # fromName = "Porte d'orléans"
-    # toName = "nation"
-    # print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
-    # fromName = "Bagneux"
-    # toName = "Chapelle"
-    # print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
+def likelyCorrect(a):
+    return(True or "Prendre" in a or "Liste" in a)
 
 class BackendRatp(Backend):
     backendName = "ratp"
@@ -307,38 +347,61 @@ class BackendRatp(Backend):
         expected answer (in Unicode). """
         fromName = request.argsList[0]
         toName = request.argsList[1]
-        res = journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
+        options = map(lambda s: simplifyText(s), request.argsList[2:])
+        summary = "liste" in options
+        if len(request.argsList) > 2:
+            dateArg = request.argsList[2]
+            dateRe = simplifyText(dateArg.split()[0])
+            hourStr = simplifyText(dateArg.split()[1]) # only hour/minute (e.g., 12h34)
+            nowDay = datetime.datetime.now().strftime("%y%m%d")
+            structDate = time.strptime(nowDay + "T" + hourStr, "%y%m%dT%Hh%M")
+            date = datetime.datetime(*structDate[:5])
+            if dateRe == "dep":
+                departure,arrival = date, None
+            else:
+                departure,arrival = None, date
+            res = journey(fromName, toName, departure = departure, arrival=arrival,summary=summary)
+        else:
+            res = journey(fromName, toName, departure = datetime.datetime.now(), arrival=None,summary=summary)
         return(res)
 
     def help(self):
         """ Returns a help message explaining how to use this backend 
         (in Unicode). """
-	return("Type 'ratp; from;to' to get best journey.")
+	return("Demandez 'ratp; lieux1; lieux2' pour recevoir le meilleur itinéraire de lieux1 "
+               "à lieux2 (adresses, stations, lieux, etc.). Options possibles: 'dep [horaire]' ou"
+               "'ar [horaire]' pour préciser l'horaire (format: '12h45') et 'liste' pour avoir"
+               "une liste de résumés d'itinéraires possibles.")
 
     def test(self,user):
         """ Test the backend by inputting different requests and check
         the produced answer. Log everything and returns a boolean denoting
         whether the backend is broken or not (False when broken)."""
-        fromName = "Bagneux"
-        toName = "Porte de Montreuil"
-        res = journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
-        if True or not("street" in res):
-            return False
-        print(res)
-        fromName = "Dormoy Paris"
-        toName = "Mosquée de Paris"
-        res = journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
-        print(res)
-        res = journey("Gare Austerliz", "Bastille", departure = datetime.datetime.now(), arrival=None)
-        print(res)
-        res = journey("Collège Henry IV", "Rue de Charonne", departure = datetime.datetime.now(), arrival=None)
-        print(res)
-        res = journey("Collège Henry IV", "Créteil", departure = datetime.datetime.now(), arrival=None)
-        print(res)
-        if not("street" in res):
-            return False
+        reqs = []
+        def ap(x):
+            reqs.append(Request(user, "ratp", x, [], ""))
+        ap(["Bagneux", "Porte de Montreuil", "dep 23h59"])
+        ap(["Bagneux", "Porte de Montreuil", "ar 21h22"])
+        ap(["Bagneux", "Porte de Montreuil", "ar 21h22", "liste"])
+        ap(["Bagneux", "Porte de Montreuil"])
+        ap(["Dormoy Paris", "Mosquée de Paris"])
+        ap(["Gare Austerliz", "Bastille"])
+        ap(["Collège Henry IV", "Rue de Charonne"])
+        ap(["Collège Henry IV", "Créteil"])
+        ap(["Tolbiac","Marx-Dormoy"])
+        ap(["75 rue Riquet","Porte de Vincennes"])
+        ap(["50 Rue de la Verrerie, 75004 Paris", "Bagneux"])
+        ap(["Porte d'orléans","nation"])
+        ap(["Porte d'orléans","nation", "liste"])
+        ap(["Bagneux","Chapelle"])
+        for r in reqs:
+            logging.info("Checking a request [%s]" % r)
+            a = self.answer(r, {})
+            if a:
+                logging.info(a + "\n")
+            if not(likelyCorrect(a)):
+                return False
         return True
-
 
 bRatp = BackendRatp()
 

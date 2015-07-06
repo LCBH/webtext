@@ -54,7 +54,11 @@ def dicoOfChoices(address) :
     """ Given an address, it returns a dictionnary  with all the choices
     (i.e., places matching address) and their attributes."""
     params = urllib.urlencode({'format' : 'json', 'q' : address.encode("utf8")})
-    response = urllib2.urlopen(lat_long_provider + ("?%s" %params))
+    try:
+        response = urllib2.urlopen(lat_long_provider + ("?%s" %params))
+    except IOError as e:
+        logging.error("BackendRatp > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
+        raise e
     data = json.load(response, encoding='utf-8')
     return(data)
 
@@ -63,6 +67,8 @@ def listOfChoices(address, max_nb):
     at most X choices (i.e., places matching address) along with the list of the corresponding
     (latitude,longitude). """
     dico = dicoOfChoices(address)
+    if dico == None:
+        return None
     lChoices = []
 #    lChoicesGeo = []
     regexp_arrond = re.compile("^ [0-9]{1,2}e$")
