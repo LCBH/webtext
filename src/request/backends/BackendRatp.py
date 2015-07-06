@@ -32,10 +32,12 @@ import os
 from os.path import expanduser
 import csv
 import datetime
+import time
 import urllib                  # used to transform text into url
 import urllib2                  # used to transform text into url
 import json
 import pprint
+from geoOfAddress import listOfChoices
 
 from static import *
 from mainClass import *
@@ -49,13 +51,19 @@ PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 pathData = expanduser(PROJECT_DIR+'data/backends/RATP/static/ratp_arret_graphique_01.csv')
 navitiaKey = CONF['config_backends']['navitia']['API_key']
-prefixQuery ="http://api.navitia.io/v1/journeys"
+prefixQuery ="http://api.navitia.io/v1/coverage/fr-idf/journeys" # limit the coverage to IDF
 
-def coords(row):
-    return(row[1:3])
+pp = pprint.pprint
+
+# -----------------
+# -- COORDINATES --
+# -----------------
+def coordsCVS(row):
+    return([row[1],row[2]])
 
 def findCoordsStation(name):
-    """ Given the name (of part of it), returns GPS coordinates corresponding to the station of same name.."""
+    """ Given the name (of part of it), returns GPS coordinates corresponding to the station of same name
+    according the the CVS file released by RATP (will fail when misspelled)."""
     # Fetch csv
     with open(pathData, 'rb') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=str('#'), quotechar=str('|'))
@@ -69,24 +77,49 @@ def findCoordsStation(name):
                     matched.append(row)
                     break
         else:
-            print "Did not find any."
+            logging.debug("Did not find any.")
             return []
         if len(matched) > 1:
             for row in matched:
                 if (row[-1] in ["metro", "rer"]):
-                    return coords(row)
-        return(coords(matched[0]))
-        
-#TODO: ajouter la possibilité de tester en local (sans internet) avec un json en dump file
-def makeRequest(fromCoords, toCoords, departure=None, arrival=None, isTesting=None):
+                    return coordsCVS(row)
+        return(coordsCVS(matched[0]))
+
+def findPlace(name):
+    """ Find a place using MapQuest matching 'name'."""
+    listPlaces = listOfChoices(name, 20)
+    if len(listPlaces) == 0:
+        logging.debug("No places found.")
+        return None
+    # Paris in priority
+    for place in listPlaces:
+        if "Paris" in place['address']:
+            return(place)
+    return(listPlaces[0])
+
+def findCoords(name):
+    coords = findCoordsStation(name)
+    if coords == []:
+        logging.info("[findCoords] No station found, we will try with MapQuest.")
+        place = findPlace(name)
+        if place != None:
+            coords = [str(place['geo'][0]), str(place['geo'][1])]
+            res = (coords, place['address'])
+        else:
+            logging.warning("[findCoords] No station found, No place found. Sorry.")
+            return "Nous n'avons pas trouvé d'arrêt correspondat à "+toName
+    else:
+        res = (coords, "Station %s " % name)
+    logging.debug("Place found %s." % (str(res)))
+    return(res)
+
+# ---------------  
+# -- JOURNEYS  --
+# ---------------  
+def makeRequest(fromCoords, toCoords, departure=None, arrival=None):
     """ Given departure and arrival GPS coordinates, and at most one datetime among (departure, arrival),
     returns the best journey satisfying all constraints (if no datetetime is given, we look for the first one)."""
-    if isTesting != None:
-        f = open(isTesting, "r")
-        raw = f.read()
-        data = json.dump(raw, encoding='utf-8')
-        # data = json.load(raw, encoding='utf-8')
-        return data
+    # get dateR and dateRepresents (arrival or departure or as soon as possible)
     if departure:
         dateR = departure.strftime("%y%m%dT%H%M")
         dateRepresents = "departure"
