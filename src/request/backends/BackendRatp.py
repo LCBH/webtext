@@ -131,21 +131,24 @@ def makeRequest(fromCoords, toCoords, departure=None, arrival=None):
         dateRepresents = "departure"        
     # Todo: cleaner way
     randomStr = "sdf5s6d4f5345sd5f"
+    ratio = 1000./3600.
     paramDico = {'from' : randomStr.join(fromCoords),
                  'to' : randomStr.join(toCoords),
 #                 'commercial_mode' : '',
                  'datetime' : dateR,
                  'datetime_represents' : dateRepresents,
-#                 'max_duration_to_pt' : 30*60, # max time (in sec.) to reach public transport by bike or walk
-                 'walking_speed' : 1.26, #(4.5km/h)         # default: 1.12 m/s (4 km/h)
-                 'bike_speed' : 5.02, # (18 km/h)           # default: 4.1 m/s (14.7 km/h)
-                 'bss_speed' : 5.02, # (18 km/h)   bike haring        # default: 4.1 m/s (14.7 km/h)
-                 'disruption_active' : True, # take disruptions into account
-#                 'max_nb_transfers' : 0,     # test for velib
-                 # 'first_section_mode[]' : "walking",
-                 # 'first_section_mode[]' : "bss",
-                 # 'last_section_mode[]' : "walking",
+#                 'forbidden_uris[]' : #If you want to avoid lines, modes, networks, etc.
+                 # 'first_section_mode[]' : "walking", "bss"
                  # 'last_section_mode[]' : "bss",
+                 'max_duration_to_pt' : 20*60, # max time (in sec.) to reach public transport by bike or walk
+                 'walking_speed' : 4.5*ratio, #(4.5km/h)         # default: 1.12 m/s (4 km/h)
+                 'bike_speed' : 18*ratio, # (18 km/h)           # default: 4.1 m/s (14.7 km/h)
+                 'bss_speed' : 18*ratio, # (18 km/h)   bike haring        # default: 4.1 m/s (14.7 km/h)
+#                 'min_nb_journeys' : Minimum number of different suggested trips More in multiple_journeys
+#                 'min_nb_journeys' : Maximum number of different suggested trips More in multiple_journeys
+#                 'count' : Fixed number of different journeys More in multiple_journeys
+#                 'max_nb_transfers' : 7,     # default: 10
+                 'disruption_active' : True, # take disruptions into account
                  }
     payload = {
         'op': 'login-main',
@@ -153,6 +156,8 @@ def makeRequest(fromCoords, toCoords, departure=None, arrival=None):
         'passwd': ''
         }
     params = urllib.urlencode(paramDico)
+#    pprint.pprint(params)
+    # TODO: cleaner way (than replace randomStr)
     URL = (prefixQuery + (str("?%s") % params)).replace(randomStr, ";")
     # create a password manager
     password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -163,113 +168,136 @@ def makeRequest(fromCoords, toCoords, departure=None, arrival=None):
     handler = urllib2.HTTPBasicAuthHandler(password_mgr)
     # create "opener" (OpenerDirector instance)
     opener = urllib2.build_opener(handler)
-    # use the opener to fetch a URL
-    opener.open(URL)
-    # Install the opener.
-    # Now all calls to urllib2.urlopen use our opener.
-    urllib2.install_opener(opener)
-    response = urllib2.urlopen(URL)
+    try:
+        # Install the opener.
+        # Now all calls to urllib2.urlopen use our opener.
+        urllib2.install_opener(opener)
+        response = urllib2.urlopen(URL)
+    except IOError as e:
+        logging.error("BackendRatp > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
+        raise Exception(MESS_BUG())
     data = json.load(response, encoding='utf-8')
     return(data)
 
-def journey(fromName, toName, departure=None, arrival=None, isTesting=None):
-    """ Todo."""
+def printDuration(duration):
+    if duration < 3600:
+        return("%sm%ss" % (duration/60, duration % 60))
+    else:
+        return("%sh%sm" % (duration/3600, (duration % 3600)/60))
+
+def printDate(date):
+    """Pretty print dates."""
+    return(date.strftime("%Hh%Mm%Ss"))
+
+def parseDate(dateStr):
+    """ Parse date as returned by Nativia Api."""
+    structDate = time.strptime(dateStr, "%Y%m%dT%H%M%S")
+    date = datetime.datetime(*structDate[:6])
+    return(date)
+
+def journey(fromName, toName, departure=None, arrival=None):
+    """ Given departure and arrival text descriptions, and at most one datetime among (departure, arrival),
+    returns the best journey satisfying all constraints (if no datetetime is given, we look for the first one)."""
     logging.info("Starting ratp")
-    fromCoords = findCoordsStation(fromName)
-    toCoords = findCoordsStation(toName)
-    if toCoords == []:
-        return "Nous n'avons pas trouvé d'arrêt correspondat à "+toName
-    if fromCoords == []:
-        return "Nous n'avons pas trouvé d'arrêt correspondat à "+fromName
-    data = makeRequest(fromCoords, toCoords, departure, arrival, isTesting=isTesting)
-    arrivalTime = decode_time(data["journeys"][0]["arrival_date_time"].encode("utf8"))
+    # Set up the request
+    (fromCoords,fromPrint) = findCoords(fromName)
+    (toCoords,toPrint) = findCoords(toName)
+    try:
+        data = makeRequest(fromCoords, toCoords, departure, arrival)
+    except Exception as inst:
+        return(str(inst.args))
+    # we never use 'links' part of data:
+    data = data["journeys"]
+    # by default we take the first returned journey
+    journey = data[0]
+#    pprint.pprint(journey)
+    dateDeparture = parseDate(journey["departure_date_time"])
+    dateArrival = parseDate(journey["arrival_date_time"])
+    duration = journey["duration"]
+    nbTransfers = journey["nb_transfers"]
+    typeJ = journey["type"]     # best, rapid, no_train, comfort, fastest, etc.
 
-#    pprint.pprint(data)
-    res = ""
-    for edge in data["journeys"][0]["sections"]:
-        res += "[" + edge["type"] + "] " + str(float(edge["duration"])/60.0) + "m\n"
-        if edge["type"]== "bss_rent" or edge["type"] == "bss_put_back":
-            res += ("  " + edge["from"]["name"] + "--> " + edge["to"]["name"] + "\n")
-        if edge["type"]== "street_network":
-            res += ("  " + edge["from"]["name"] + "--> " + edge["to"]["name"]+"\n")
-            res += ("   --> " + edge["mode"] + "\n")
-        if edge["type"] == "public_transport":
-            res += ("   " + edge["from"]["name"] + "--> " + edge["to"]["name"] + "\n")
-            res += ("    --> métro " + edge["display_informations"]["code"].encode("utf8")+"\n")
+    # Parsing the response
+    res = ("Trajet de %s à %s (temps: %s). Départ à %s, arrivé à %s. " %
+           (fromPrint, toPrint, printDuration(duration), printDate(dateDeparture), printDate(dateArrival)))
+    print(res)
 
-            # break
-    departureTime = decode_time(edge['departure_date_time'].encode("utf8"))
-    firstStop = edge["from"]["name"].encode("utf8")
-    network = "RER"
-    # if edge["display_informations"]["network"] == "RATP":
-    #     network = "métro"
-
-    # line = network + " "+edge["display_informations"]["code"].encode("utf8")
-
-
-    
-    # ret = "J'ai compris que tu souhaitais un itinéraire de %s à %s\nIl faut prendre la ligne %s à %s à %s. Arrivée prévu à %s." %(fromName,
-    #                                                                                                                                toName,
-    #                                                                                                                                line,
-    #                                                                                                                                firstStop,
-    #                                                                                                                                departureTime,
-    #                                                                                                                                arrivalTime)
-#    return ret
+    for section in journey["sections"]:
+        typeS = section["type"]
+        durationS = section["duration"]
+        # For some types we just stay at the same place
+        if typeS == "waiting":
+            textS = "Attendre %s. " % printDuration(durationS)
+        elif typeS == "transfer":
+            textS = "Changement (%s). " % printDuration(durationS)
+        elif typeS == "bss_rent":     # take a velib 
+            print(section)
+            logging.info(section)
+            textS = ("Prendre un vélo à %s - %s (%s). " % (fromNameS, toNameS, printDuration(durationS)))
+        elif typeS == "bss_put_back": # put back velib
+            print(section)
+            logging.info(section)
+            textS = ("Reposer un vélo à %s - %s (%s). " % (fromNameS, toNameS, printDuration(durationS)))
+        # Other types (there exist 'from' and 'to')
+        else:
+            modeS = section["mode"] if "mode" in section.keys() else ""
+            fromS, toS = section["from"], section["to"]
+            fromNameS, toNameS = fromS["name"], toS["name"]
+            displayInfoS = (section["display_informations"]
+                            if "display_informations" in section.keys()
+                            else "")
+            transferTypeS = (section["transfer_type"]
+                             if "transfer_type" in section.keys()
+                             else "")
+            depDateS, arDateS = section["departure_date_time"], section["arrival_date_time"]
+            if typeS == "street_network":
+                if modeS == "walking":
+                    textS = ("Marcher de %s à %s (%s). " % (fromNameS, toNameS, printDuration(durationS)))
+                    res += textS
+                elif modeS == "bike":         # ride velib 
+                    textS = ("Rouler en vélo de %s à %s (%s). " % (fromNameS, toNameS, printDuration(durationS)))
+                    res += textS
+                else:
+                    print(section)
+                    logging.info(section)
+                    textS = "QUE DIRE?"
+            elif typeS == "public_transport":
+                typeTransport = displayInfoS['commercial_mode']
+                lineTransport = displayInfoS['code']
+                directionTransport = displayInfoS['direction']
+                textS = ("Prendre le %s %s jusqu'à %s (%s) (direct.: %s...) " %
+                         (typeTransport, lineTransport, toNameS, printDuration(durationS), 
+                          directionTransport[0:10]))
+            else:
+                print(section)
+                logging.info(section)
+                textS = "QUE DIRE?"
+        res += textS
+        print(textS)            # DEBUG
     return res
 
-def decode_time(time):
-    yearmonthday = time.split("T")[0]
-    hoursminsec  = time.split("T")[1]
-    year = yearmonthday[0:4]
-    month = yearmonthday[4:6]
-    day = yearmonthday[6:8]
-    hours = hoursminsec[0:2]
-    minutes = hoursminsec[2:4]
-    secs  = hoursminsec[4:6]
-    return (":".join([hours, minutes, secs]))+ " le " + ("/".join([day, month, year]))
 
-# for debugging Only
-# pp = pprint.PrettyPrinter(indent=4)
-# coords1 = findCoordsStation(fromName)
-# coords2 = findCoordsStation(toName)
-# print(";".join(coords1))
-# print(coords2)
-# data = makeRequest(coords1, coords2, departure = datetime.datetime.now(), arrival=None, isTesting = None)
-# pp.pprint(data.keys())
-# print "-----------------------------------------------"
-# # pp.pprint(data["journeys"][0])
-# # pp.pprint(len(data["journeys"]))
-# arrivalTime = decode_time(data["journeys"][0]["arrival_date_time"].encode("utf8"))
-# print "-----------------------------------------------"
-# for edge in data["journeys"][0]["sections"]:
-#     if edge["type"] == "public_transport":
-#         pp.pprint(edge)
-#         break
-# departureTime = decode_time(edge['departure_date_time'].encode("utf8"))
-# firstStop = edge["from"]["name"].encode("utf8")
-# network = "RER"
-# if edge["display_informations"]["network"] == "RATP":
-#     network = "métro"
-
-# line = network + " "+edge["display_informations"]["code"].encode("utf8")
-
-
-# #departureTime.encode('utf-8') 
-# #firstStop.encode('utf-8')
-# # line.encode('utf-8')
-
-
-fromName = "Tolbiac"
-toName = "Marx-Dormoy"
-print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
-
-fromName = "Porte d'orléans"
-toName = "nation"
-print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
-
-fromName = "Bagneux"
-toName = "Chapelle"
-print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
+# For debugging only
+# If this is executed as a script, we parse argv
+if __name__ == "__main__":
+    # fromName = "Tolbiac"
+    # toName = "Marx-Dormoy"
+    # print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
+    fromName = "Tolbiac"
+    toName = "Marx-Dormoy"
+    print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
+    fromName = "75 rue Riquet"
+    toName = "Porte de Vincennes"
+    print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
+    fromName = "50 Rue de la Verrerie, 75004 Paris"
+    toName = "Bagneux"
+    print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
+    # fromName = "Porte d'orléans"
+    # toName = "nation"
+    # print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
+    # fromName = "Bagneux"
+    # toName = "Chapelle"
+    # print journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
 
 class BackendRatp(Backend):
     backendName = "ratp"
@@ -279,7 +307,7 @@ class BackendRatp(Backend):
         expected answer (in Unicode). """
         fromName = request.argsList[0]
         toName = request.argsList[1]
-        res = journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
+        res = journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
         return(res)
 
     def help(self):
@@ -293,8 +321,39 @@ class BackendRatp(Backend):
         whether the backend is broken or not (False when broken)."""
         fromName = "Bagneux"
         toName = "Porte de Montreuil"
-        res = journey(fromName, toName, departure = datetime.datetime.now(), arrival=None, isTesting = None)
-        return("street" in res)
+        res = journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
+        if True or not("street" in res):
+            return False
+        print(res)
+        fromName = "Dormoy Paris"
+        toName = "Mosquée de Paris"
+        res = journey(fromName, toName, departure = datetime.datetime.now(), arrival=None)
+        print(res)
+        res = journey("Gare Austerliz", "Bastille", departure = datetime.datetime.now(), arrival=None)
+        print(res)
+        res = journey("Collège Henry IV", "Rue de Charonne", departure = datetime.datetime.now(), arrival=None)
+        print(res)
+        res = journey("Collège Henry IV", "Créteil", departure = datetime.datetime.now(), arrival=None)
+        print(res)
+        if not("street" in res):
+            return False
+        return True
 
 
 bRatp = BackendRatp()
+
+
+# TODO:
+#==== recherche de lignes:
+# https://github.com/CanalTP/navitia/blob/dev/documentation/navitia.io/source/integration.rst#specific-parameters
+#ex. https://api.navitia.io/v1/coverage/fr-idf/networks/network:RER/lines
+
+# === recherche de lignes autocomplete
+# https://github.com/CanalTP/navitia/blob/dev/documentation/navitia.io/source/integration.rst#public-transport-objects-autocomplete-pt_objects
+# ex: https://api.navitia.io/v1/coverage/fr-idf/pt_objects?q=bus%20ratp%209&type[]=line&type[]=route
+
+# ==== recherche de lieux via nativia
+# cf. Github /places
+# ex: https://api.navitia.io/v1/coverage/fr-idf/places?q=jardin+des+plantes
+
+# ==== 
