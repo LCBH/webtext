@@ -129,7 +129,7 @@ def findCoords(name):
 def makeRequest(fromCoords, toCoords, departure=None, arrival=None):
     """ Given departure and arrival GPS coordinates, and at most one datetime among (departure, arrival),
     returns the best journey satisfying all constraints (if no datetetime is given, we look for the first one)."""
-    isSporty = False                     # TODO: marche et roule (vélib) plus vite
+    isSporty = True                     # TODO: marche et roule (vélib) plus vite
     # get dateR and dateRepresents (arrival or departure or as soon as possible)
     if departure:
         dateR = departure.strftime("%y%m%dT%H%M")
@@ -156,9 +156,10 @@ def makeRequest(fromCoords, toCoords, departure=None, arrival=None):
 #                 'count' : 100,#Fixed number of different journeys More in multiple_journeys
 #                 'max_nb_transfers' : 0,     # default: 10
                  'disruption_active' : True, # take disruptions into account
+                 'max_duration_to_pt' : 18*60, # (default 15) max time (in sec.) to reach public transport by bike or walk
                  }
     paramDicoSpeed = {
-        'max_duration_to_pt' : 20*60, # max time (in sec.) to reach public transport by bike or walk
+        'max_duration_to_pt' : 30*60, # max time (in sec.) to reach public transport by bike or walk
         'walking_speed' : 4.5*ratio, #(4.5km/h) (default: 1.12 m/s (4 km/h))
         'bike_speed' : 18*ratio, # (18 km/h) (default: 4.1 m/s (14.7 km/h))
         'bss_speed' : 18*ratio, # (18 km/h)  bike haring (default: same)
