@@ -39,6 +39,7 @@ import wget                     # wget command (for api free)
 import subprocess               # for launching bash programs
 import urllib                   # used to transform text into url
 import logging
+import database.db
 from os.path import expanduser
 
 import parse
@@ -91,31 +92,55 @@ def main(is_testing, is_local, content, number, password=""):
 
     user = searchUser(CONF, number)
     if user == None:    
-        logging.warning("I will not process the request since the sender is not in the white list")
-    else:
-        logging.info("The SMS comes from the user %s (name: %s)." % (user['login'], user['name']))
-        # extract config of banckends
-        config_backends = CONF['config_backends']
-        try:
-            outputParse = parse.produceAnswers(content, user, config_backends, is_local=is_local, is_testing=is_testing)
-            if outputParse != None and len(outputParse) == 2:
-                answers, optionsDict = outputParse
-            else:
-                logging.info("parse.produceAnswers returned 'None'...")
-                return None
-        except IOError as e:
-            logging.error("produceAnswers has failed: I/O error({0}): {1}".format(e.errno, e.strerror))
-            exit(0)
-        if answers != None and answers != []:
-            logging.info("Answer is: " + '|| '.join(answers))
-            try:
-                send.sendText(answers, user, optionsDict, is_testing=is_testing)
-                logging.info("END of handleSMS")
-            except IOError as e:
-                logging.error("sendText has failed: I/O error({0}): {1}".format(e.errno, e.strerror))
-                exit(0)
+        logging.warning("The sender is not in the white list.")
+        hasReached = database.db.hasReachedLimit(number)
+        if hasReached == None:
+            logging.warning("A new user will be added to the database...")
+            database.db.addAno(number)
+            logging.info("This new user has the right to make a request.")
+            database.db.addRequest(number)
+        elif hasReached == True: 
+            logging.warning("A known anonymous user seems to spam our server. I do not answer to this one.")
+            return(None)
+        elif hasReached == False:
+            logging.info("A known anonymous user has the right to make a request.")
+            database.db.addRequest(number)
+        # We now create an anonymous user for this number
+        if number[0] == " ":
+            # Means that it was a '+' but it has been URLencoded
+            number = "+" + number[1:]
+        user = {
+            'login' : "Anonymous:" + number,
+            'name' : "ANONYMOUS",
+            'number' : number,
+            'email' : "ANONYMOUS",
+            'sendSMS' : {'method' : "RASP"},
+            'shortcuts' :  []
+            }
+
+    logging.info("The SMS comes from the user %s (name: %s, number: %s)." % (user['login'], user['name'], user['number']))
+    # extract config of banckends
+    config_backends = CONF['config_backends']
+    try:
+        outputParse = parse.produceAnswers(content, user, config_backends, is_local=is_local, is_testing=is_testing)
+        if outputParse != None and len(outputParse) == 2:
+            answers, optionsDict = outputParse
         else:
-            logging.info("Pas de réponse! (privée + distant?).")
+            logging.info("parse.produceAnswers returned 'None'...")
+            return None
+    except IOError as e:
+        logging.error("produceAnswers has failed: I/O error({0}): {1}".format(e.errno, e.strerror))
+        exit(0)
+    if answers != None and answers != []:
+        logging.info("Answer is: " + '|| '.join(answers))
+        try:
+            send.sendText(answers, user, optionsDict, is_testing=is_testing)
+            logging.info("END of handleSMS")
+        except IOError as e:
+            logging.error("sendText has failed: I/O error({0}): {1}".format(e.errno, e.strerror))
+            exit(0)
+    else:
+        logging.info("Pas de réponse! (privée + distant?).")
 
 # If this is executed as a script, we parse argv
 if __name__ == "__main__":

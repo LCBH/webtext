@@ -112,6 +112,8 @@ if testSystem:
     callHandle("trafic", user1['number'])
     callHandle("cine louxor", user2['number'])
     callHandle("meteo 75020", user1['number'])
+    callHandle("aide; trafic", " 33632368092")
+    callHandle("trafic", " 33632368093")
     # callHandle("retour", user1['number'])
     # callHandle("wiki github", user1['number'])
     # callHandle("velo marx dormoy", user1['number'])

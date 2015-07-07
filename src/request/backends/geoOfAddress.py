@@ -34,6 +34,7 @@ import urllib2                  # used to transform text into url
 import logging
 import json
 import re                       # for regexp and match
+import pprint
 
 # for debugging only
 import pprint
@@ -52,8 +53,12 @@ pp = pprint.PrettyPrinter(indent=4)
 def dicoOfChoices(address) :
     """ Given an address, it returns a dictionnary  with all the choices
     (i.e., places matching address) and their attributes."""
-    params = urllib.urlencode({'format' : 'json', 'q' : address})
-    response = urllib2.urlopen(lat_long_provider + ("?%s" %params))
+    params = urllib.urlencode({'format' : 'json', 'q' : address.encode("utf8")})
+    try:
+        response = urllib2.urlopen(lat_long_provider + ("?%s" %params))
+    except IOError as e:
+        logging.error("BackendRatp > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
+        raise e
     data = json.load(response, encoding='utf-8')
     return(data)
 
@@ -62,16 +67,20 @@ def listOfChoices(address, max_nb):
     at most X choices (i.e., places matching address) along with the list of the corresponding
     (latitude,longitude). """
     dico = dicoOfChoices(address)
+    if dico == None:
+        return None
     lChoices = []
-    lChoicesGeo = []
+#    lChoicesGeo = []
     regexp_arrond = re.compile("^ [0-9]{1,2}e$")
     compt = 0
     while (compt < max_nb and compt < len(dico)):
         choice = dico[compt]
-        compt += 1
+        compt = compt + 1
+        typeM = choice['type']
+        classM = choice['class']
         osmType = choice['osm_type']
         address = choice['display_name']
-        if osmType == 'node' and "France" in address:
+        if True or (osmType == 'node' and "France" in address):
             address_words = address.split(',')
             def toRemove(word):
                 if word == ' Paris' or '-de-France' in word or " France" in word:
@@ -80,18 +89,23 @@ def listOfChoices(address, max_nb):
                     return(False)
                 return(True)
             simplified_address = ', '.join(filter(toRemove, address_words))
-            lChoices.append(simplified_address)
-            lChoicesGeo.append((float(choice['lat']), float(choice['lon'])))
-    return(lChoices, lChoicesGeo)
+            lChoices.append({
+                    'address' : simplified_address,
+                    'type' : typeM,
+                    'class' : classM,
+                    'osmType' : osmType,
+                    'geo' : [choice['lon'], choice['lat']],
+                    })
+#            lChoicesGeo.append((float(choice['lat']), float(choice['lon'])))
+    return(lChoices)
 
 # For debugging only
-for e in dicoOfChoices("Dormoy") :
-# for e in listOfChoices("Chapelle",4) :
-    print "--------------------", e
-# (l1,l2) = listOfChoices("Chapelle", 4)
-# pp.pprint(l1)
-# pp.pprint(l2)
-
+# If this is executed as a script, we parse argv
+if __name__ == "__main__":
+    pprint.pprint(listOfChoices(u"Mosquée de Paris", 4))
+    pprint.pprint(listOfChoices(u"Dormoy Paris", 4))
+    pprint.pprint(listOfChoices(u"place Bellecour", 4))
+    
 
 # URL OF THE API'S DOC: 
 # http://open.mapquestapi.com/nominatim/

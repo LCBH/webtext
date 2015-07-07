@@ -69,6 +69,15 @@ NB_BUSI = 10                    # number of businesses displayed for each search
 MAX_CHAR_REVIEW = 200           # maximum characater displayed for each review
 SORT_MODE = 0                   # 0: best matches, 1:distance, 2:ratings (see [1])
 
+# TEXTS
+NOT_FOUND = "Yelp n'a pas trouvé de réponses à votre requête."
+CRIT_ERROR = "Erreur YELP grave: "
+DETAIL = "Détails du lieux "
+BAD_REQ = "Requête mal formée. Rappel: "
+BAD_INDEX = "Votre dernière requête comportait moins de %d réponses. Rappel: "
+LIST = "Liste: "
+RATE = 'Note: '
+
 def printLocation(location):
     """ Pretty print location given by Yelp. """
     if "France" in location[-1]:
@@ -88,12 +97,12 @@ def listBusinesses(request, typeB, location):
             logging.error("BackendYelp > Access to the Yelp's API | I/O error({0}): {1}".format(e.errno, e.strerror))
             return(MESS_BUG())
     except YelpAPI.YelpAPIError as e:
-        loging.critical("Erreur YELP grave: " + e)
+        loging.critical(CRIT_ERROR + e)
         return(produceMessBug())
     listBusinesses = dicoBusinesses['businesses']
     database.db.storeYelpIDs(request.user, listBusinesses)
     if len(listBusinesses) == 0:
-        return("Yelp n'a pas trouvé de réponses à votre requête.")
+        return(NOT_FOUND)
     answ = ""
     i = 1
     for busi in listBusinesses:
@@ -117,9 +126,9 @@ def detailsBusiness(request, idBusiness, no_limit_char_review=False):
             logging.error("BackendYelp > Access to the Yelp's API | I/O error({0}): {1}".format(e.errno, e.strerror))
             return(MESS_BUG())
     except YelpAPI.YelpAPIError as e:
-        loging.critical("Erreur YELP grave: " + e)
+        loging.critical(CRIT_ERROR + e)
         return(produceMessBug())
-    answ = ("Détailles du lieux %s: [%d/5] (%d %s) (%s, %s).\n"
+    answ = (DETAIL + "%s: [%d/5] (%d %s) (%s, %s).\n"
             % (reqBusiness['name'],
                reqBusiness['rating'],
                reqBusiness['review_count'],
@@ -138,12 +147,12 @@ def detailsBusiness(request, idBusiness, no_limit_char_review=False):
                 maxi = len(review['excerpt'])
                 suff = ""
             textReview = review['excerpt'][0:maxi] + suff
-        answ += ('Note: %d -- %s\n' % (review['rating'], textReview))
+        answ += (RATE + '%d -- %s\n' % (review['rating'], textReview))
     return(answ)
 
 
 def likelyCorrect(answer):
-    return(answer and ("(1)" in answer or "Note" in answer))
+    return(answer and ("(1)" in answer or RATE in answer))
 
 class BackendYelp(Backend):
     backendName = YELP
@@ -155,12 +164,12 @@ class BackendYelp(Backend):
         if simplifyText(str(fstWord)) == str(DETAILS):
             # request of type 2
             if len(args[0].split()) != 2:
-                print("Requête mal formée. Rappel: " + self.help())
+                print(BAD_REQ + self.help())
             else:
                 number = int(args[0].split()[1])-1
                 dicoBusinesses = database.db.getYelpIDs(request.user, number=NB_BUSI)
                 if not(number in range(len(dicoBusinesses))):
-                    print("Votre dernière requête comportait moins de %d réponses. Rappel: " % (number + 1) + self.help())
+                    print(BAD_INDEX % (number + 1) + self.help())
                 else:
                     business = dicoBusinesses[number]
                     idBusiness = business["id"]
@@ -171,9 +180,9 @@ class BackendYelp(Backend):
         else:
             # request of type 1
             if len(args) != 2:
-                print("Requête mal formée. Rappel: " + self.help())
+                print(BAD_REQ + self.help())
             else:
-                return("Liste: " + listBusinesses(request, args[0],args[1]))
+                return(LIST + listBusinesses(request, args[0],args[1]))
 
     def test(self, user):
         reqs = []
