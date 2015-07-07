@@ -1,4 +1,10 @@
 # -- coding: utf-8 --
+# TODO: 
+# - enlever les étapes de moins d'une minute ou deux: 
+# - ajouter isSport
+# - TESTER
+# - réfléchir et régle la précision des résultats (adresse seulement pour velib par ex.) et compression des arrêtes métro...
+
 ###########################################################################
 #                                                                         #
 #                       WebText                                           #
@@ -56,6 +62,8 @@ prefixQuery ="http://api.navitia.io/v1/coverage/fr-idf/journeys" # limit the cov
 
 pp = pprint.pprint
 
+### CONFIG
+minDuration = 60                # do not print section with duration <= minDuration s
 # -----------------
 # -- COORDINATES --
 # -----------------
@@ -289,13 +297,16 @@ def journey(fromName, toName, departure=None, arrival=None, summary=False):
            (fromPrint, toPrint, printDuration(duration), printDate(dateDeparture), printDate(dateArrival)))
 
     for section in journey["sections"]:
+        textS = ""
         typeS = section["type"]
         durationS = section["duration"]
         # For some types we just stay at the same place
         if typeS == "waiting":
-            textS = "Attendre %s. " % printDuration(durationS)
+            if durationS > minDuration:
+                textS = "Attendre %s. " % printDuration(durationS)
         elif typeS == "transfer":
-            textS = "Changement (%s). " % printDuration(durationS)
+            if durationS > minDuration:
+                textS = "Changement (%s). " % printDuration(durationS)
         # Other types (there exist 'from' and 'to')
         else:
             modeS = section["mode"] if "mode" in section.keys() else ""
@@ -314,7 +325,8 @@ def journey(fromName, toName, departure=None, arrival=None, summary=False):
                 textS = ("Reposer le vélo à %s (%s). " % (toNameS, printDuration(durationS)))
             elif typeS == "street_network":
                 if modeS == "walking":
-                    textS = ("Marcher de %s à %s (%s). " % (fromNameS, toNameS, printDuration(durationS)))
+                    if durationS > minDuration:
+                        textS = ("Marcher de %s à %s (%s). " % (fromNameS, toNameS, printDuration(durationS)))
                 elif modeS == "bike":         # ride velib 
                     textS = ("Rouler en vélo de %s à %s (%s). " % (fromNameS, toNameS, printDuration(durationS)))
                 else:
@@ -422,9 +434,3 @@ bRatp = BackendRatp()
 # ex: https://api.navitia.io/v1/coverage/fr-idf/places?q=jardin+des+plantes
 
 # ==== 
-
-# TODO: 
-# - enlever les étapes de moins d'une minute ou deux: 
-# - ajouter isSport
-# - TESTER
-# - réfléchir et régle la précision des résultats (adresse seulement pour velib par ex.) et compression des arrêtes métro...
