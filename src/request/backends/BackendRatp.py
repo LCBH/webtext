@@ -378,7 +378,7 @@ class BackendRatp(Backend):
         options = map(lambda s: simplifyText(s), request.argsList[2:])
         summary = "liste" in options
         # Parsing time options
-        optionsTime = map(lambda s : if len(s.split()) > 1 then s.split()[0])
+        optionsTime = map(lambda s : s.split()[0] if len(s.split()) > 1 else s, request.argsList[2:])
         departure, arrival = datetime.datetime.now(), None
         if ("dep" in optionsTime or "ar" in optionsTime):
             dateArg = request.argsList[2]
