@@ -31,6 +31,7 @@ import subprocess
 
 from static import *
 from mainClass import *
+from utils import compactText
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
@@ -66,7 +67,7 @@ class BackendForecasts(Backend):
 
     def answer(self, request, config):
         where = request.argsList[0]
-        return(forecasts(where, config))
+        return(compactText(forecasts(where, config)))
 
     def test(self, user):
         r1 = Request(user, "meteo", ["75020"], [], "")
