@@ -117,15 +117,15 @@ def findCoords(name):
         place = findPlace(name)
         if place != None:
             coords = [str(place['geo'][0]), str(place['geo'][1])]
-            res = (coords, place['address'])
+            res = (coords, place['address'].strip())
         else:
             logging.warning("[findCoords] No station found, No place found. Sorry.")
             raise Exception("Nous n'avons pas trouvé d'arrêt correspondat à "+ name)
     else:
         # in that case, we found a RATP station
-        res = (coords, "la station %s" % name)
+        res = (coords, ("la station %s" % name).strip())
     logging.debug("Place found %s." % (str(res)))
-    return(res.strip())
+    return(res)
 
 # ---------------  
 # -- JOURNEYS  --
@@ -147,8 +147,8 @@ def paramOfOptions(opt):
         'last_section_mode[]' : "bss" if bike else "walking",
         'max_duration_to_pt' : max_duration_walk,  # max time (in sec.) to reach public transport by bike or walk (default 15m)
         'walking_speed' : '%.3f' % (opt['speedWalk']*ratio), #(4.5km/h) (default: 1.12 m/s (4 km/h))
-        'bike_speed' : '%.3f' % (opt['speedBike']*ratio), # (18 km/h) (default: 4.1 m/s (14.7 km/h))
-        'bss_speed' : '%.3f' % (opt['speedBike']*ratio), # (18 km/h)  bike haring (default: same)
+        'bike_speed' : '%.4f' % (opt['speedBike']*ratio), # (18 km/h) (default: 4.1 m/s (14.7 km/h))
+        'bss_speed' : '%.4f' % (opt['speedBike']*ratio), # (18 km/h)  bike haring (default: same)
         }    
     return(dicoParam)
 
@@ -251,8 +251,11 @@ def printPlace(place):
     if isStation:
         if "(Paris)" in name:
             name = name.split(" (Paris)")[0]
-        name = " la stationn " + name
-        return("Station " + name)
+        name = "la station " + name
+        return(name.strip())
+    if "poi" in place.keys() and "address" in place["poi"]:
+        name = name.replace("(Paris)", "").replace("Paris", "")
+        name = name + (" (%s)" % (place["poi"]["address"]["label"]))
     # if there is a ZIP code, no city is needed (e.g., (Paris))
     isAr = name.find("750")
     if isAr != -1:
@@ -446,7 +449,7 @@ class BackendRatp(Backend):
             optionsDico['speedBike'] = 20
             optionsDico['speedWalk'] = 7
         res = journey(fromName, toName, departure=departure, arrival=arrival,summary=summary)
-        return(res)
+        return(compactText(res))
 
     def help(self):
         """ Returns a help message explaining how to use this backend 
