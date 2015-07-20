@@ -33,6 +33,7 @@ import unicodedata
 
 from mainClass import *
 from static import *
+from utils import *
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ RER = "rer"
 def trafic_ratp(metro=True, rer=True):
     """Fetch trafic information of RATP network (for metro or/and RER) using API made by
     Paul Grimaud."""
-    answ = "Voici l'état du trafic RATP: "
+    answ = "Etat du trafic RATP: "
     if rer:
         url = API_trafic + "rer"
         try:
@@ -59,9 +60,9 @@ def trafic_ratp(metro=True, rer=True):
             return(MESS_BUG())
         data = json.load(resp)
         if data[K_trafic] == "normal":
-            answ += u"[RER] Aucune perturbation."
+            answ += u"[RER: Aucune perturbation] "
         else:
-            answ += u"[RER] Perturbations: "
+            answ += u"[RER Perturbations] "
             for ligne,status in data[K_pertu_rer].iteritems():
                 if ligne == "":
                         answ = (u"Le bulletin contient une remarque générale. Voici un résumé: ")
@@ -70,7 +71,7 @@ def trafic_ratp(metro=True, rer=True):
                         else:
                             answ += status
                 else:
-                    answ += u"{" + ligne + u"}" + u": " + status
+                    answ += u"{" + ligne.replace("Ligne ","") + u"}" + u": " + status
         answ += u"\n"
     if metro:
         url = API_trafic + "metro"
@@ -85,14 +86,8 @@ def trafic_ratp(metro=True, rer=True):
         else:
             answ += u"[METRO] Perturbations: "
             for ligne,status in data[K_pertu_metro].iteritems():
-                answ += u"{" + ligne + u"}" + u": " + status
+                answ += u"{" + ligne.replace("Ligne ","") + u"}" + u": " + status
     return(answ)
-
-def simplifyText(s):
-    """Remove extra blanks, replace uppercase letters by lowercase letters and remove all accents from 's'."""
-    s1 = unicode(str(s.strip().lower()), 'utf-8')
-    s2 = unicodedata.normalize('NFD', s1).encode('ascii', 'ignore')     
-    return(s2)
 
 def likelyCorrect(a):
     return("Aucune" in a or "Voici un" in a or "{" in a)

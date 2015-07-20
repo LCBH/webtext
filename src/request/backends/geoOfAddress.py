@@ -49,11 +49,24 @@ lat_long_provider = "http://open.mapquestapi.com/nominatim/v1/search.php"
 
 # for debugging Only
 pp = pprint.PrettyPrinter(indent=4)
+# for focusing on Ile-de-France (~Chartes - Crépy en Valois)
+# viewLB = [48.441176, 1.591235]
+# viewLT = [49.363723, 1.659899]
+# viewRT = [49.329725, 3.173266]
+# viewRB = [48.439354, 3.258410]
+viewL = str(1.591235)
+viewT = str(49.329725)
+viewR = str(3.258410)
+viewB = str(48.439354)
 
 def dicoOfChoices(address) :
     """ Given an address, it returns a dictionnary  with all the choices
     (i.e., places matching address) and their attributes."""
-    params = urllib.urlencode({'format' : 'json', 'q' : address.encode("utf8")})
+    params = urllib.urlencode({'format' : 'json',
+                               'q' : address.encode("utf8"),
+                               'countrycodes' : 'FR', # limit the search to a specific country (here France)
+                               'viewbox' : ",".join([viewL,viewT,viewR,viewB]),
+                               })
     try:
         response = urllib2.urlopen(lat_long_provider + ("?%s" %params))
     except IOError as e:
