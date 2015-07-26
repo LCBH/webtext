@@ -167,36 +167,9 @@ def paramOfOptions(opt):
         }    
     return(dicoParam)
 
-def makeRequest(fromCoords, toCoords, departure=None, arrival=None, optionsJourney = optionsDefault):
-    """ Given departure and arrival GPS coordinates, and at most one datetime among (departure, arrival),
-    returns the best journey satisfying all constraints (if no datetetime is given, we look for the first one)."""
-    # get dateR and dateRepresents (arrival or departure or as soon as possible)
-    if departure:
-        dateR = departure.strftime("%y%m%dT%H%M")
-        dateRepresents = "departure"
-    if arrival:
-        dateR = arrival.strftime("%y%m%dT%H%M")
-        dateRepresents = "arrival"
-    if not(departure) and not(arrival):
-        dateR = datetime.datetime.now().strftime("%y%m%dT%H%M")
-        dateRepresents = "departure"        
-    # Todo: cleaner way
-    randomStr = "sdf5s6d4f5345sd5f"
-    paramDico = {'from' : randomStr.join(fromCoords),
-                 'to' : randomStr.join(toCoords),
-#                 'commercial_mode' : '',    allows for filtering by transport mode
-                 'datetime' : dateR,
-                 'datetime_represents' : dateRepresents,
-#                 'forbidden_uris[]' : #If you want to avoid lines, modes, networks, etc.
-#                 'min_nb_journeys' : Minimum number of different suggested trips More in multiple_journeys
-#                 'min_nb_journeys' : Maximum number of different suggested trips More in multiple_journeys
-#                 'count' : 100,#Fixed number of different journeys More in multiple_journeys
-#                 'max_nb_transfers' : 0,     # default: 10
-                 'disruption_active' : True, # take disruptions into account
-                 'max_duration_to_pt' : 18*60, # (default 15) max time (in sec.) to reach public transport by bike or walk
-                 }
-    paramDicoOptions = paramOfOptions(optionsJourney)
-    paramDico = dict(paramDico, **paramDicoOptions)
+def makeRequest(paramDico, replaceStr):
+    """Make a generic request to Nativia's API. paramdico contains all paramaters of the request
+       and replaceStr allows for hacking URL (replace str by another just before making the request)."""
     payload = {
         'op': 'login-main',
         'user': navitiaKey,
@@ -204,7 +177,7 @@ def makeRequest(fromCoords, toCoords, departure=None, arrival=None, optionsJourn
         }
     params = urllib.urlencode(paramDico)
     # TODO: cleaner way (than replace randomStr)
-    URL = (prefixQuery + (str("?%s") % params)).replace(randomStr, ";")
+    URL = prefixQuery + (str("?%s") % (replaceStr(params)))
     # create a password manager
     password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
     # Add the username and password.
@@ -223,6 +196,40 @@ def makeRequest(fromCoords, toCoords, departure=None, arrival=None, optionsJourn
         logging.error("BackendRatp > makeRequest > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
         raise Exception(MESS_BUG())
     data = json.load(response, encoding='utf-8')
+    return(data)
+
+def requestJourney(fromCoords, toCoords, departure=None, arrival=None, optionsJourney = optionsDefault):
+    """ Given departure and arrival GPS coordinates, and at most one datetime among (departure, arrival),
+    returns the best journey satisfying all constraints (if no datetetime is given, we look for the first one)."""
+    # get dateR and dateRepresents (arrival or departure or as soon as possible)
+    if departure:
+        dateR = departure.strftime("%y%m%dT%H%M")
+        dateRepresents = "departure"
+    if arrival:
+        dateR = arrival.strftime("%y%m%dT%H%M")
+        dateRepresents = "arrival"
+    if not(departure) and not(arrival):
+        dateR = datetime.datetime.now().strftime("%y%m%dT%H%M")
+        dateRepresents = "departure"        
+    # Todo: cleaner way
+    randomStr = "sdf5s6d4f5345sd5f"
+    replaceStr = (lambda s: s.replace(randomStr, ";"))
+    paramDico = {'from' : randomStr.join(fromCoords),
+                 'to' : randomStr.join(toCoords),
+#                 'commercial_mode' : '',    allows for filtering by transport mode
+                 'datetime' : dateR,
+                 'datetime_represents' : dateRepresents,
+#                 'forbidden_uris[]' : #If you want to avoid lines, modes, networks, etc.
+#                 'min_nb_journeys' : Minimum number of different suggested trips More in multiple_journeys
+#                 'min_nb_journeys' : Maximum number of different suggested trips More in multiple_journeys
+#                 'count' : 100,#Fixed number of different journeys More in multiple_journeys
+#                 'max_nb_transfers' : 0,     # default: 10
+                 'disruption_active' : True, # take disruptions into account
+                 'max_duration_to_pt' : 18*60, # (default 15) max time (in sec.) to reach public transport by bike or walk
+                 }
+    paramDicoOptions = paramOfOptions(optionsJourney)
+    paramDico = dict(paramDico, **paramDicoOptions)
+    data = makeRequest(paramDico, replaceStr)
     return(data)
 
 def parseDate(dateStr):
@@ -343,7 +350,7 @@ def journey(fromName, toName, departure=None, arrival=None, summary=False):
     except Exception as inst:
         return(str(inst.args))
     try:
-        data = makeRequest(fromCoords, toCoords, departure, arrival)
+        data = requestJourney(fromCoords, toCoords, departure, arrival)
     except Exception as inst:
         return(str(inst.args))
     # we never use 'links' part of data:
