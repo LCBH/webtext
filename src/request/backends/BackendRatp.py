@@ -152,8 +152,8 @@ def findCoordsStation(name):
                 if (row[-1] in ["metro", "rer"]):
                     return coordsCVS(row)
         return(coordsCVS(matched[0]))
-
-def findPlace(name):
+# -- Places using MapQuest (depreciated)
+def findPlaceMapQuest(name):
     """ Find a place using MapQuest matching 'name'."""
     listPlaces = listOfChoices(name, 20)
     if listPlaces == None or len(listPlaces) == 0:
@@ -165,18 +165,45 @@ def findPlace(name):
             return(place)
     return(listPlaces[0])
 
+# -- Places using Navitia (should be always used)
+def findPlace(name, velib=False, station=False):
+    """ Find a place using Navitia matching 'name'."""
+# type[]=poi&filter=poi_type.id=poi_type:amenity:parking
+    dicoParam = {
+        'q' : name,
+        }
+    data = makeRequest(dicoParam, REQ_PLACE)
+    places = data["places"]
+    if len(places) > 0:
+        place = places[0]
+        coordsDico = place["stop_area"]["coord"]
+        coords = [str(coordsDico['lon']), str(coordsDico['lat'])]
+        name = place['name'].strip()
+        # Sometimes, Navitia returns name with only uppercase letters
+        if name.split()[0].isupper():
+            name = " ".join([word.capitalize() for word in name.split()]).strip()
+        return((coords, name))
+    else:
+        raise Exception("Nous n'avons pas trouvé de lieux correspondant à "+ name)
+
 def findCoords(name):
     """ Find a place using RATP CVS or MapQuest matching 'name'."""
-    coords = findCoordsStation(name)
+    # TODO: only Navitia
+    coords = [] # findCoordsStation(name)
     if coords == []:
-        logging.debug("[findCoords] No station found, we will try with MapQuest.")
+        logging.debug("[findCoords] No station found, we will try with Navitia.")
         place = findPlace(name)
         if place != None:
-            coords = [str(place['geo'][0]), str(place['geo'][1])]
-            res = (coords, place['address'].strip())
+            res = place
         else:
-            logging.warning("[findCoords] No station found, No place found. Sorry.")
-            raise Exception("Nous n'avons pas trouvé d'arrêt correspondat à "+ name)
+            logging.debug("[findCoords] No station found, we will try with MapQuest.")
+            place = findPlaceMapQuest(name)
+            if place != None:
+                coords = [str(place['geo'][0]), str(place['geo'][1])]
+                res = (coords, place['address'].strip())
+            else:
+                logging.warning("[findCoords] No station found, No place found. Sorry.")
+                raise Exception("Nous n'avons pas trouvé d'arrêt correspondat à "+ name)
     else:
         # in that case, we found a RATP station
         res = (coords, ("la station %s" % name).strip())
@@ -207,37 +234,6 @@ def paramOfOptions(opt):
         'bss_speed' : '%.4f' % (opt['speedBike']*ratio), # (18 km/h)  bike haring (default: same)
         }    
     return(dicoParam)
-
-def makeRequest(paramDico, replaceStr):
-    """Make a generic request to Nativia's API. paramdico contains all paramaters of the request
-       and replaceStr allows for hacking URL (replace str by another just before making the request)."""
-    payload = {
-        'op': 'login-main',
-        'user': navitiaKey,
-        'passwd': ''
-        }
-    params = urllib.urlencode(paramDico)
-    # TODO: cleaner way (than replace randomStr)
-    URL = prefixQuery + (str("?%s") % (replaceStr(params)))
-    # create a password manager
-    password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    # Add the username and password.
-    # If we knew the realm, we could use it instead of None.
-    top_level_url = prefixQuery
-    password_mgr.add_password(None, top_level_url, navitiaKey, '') # user=navitiaKey, passwd is empty
-    handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-    # create "opener" (OpenerDirector instance)
-    opener = urllib2.build_opener(handler)
-    try:
-        # Install the opener.
-        # Now all calls to urllib2.urlopen use our opener.
-        urllib2.install_opener(opener)
-        response = urllib2.urlopen(URL)
-    except IOError as e:
-        logging.error("BackendRatp > makeRequest > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
-        raise Exception(MESS_BUG())
-    data = json.load(response, encoding='utf-8')
-    return(data)
 
 def requestJourney(fromCoords, toCoords, departure=None, arrival=None, optionsJourney = optionsDefault):
     """ Given departure and arrival GPS coordinates, and at most one datetime among (departure, arrival),
@@ -270,7 +266,7 @@ def requestJourney(fromCoords, toCoords, departure=None, arrival=None, optionsJo
                  }
     paramDicoOptions = paramOfOptions(optionsJourney)
     paramDico = dict(paramDico, **paramDicoOptions)
-    data = makeRequest(paramDico, replaceStr)
+    data = makeRequest(paramDico, REQ_JOURNEY, replaceStr)
     return(data)
 
 def parseDate(dateStr):
@@ -511,8 +507,9 @@ class BackendRatp(Backend):
         if 'sport' in options:
             optionsDico['speedBike'] = 20
             optionsDico['speedWalk'] = 7
-        res = journey(fromName, toName, departure=departure, arrival=arrival,summary=summary)
-        return(compactText(res))
+        res = compactText(journey(fromName, toName, departure=departure, arrival=arrival,summary=summary))
+        res_compact = "\n".join([ll.rstrip() for ll in res.splitlines() if ll.strip()])
+        return(res_compact + "\n")
 
     def help(self):
         """ Returns a help message explaining how to use this backend 
@@ -531,12 +528,12 @@ class BackendRatp(Backend):
         reqs = []
         def ap(x):
             reqs.append(Request(user, "ratp", x, [], ""))
-        ap(["Balard", "Hoche"])
         ap(["Ranelagh", "les Buttes Chaumont"])
+#        ap(["Balard", "Hoche", "dep bhk"])
+        ap(["Balard", "Hoche"])
         ap(["Ranelagh", "les Buttes Chaumont", "sport"])
         ap(["Ranelagh", "les Buttes Chaumont", "pas sport"])
         ap(["Ranelagh", "les Buttes Chaumont", "pas velib"])
-#        ap(["Balard", "Hoche", "dep bhk"])
         ap(["Tolbiac","Marx-Dormoy", "ar 23h14", "liste"])
         ap(["Bagneux", "Porte de Montreuil", "dep 23h59"])
         ap(["Bagneux", "Porte de Montreuil", "ar 21h22"])
@@ -550,10 +547,12 @@ class BackendRatp(Backend):
         ap(["Porte d'orléans","nation"])
         ap(["Porte d'orléans","nation", "liste"])
         ap(["Bagneux","Chapelle"])
+        f = open('LOG', 'w')
         for r in reqs:
             logging.info("Checking a request [%s]" % r)
             a = self.answer(r, {})
             if a:
+                f.write(a.encode('utf8'))
                 logging.info(a + "\n")
             if not(likelyCorrect(a)):
                 return False
