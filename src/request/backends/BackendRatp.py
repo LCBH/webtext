@@ -6,6 +6,21 @@
 # - ajouter une fonctionnalité 'suivi' : si jamais quelque chose se passe mal, on est prévenu avec une MAJ de l'itinéraire
 # 
 
+########
+## Nativia propose /place pour rechercher un lieux à partir d'un nom (fonctionnalité autocomplete)
+## Ca serait bien de partir là dessus pour faire de la recherche de lieux au lieu de passer par mapquest/CVS de RATP
+
+## Une fois qu'on a un lieux, on a le droit à places_nearby avec la possibilité de filtrer les résultats. Très bien
+# pour avoir les vélib dans le coin/arrêt de métro/bus etc.
+
+# ex: http://api.navitia.io/v1/coverage/fr-idf/places?q=75+rue+riquet
+# puis dans le premier résultat: [adress][id] ---> URL du lieux:
+# http://api.navitia.io/v1/coverage/fr-idf/addresses/2.361419;48.890011/
+# puis en ajoutant places_nearby avec un bon filtre ---> TOUS LES VELIB AUTOUR avec distance du point donné et "nom" de la station que l'on peut croiser avec le JSON statique
+# de JCdecaux pour récup le numéro et check la dispo en temps réel:
+# http://api.navitia.io/v1/coverage/fr-idf/addresses/2.361419;48.890011/places_nearby?distance=500&count=100&type[]=poi&filter=poi_type.id=poi_type:amenity:bicycle_rental
+
+
 ###########################################################################
 #                                                                         #
 #                       WebText                                           #
