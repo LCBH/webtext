@@ -74,7 +74,9 @@ PROJECT_DIR = os.path.dirname(REQUEST_DIR) + "/../../"
 execfile(expanduser(PROJECT_DIR+'config_backends.py'))
 pathData = expanduser(PROJECT_DIR+'data/backends/RATP/static/ratp_arret_graphique_01.csv')
 navitiaKey = CONF['config_backends']['navitia']['API_key']
-prefixQuery ="http://api.navitia.io/v1/coverage/fr-idf/journeys" # limit the coverage to IDF
+prefixQuery ="http://api.navitia.io/v1/coverage/fr-idf/" # limit the coverage to IDF
+REQ_JOURNEY = "journeys"
+REQ_PLACE = "places"
 
 pp = pprint.pprint
 
@@ -83,8 +85,47 @@ minDuration = 60                # do not print section with duration <= minDurat
 maxCharDirect = 10              # max char. to print for directions
 
 # -----------------
-# -- COORDINATES --
+# -- NAVITIA ------
 # -----------------
+def makeRequest(paramDico, typeRequest, replaceStr=(lambda s:s)):
+    """Make a generic request to Nativia's API. paramdico contains all paramaters of the request
+       and replaceStr allows for hacking URL (replace str by another just before making the request)."""
+    logging.info("About to make a request to Navitia.")
+    payload = {
+        'op': 'login-main',
+        'user': navitiaKey,
+        'passwd': ''
+        }
+    params = urllib.urlencode(paramDico)
+    # TODO: cleaner way (than replace randomStr)
+    URL = prefixQuery + typeRequest + (str("?%s") % (replaceStr(params)))
+    # create a password manager
+    password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    # Add the username and password.
+    # If we knew the realm, we could use it instead of None.
+    top_level_url = prefixQuery
+    password_mgr.add_password(None, top_level_url, navitiaKey, '') # user=navitiaKey, passwd is empty
+    handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+    # create "opener" (OpenerDirector instance)
+    opener = urllib2.build_opener(handler)
+    logging.info("Next: http request.")
+    try:
+        # Install the opener.
+        # Now all calls to urllib2.urlopen use our opener.
+        urllib2.install_opener(opener)
+        response = urllib2.urlopen(URL)
+    except IOError as e:
+        logging.error("BackendRatp > makeRequest > urllib2 | I/O error({0}): {1}".format(e.errno, e.strerror))
+        raise Exception(MESS_BUG())
+    data = json.load(response, encoding='utf-8')
+    logging.info("Request ok.")
+    return(data)
+
+
+# -----------------
+# -- PLACES      --
+# -----------------
+# -- Places using RATP's CVS (depreciated)
 def coordsCVS(row):
     return([row[1],row[2]])
 
