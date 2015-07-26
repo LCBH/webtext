@@ -82,7 +82,10 @@ class BackendAdmin(Backend):
             output = process.communicate()[0]
             listLines = output.splitlines()
             res = (str("\n")).join(listLines)
-            answ += res.split(str("Summary of tests:"))[1]
+            if "Summary of tests:" in res:
+                answ += res.split(str("Summary of tests:"))[1]
+            else:
+                answ += "no results found..."
             return(answ)
 
     # Warning: 'log' requests cannot be tested easily because when testing, log information is redirected
