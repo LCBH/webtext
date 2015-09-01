@@ -2,7 +2,7 @@
 sudo apt-get install gammu gammu-smsd
 sudo apt-get install screen
 #Config Gammu
-cp config_gammu.txt /etc/gammu-smsdrc
+sudo cp config_gammu.txt /etc/gammu-smsdrc
 # Set up databases
 mkdir data
 mkdir data/log
@@ -11,7 +11,8 @@ mkdir data/SMS/inbox
 mkdir data/SMS/error
 mkdir data/SMS/sent
 mkdir data/SMS/outbox
-chown gammu -R data
+sudo chown lutcheti -R data
+sudo chown gammu -R data/SMS
 #Set up sendSMS.php script
 sudo apt-get install apache2 php5 libapache2-mod-php5 -y
 # -> enable SSL (should answer to HTTPS requests)
@@ -27,7 +28,7 @@ sudo chmod u+x /var/www/webtext/api/sendSMS.php
 
 # Need the URI::Escape Lib of Perl (to URLEncode SMS's text before using curl)
 # ADD ton crontab (send 1 SMS per month to avoid to get the line closed):
-# 0 0 1 * * §home/lutcheti/webtext/src/rasp/send_sms.sh
+# 0 0 1 * * /home/lutcheti/webtext/src/rasp/send_sms.sh
 echo "Launch the gammu-smsd daemon: 'screen -S GAMMU sudo gammu-smsd -c /etc/gammu-smsdrc'."
 
 echo "Now, you must launch ./install_request.sh... "
