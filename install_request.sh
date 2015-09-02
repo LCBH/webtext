@@ -24,8 +24,8 @@ sudo chmod u+x /var/www/webtext/api/sms.php
 
 
 # Python modules
-wget https://bootstrap.pypa.io/ez_setup.py -O - | python
-easy_instal wget
-easy_instal dataset
-easy_instal wikipedia
-easy_instal yelpapi
+wget https://bootstrap.pypa.io/ez_setup.py -O - | sudo python
+sudo easy_install wget
+sudo easy_install dataset
+sudo easy_install wikipedia
+sudo easy_install yelpapi
