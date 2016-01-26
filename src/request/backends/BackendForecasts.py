@@ -71,7 +71,7 @@ class BackendForecasts(Backend):
 
     def test(self, user):
         r1 = Request(user, "meteo", ["75020"], [], "")
-        r2 = Request(user, "meteo", ["84000"], [], "")
+        r2 = Request(user, "meteo", ["Suzette"], [], "")
         logging.info("Checking a request [%s]" % r1)
         a1 = self.answer(r1, {})
         if not(likelyCorrect(a1)):

@@ -41,8 +41,8 @@ logging = logging.getLogger(__name__)
 API_url = "http://api-ratp.pierre-grimaud.fr/"
 API_trafic = API_url + "data/trafic/"
 K_trafic = "trafic"
-K_pertu_metro = "perburbations"
-K_pertu_rer = "perburbations"
+K_pertu_metro = "perturbations"
+K_pertu_rer = "perturbations"
 
 METRO = "metro"
 RER = "rer"
