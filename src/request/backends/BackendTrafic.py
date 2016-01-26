@@ -41,8 +41,8 @@ logging = logging.getLogger(__name__)
 API_url = "http://api-ratp.pierre-grimaud.fr/"
 API_trafic = API_url + "data/trafic/"
 K_trafic = "trafic"
-K_pertu_metro = "perburbations"
-K_pertu_rer = "perburbations"
+K_pertu_metro = "perturbations"
+K_pertu_rer = "perturbations"
 
 METRO = "metro"
 RER = "rer"
@@ -63,15 +63,16 @@ def trafic_ratp(metro=True, rer=True):
             answ += u"[RER: Aucune perturbation] "
         else:
             answ += u"[RER Perturbations] "
-            for ligne,status in data[K_pertu_rer].iteritems():
-                if ligne == "":
+            for dico in data[K_pertu_rer]:
+                for ligne,status in dico.iteritems():
+                    if ligne == "":
                         answ = (u"Le bulletin contient une remarque générale. Voici un résumé: ")
                         if len(status) > 80:
                             answ +=  status[0:80] + u"[...]"
                         else:
                             answ += status
-                else:
-                    answ += u"{" + ligne.replace("Ligne ","") + u"}" + u": " + status
+                    else:
+                        answ += u"{" + ligne.replace("Ligne ","") + u"}" + u": " + status
         answ += u"\n"
     if metro:
         url = API_trafic + "metro"
@@ -85,8 +86,9 @@ def trafic_ratp(metro=True, rer=True):
             answ += u"[METRO] Aucune perturbation."
         else:
             answ += u"[METRO] Perturbations: "
-            for ligne,status in data[K_pertu_metro].iteritems():
-                answ += u"{" + ligne.replace("Ligne ","") + u"}" + u": " + status
+            for dico in data[K_pertu_metro]:
+                for ligne,status in dico.iteritems():
+                    answ += u"{" + ligne.replace("Ligne ","") + u"}" + u": " + status
     return(answ)
 
 def likelyCorrect(a):
