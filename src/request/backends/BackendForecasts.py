@@ -32,22 +32,46 @@ import subprocess
 from static import *
 from mainClass import *
 from utils import compactText
+import tempfile
+import time
+
 
 # -- Setup Logging --
 logging = logging.getLogger(__name__)
 
 def forecasts(zipcode, config):
     """ Fetch forecasts in Zipcode."""
-    logging.info("Starting bankInfo")
+    logging.info("Starting forecasts")
    # (dirty) launch_wetboobs.sh is because wetboob is broken
-    bashCommandList = (os.path.dirname(os.path.abspath(__file__))+ "/launch_wetboobs.sh %s" % (zipcode))
+#    bashCommandList = "sh " + (os.path.dirname(os.path.abspath(__file__))+ "/launch_wetboobs.sh %s" % (zipcode))
+    bashCommandList = "wetboobs forecasts " + zipcode 
     logging.info("Before subprocess: %s" % bashCommandList)
     try:
-        process = subprocess.Popen(['sh'] + bashCommandList.split(), stdout=subprocess.PIPE)
+        f = tempfile.TemporaryFile() 
+        p = subprocess.Popen(bashCommandList.split(), stdout=f) # stdout=subprocess.PIPE)
+        time.sleep(2)
+        
+        # kill process
+    #NOTE: if it doesn't kill the process then `p.wait()` blocks forever
+        p.terminate() 
+        p.wait() # wait for the process to terminate otherwise the output is garbled
+
+    # print saved output
+        f.seek(0) # rewind to the beginning of the file
+        output = f.read() 
+        f.close()
+
     except OSError as e:
         logging.error("forecasts > Popen | Execution failed:" + str(e))
         return(MESS_BUG())
-    output = process.communicate()[0]
+
+    # print("OK")
+    # time.sleep(2)
+    # process.terminate() 
+    # process.wait() # wait for the process to terminate otherwise the output is garbled    
+
+    process = 0
+    # output = process.communicate()[0]
     output_trunc = u""
     listLines = output.splitlines()
     for line in listLines:
