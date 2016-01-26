@@ -136,23 +136,24 @@ def detailsBusiness(request, idBusiness, no_limit_char_review=False):
                reqBusiness['display_phone'] if 'display_phone' in reqBusiness else "(pas de tel.)",
                printLocation(reqBusiness['location']['display_address'])))
     # Problem: Yelp's API only provide reviews snippet
-    for review in reqBusiness['reviews']:
-        if no_limit_char_review:
-            textReview = review['excerpt']
-        else:
-            if MAX_CHAR_REVIEW > len(review['excerpt']):
-                maxi = MAX_CHAR_REVIEW
-                suff = "[...]"
+    if 'reviews' in reqBusiness.keys():
+        for review in reqBusiness['reviews']:
+            if no_limit_char_review:
+                textReview = review['excerpt']
             else:
-                maxi = len(review['excerpt'])
-                suff = ""
-            textReview = review['excerpt'][0:maxi] + suff
-        answ += (RATE + '%d -- %s\n' % (review['rating'], textReview))
+                if MAX_CHAR_REVIEW > len(review['excerpt']):
+                    maxi = MAX_CHAR_REVIEW
+                    suff = "[...]"
+                else:
+                    maxi = len(review['excerpt'])
+                    suff = ""
+                textReview = review['excerpt'][0:maxi] + suff
+            answ += (RATE + '%d -- %s\n' % (review['rating'], textReview))
     return(answ)
 
 
 def likelyCorrect(answer):
-    return(answer and ("(1)" in answer or RATE in answer))
+    return(answer and ("(1)" in answer or RATE in answer or "(0 r" in answer))
 
 class BackendYelp(Backend):
     backendName = YELP
