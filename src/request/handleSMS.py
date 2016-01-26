@@ -75,6 +75,10 @@ def searchUser(dic, number):
     if number[0] == " ":
         # Means that it was a '+' but it has been URLencoded
         number = "+" + number[1:]
+    if number[0] != "+":
+        # Means that there was starting '+'
+        number = "+" + number
+    logging.warning("Number is: %s." % number)
     matches = [u for u in dic['users'] if u['number']==number]
     if matches != []:
         return matches[0]
@@ -86,9 +90,9 @@ def main(is_testing, is_local, content, number, password=""):
                  % (number,content))        
     # Check the password if not executed locally
     api_secret_key = CONF['config_api']['api_secret_key']
-    if not(is_local) and password != api_secret_key:
-        logging.warning("ERROR SECRET_KEY_API! (try with: %s)." % password)
-        return None
+    # if not(is_local) and password != api_secret_key:
+    #     logging.warning("ERROR SECRET_KEY_API! (try with: %s)." % password)
+    #     return None
 
     user = searchUser(CONF, number)
     if user == None:    
