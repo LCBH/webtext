@@ -23,6 +23,7 @@
 #    along with OwnShare.  If not, see <http://www.gnu.org/licenses/>.    #
 #                                                                         #
 ###########################################################################
+from __future__ import unicode_literals # implicitly declaring all strings as unicode strings
 
 """ Using either carrier API's or the raspberry pi, we define functions
 that send SMSs."""
@@ -52,6 +53,7 @@ def sendTextFree(text, login, password, is_testing=False):
     else:
         text_enc = text
     encodedText = urllib.quote_plus(text_enc) # url-ize the message's content
+    logging.info("Encodings OK...")
     url = ('https://smsapi.free-mobile.fr/sendmsg?user=%s&pass=%s&msg=%s'
            % (login, password, encodedText))
     filename = "./tmp/torm.tmp"
@@ -59,11 +61,13 @@ def sendTextFree(text, login, password, is_testing=False):
         try:
             out = wget.download(url,out=filename)
             os.remove(filename)
+            logging.info("Everything went well....")
         except IOError as e:
             logging.error("sendTextFree > wget | I/O error({0}): {1}".format(e.errno, e.strerror))
             exit(0)
     else:
-        logging.info("I do not send any SMS (we are testing now!).")
+        logging.warning("I do not send any SMS (we are testing now!).")
+    logging.info("END")
 
 
 def sendTextRasp(text, number, is_testing=False):

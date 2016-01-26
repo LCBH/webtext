@@ -41,6 +41,5 @@ def simplifyText(s):
 def compactText(s):
     """ Remove extra blanks (at most one blank). """
     while (BLANK + BLANK) in s:
-        print(s)
         s = s.replace(BLANK + BLANK, BLANK)
     return(s)

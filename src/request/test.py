@@ -146,8 +146,8 @@ if testBackend:
 
 if testSend:
     NB = 999                    # API FREE's limit is at 999
-    NB = 160                    # limit one SMS by Gammu
-    NB = 2001                   # limit multiple SMSs by Gammu (can be bigger)
-    NB = 1750                   # limit multiple SMSs by Gammu - UR'size (max 2000)
+    # NB = 160                    # limit one SMS by Gammu
+    # NB = 2001                   # limit multiple SMSs by Gammu (can be bigger)
+    # NB = 1750                   # limit multiple SMSs by Gammu - UR'size (max 2000)
     MESS = [str(NB) + "a" * (NB-1-3-1) + "b"]
     send.sendText(MESS, user1, {}, is_testing = False)

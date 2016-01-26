@@ -20,7 +20,9 @@ sudo mkdir /var/www/webtext
 sudo mkdir /var/www/webtext/api
 sudo chgrp www-data -R /var/www/webtext
 sudo cp src/request/sms.php /var/www/webtext/api/
+sudo cp src/request/nexmo.php /var/www/webtext/api/
 sudo chmod u+x /var/www/webtext/api/sms.php
+sudo chmod u+x /var/www/webtext/api/nexmo.php
 
 
 # Python modules
