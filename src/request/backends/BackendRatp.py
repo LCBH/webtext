@@ -152,6 +152,7 @@ def findCoordsStation(name):
                 if (row[-1] in ["metro", "rer"]):
                     return coordsCVS(row)
         return(coordsCVS(matched[0]))
+
 # -- Places using MapQuest (depreciated)
 def findPlaceMapQuest(name):
     """ Find a place using MapQuest matching 'name'."""
@@ -174,6 +175,7 @@ def findPlace(name, velib=False, station=False):
         }
     data = makeRequest(dicoParam, REQ_PLACE)
     places = data["places"]
+    places = [pl for pl in places if "stop_area" in pl.keys()]
     if len(places) > 0:
         place = places[0]
         coordsDico = place["stop_area"]["coord"]
@@ -385,11 +387,13 @@ def journey(fromName, toName, departure=None, arrival=None, summary=False):
         (fromCoords,fromPrint) = findCoords(fromName)
         (toCoords,toPrint) = findCoords(toName)
     except Exception as inst:
-        return(str(inst.args))
+        logging.error("Exception when requesting coordinates...: %s,%s." % (str(inst.args), str(inst)))
+        return(None)
     try:
         data = requestJourney(fromCoords, toCoords, departure, arrival)
     except Exception as inst:
-        return(str(inst.args))
+        logging.error("Exception when requesting Journey...: %s,%s." % (str(inst.args), str(inst)))
+        return(None)
     # we never use 'links' part of data:
     data = data["journeys"]
     summaryJ = summaryJourneys(data)
